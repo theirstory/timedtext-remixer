@@ -2,12 +2,59 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
+    <!-- <script type="module" src="https://cdn.jsdelivr.net/npm/media-chrome@1/+esm"></script> -->
+    <!-- <script type="module" src="/public/timedtext-player.bundled.js"></script> -->
   </head>
   <body>
     <div id="root"></div>
+    <div id="templates">
+      <template id="video1">
+        <video controls src="${src}">
+          <!-- <track default kind="captions" srclang="en" src="${captions}" /> -->
+        </video>
+      </template>
+  
+      <template id="video2">
+        <video controls src="${src}">
+          <!-- <track default kind="captions" srclang="en" src="${captions}" /> -->
+        </video>
+      </template>
+  
+      <template id="video-yt">
+        <youtube-video
+          src="${src}"
+          controls
+          crossorigin
+        ></youtube-video>
+      </template>
+  
+      <template id="gap1">
+        <video src="${src}"></video>
+        <h1>${title}</h1>
+      </template>
+  
+      <template id="fin">
+        <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, calc(1 - ${progress}));">
+          <!-- <p>${progress}</p> -->
+        </div>
+      </template>
+  
+  
+      <template id="ftb">
+        <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, ${progress});">
+          <!-- <p>${progress}</p> -->
+        </div>
+      </template>
+  
+      <template id="overlay">
+        <div style="position: absolute; top: 0; left: 0;">
+          <h2 style="color: yellow; background-color:  rgba(0, 0, 0, .3);">${text}</h2>
+          <!-- <p>${progress}</p> -->
+        </div>
+      </template>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

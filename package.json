@@ -35,5 +35,11 @@
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-dts": "^3.7.3"
+  },
+  "dependencies": {
+    "timedtext-player": "./../timedtext-player/dist/timedtext-player.js",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.0.1",
+    "@lit/react": "^1.0.3",
+    "media-chrome": "^3.0.2"
   }
 }
