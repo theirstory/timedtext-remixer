@@ -37,9 +37,15 @@
     "vite-plugin-dts": "^3.7.3"
   },
   "dependencies": {
-    "timedtext-player": "./../timedtext-player/dist/timedtext-player.js",
-    "@atlaskit/pragmatic-drag-and-drop": "^1.0.1",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.1.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@hello-pangea/dnd": "^16.5.0",
     "@lit/react": "^1.0.3",
-    "media-chrome": "^3.0.2"
+    "@mui/icons-material": "^5.15.14",
+    "@mui/material": "^5.15.14",
+    "media-chrome": "^3.0.2",
+    "react-beautiful-dnd": "^13.1.1",
+    "timedtext-player": "./../timedtext-player/dist/timedtext-player.js"
   }
 }
