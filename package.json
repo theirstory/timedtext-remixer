@@ -44,7 +44,9 @@
     "@lit/react": "^1.0.3",
     "@mui/icons-material": "^5.15.14",
     "@mui/material": "^5.15.14",
+    "interval-operations": "^2.0.0",
     "media-chrome": "^3.0.2",
+    "nanoid": "^5.0.6",
     "react-beautiful-dnd": "^13.1.1",
     "timedtext-player": "./../timedtext-player/dist/timedtext-player.js"
   }
