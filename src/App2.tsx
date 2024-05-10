@@ -41,6 +41,9 @@ import {
 import { createComponent } from "@lit/react";
 import { TimedTextPlayer } from "../../timedtext-player/dist/timedtext-player.js";
 
+import RemixSource from "../lib/RemixSource.js";
+import type { Clip, TimedText } from "../lib/interfaces";
+
 import track from "./data/test.json";
 
 import "./App.css";
@@ -123,7 +126,7 @@ function App() {
   const [rightDrawerOpen, setRightDrawerOpen] = React.useState(false);
   const [tabValue, setTabValue] = React.useState(0);
 
-  const [sources, setSources] = useState<Block[][]>([track2blocks(track)]);
+  const [sources, setSources] = useState<Clip[][]>([track2clips(track)]);
   const [blocks, dispatch] = useReducer(
     blockReducer,
     track2blocks(track) ?? emptyState
@@ -244,7 +247,6 @@ function App() {
       sx={{
         flexGrow: 1,
         border: "1px solid grey",
-        // borderRadius: 2,
         overflow: "hidden",
         width: 2 * width + 0,
       }}
@@ -318,39 +320,7 @@ function App() {
                 padding: 0,
               }}
             >
-              <Droppable
-                droppableId="droppable0"
-                // type="BLOCK"
-                isDropDisabled={true}
-              >
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={getListStyle(snapshot.isDraggingOver)}
-                  >
-                    <article>
-                      {sources[0].map((block, i, blocks) => (
-                        <Section
-                          key={block.id}
-                          data={block.data}
-                          id={block.id}
-                          offset={blocks
-                            .slice(0, i)
-                            .reduce(
-                              (acc, b) =>
-                                acc + (b.data?.source_range?.duration ?? 0),
-                              0
-                            )}
-                          interval={interval}
-                        />
-                      ))}
-                    </article>
-
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+              <RemixSource source={sources[0]} />
             </Box>
             {/* </TabPanel> */}
           </Box>
@@ -391,40 +361,7 @@ function App() {
             </div>
             <Box sx={{ overflowY: "auto", height: "calc(100vh - 64px)" }}>
               {/* <DragDropContext onDragEnd={onDragEnd}> */}
-              <article id="transcript">
-                <Droppable droppableId="droppable">
-                  {(provided, snapshot) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      style={getListStyle(snapshot.isDraggingOver)}
-                    >
-                      {blocks.map((block, index) => (
-                        <Draggable
-                          key={block.id}
-                          draggableId={block.id}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              style={getItemStyle(
-                                snapshot.isDragging,
-                                provided.draggableProps.style
-                              )}
-                            >
-                              <Section data={block.data} id={block.id} />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </article>
+              DDDDDDDD
               {/* </DragDropContext> */}
             </Box>
           </Box>
@@ -436,196 +373,6 @@ function App() {
         </Box>
       </DragDropContext>
     </Box>
-  );
-}
-
-function Section({
-  id,
-  data,
-  offset = 0,
-  interval,
-}: {
-  id: string;
-  data: any;
-  offset?: number;
-  interval?: [number, number];
-}) {
-  const start = data.source_range.start_time;
-  const end = data.source_range.duration + start;
-  const adjustedInterval =
-    interval &&
-    ([interval[0] - offset, interval[1] - offset] as [number, number]);
-
-  const attrs = Object.keys(data.metadata.data).reduce(
-    (acc, key) => {
-      return {
-        ...acc,
-        [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
-      };
-    },
-    { id }
-  );
-
-  const children = data?.children?.filter((c) => c.OTIO_SCHEMA === "Clip.1");
-  let before = [];
-  let selected = [];
-  let after = [];
-  let intersects = false;
-
-  if (adjustedInterval && intersection([start, end], adjustedInterval)) {
-    intersects = true;
-    attrs.style = { backgroundColor: "lightblue" };
-
-    before = children.filter(
-      (p) =>
-        p.source_range.start_time + p.source_range.duration <
-        adjustedInterval[0]
-    );
-    after = children.filter(
-      (p) => p.source_range.start_time > adjustedInterval[1]
-    );
-    selected = children.filter((p) => {
-      const pStart = p.source_range.start_time;
-      const pEnd = pStart + p.source_range.duration;
-      return intersection([pStart, pEnd], adjustedInterval);
-    });
-    // console.log({ before, selected, after });
-  }
-
-  return (
-    <section {...attrs}>
-      {intersects ? (
-        <>
-          {before.map((p, i) => (
-            <Paragraph key={`p${i}`} data={p} />
-          ))}
-
-          <Draggable draggableId="selection" index={0}>
-            {(provided, snapshot) => (
-              <>
-                <div
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  style={getItemStyle(
-                    snapshot.isDragging,
-                    provided.draggableProps.style
-                  )}
-                >
-                  {selected.map((p, i) => (
-                    <Paragraph
-                      key={`p${i}`}
-                      data={p}
-                      interval={adjustedInterval}
-                      dragHandleProps={provided.dragHandleProps}
-                      isDragging={snapshot.isDragging}
-                    />
-                  ))}
-                </div>
-                {snapshot.isDragging && (
-                  <>
-                    <div style={getItemStyle(provided.draggableProps.style)}>
-                      {selected.map((p, i) => (
-                        <Paragraph key={`p${i}`} data={p} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </Draggable>
-
-          {after.map((p, i) => (
-            <Paragraph key={`p${i}`} data={p} />
-          ))}
-        </>
-      ) : (
-        children.map((p, i) => <Paragraph key={`p${i}`} data={p} />)
-      )}
-    </section>
-  );
-}
-
-function Paragraph({
-  data,
-  interval,
-  dragHandleProps,
-  isDragging,
-}: {
-  data: any;
-  interval?: [number, number];
-  dragHandleProps?: any;
-  isDragging?: boolean;
-}) {
-  const start = data.source_range.start_time;
-  const end = data.source_range.duration + start;
-
-  const attrs = Object.keys(data?.metadata?.data ?? {}).reduce((acc, key) => {
-    if (!key) return acc;
-    return {
-      ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
-    };
-  }, {});
-
-  const children = data?.timed_texts ?? [];
-  let before = [];
-  let selected = [];
-  let after = [];
-  let intersects = false;
-
-  if (interval && intersection([start, end], interval)) {
-    intersects = true;
-    attrs.style = { backgroundColor: "lightyellow" };
-
-    before = children.filter(
-      (p) => p.marked_range.start_time + p.marked_range.duration < interval[0]
-    );
-    after = children.filter((p) => p.marked_range.start_time > interval[1]);
-    selected = children.filter((p) => {
-      const pStart = p.marked_range.start_time;
-      const pEnd = pStart + p.marked_range.duration;
-      return intersection([pStart, pEnd], interval);
-    });
-    // console.log({ before, selected, after });
-  }
-
-  return (
-    <p {...attrs}>
-      {intersects ? (
-        <>
-          {dragHandleProps && isDragging
-            ? null
-            : before.map((s, i) => <Span key={`s${i}`} data={s} />)}
-          <span className="selection" {...dragHandleProps}>
-            {selected.map((s, i) => (
-              <Span key={`s${i}`} data={s} />
-            ))}
-          </span>
-          {dragHandleProps && isDragging
-            ? null
-            : after.map((s, i) => <Span key={`s${i}`} data={s} />)}
-        </>
-      ) : (
-        children.map((s, i) => <Span key={`s${i}`} data={s} />)
-      )}
-    </p>
-  );
-}
-
-function Span({ data }: { data: any }) {
-  // const attrs = Object.keys(data?.metadata?.data ?? {}).reduce((acc, key) => {
-  //   if (!key) return acc;
-  //   return {
-  //     ...acc,
-  //     [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
-  //   };
-  // }, {});
-  const start = data.marked_range.start_time;
-  const end = data.marked_range.duration + start;
-  return (
-    <>
-      <span data-t={`${start},${end}`}>{data.texts}</span>{" "}
-    </>
   );
 }
 
@@ -677,6 +424,20 @@ function track2blocks(track: any): State {
       id: section?.metadata?.id ?? nanoid(), // TODO use urlAlphabet
       data: section,
       metadata: section?.metadata ?? {},
+    };
+  });
+}
+
+function track2clips(track: any): State {
+  if (!track) return [];
+
+  return track.children.map((section: any) => {
+    const metadata = section?.metadata ?? {};
+    if (!metadata.id) metadata.id = nanoid(); // TODO use urlAlphabet
+
+    return {
+      ...section,
+      metadata,
     };
   });
 }
