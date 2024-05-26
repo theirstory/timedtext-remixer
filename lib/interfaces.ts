@@ -1,4 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { DropResult } from "@hello-pangea/dnd";
+
+export type State = { // TODO: verify with OTIO spec, this is a Timeline
+  sources?: Timeline[] | undefined | null;
+  remix?: Timeline | undefined | null;
+};
+
+export type Action =
+| { type: "test"; payload: any }
+| { type: "move"; payload: DropResult }
+| { type: "add"; payload: [DropResult, Clip] };
+
+export interface Stack {
+  OTIO_SCHEMA: string;
+  metadata?: Metadata;
+  name?: string;
+  media_reference?: any | null;
+  source_range?: TimeRange;
+  children: Track[];
+}
+
+export interface Timeline {
+  OTIO_SCHEMA: string;
+  metadata?: Metadata;
+  name?: string;
+  tracks: Stack;
+}
 
 export interface Metadata {
   [key: string]: any;
@@ -20,45 +47,45 @@ export interface TimeRange {
 
 export interface Clip {
   OTIO_SCHEMA: string;
-  markers: any[]; 
-  effects: Effect[];
+  markers?: any[]; 
+  effects?: Effect[];
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure
   metadata: Metadata;
-  name: string;
+  name?: string;
   source_range: TimeRange;
-  children: Clip[]; // FIXME this should not be here, make section a composition of clips
-  timed_texts: TimedText[] | null;
+  // children: Clip[]; // FIXME this should not be here, make section a composition of clips
+  timed_texts?: TimedText[] | null;
 }
 
 export interface Gap { // TODO: verify with OTIO spec
   OTIO_SCHEMA: string;
-  markers: any[]; 
+  markers?: any[]; 
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure
   metadata: Metadata;
-  name: string;
+  name?: string;
   source_range: TimeRange;
 }
 
 export interface Track {
   OTIO_SCHEMA: string;
   // children: (Clip | Transition)[]; // Assuming Transition is another interface you have defined
-  children: Clip[]; // TODO use Composable?
+  children: (Clip | Stack)[];
   kind: string;
-  markers: any[]; 
-  metadata: Metadata;
-  name: string;
+  markers?: any[]; 
+  metadata?: Metadata;
+  name?: string;
   // source_range: TimeRange | null;
-  effects: Effect[];
+  effects?: Effect[];
 }
 
 export interface TimedText {
   OTIO_SCHEMA: string;
-  metadata: Metadata;
-  name: string;
-  color: string;
+  metadata?: Metadata;
+  name?: string;
+  color?: string;
   marked_range: TimeRange;
   texts: string | string[];
-  style_ids: string[];
+  style_ids?: string[];
 }
 
 export interface Effect {

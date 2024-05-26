@@ -1,17 +1,24 @@
-import { useState, useCallback, ElementType, CSSProperties } from "react";
+import {
+  useMemo,
+  useState,
+  useCallback,
+  ElementType,
+  CSSProperties,
+} from "react";
 import { Droppable } from "@hello-pangea/dnd";
 
 import { PlainDiv, PlainSpan, Section } from "./components";
 
-import type { Clip } from "./interfaces";
+import type { Timeline, Stack, Track, Clip } from "./interfaces";
 
 interface RemixSourceProps {
-  PlayerWrapper: ElementType;
-  SourceWrapper: ElementType;
-  BlockWrapper: ElementType;
-  SelectedBlocksWrapper: ElementType;
-  SelectionWrapper: ElementType;
-  source: Clip[];
+  PlayerWrapper?: ElementType;
+  SourceWrapper?: ElementType;
+  BlockWrapper?: ElementType;
+  SelectedBlocksWrapper?: ElementType;
+  SelectionWrapper?: ElementType;
+  source: Timeline;
+  active: boolean;
 }
 
 const RemixSource = ({
@@ -20,14 +27,27 @@ const RemixSource = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
-  source = [],
+  source,
+  active,
 }: RemixSourceProps): JSX.Element => {
+  const stacks: Stack[] = useMemo(() => {
+    if (
+      source.tracks.children[0].children.every(
+        (c) => c.OTIO_SCHEMA === "Clip.1"
+      )
+    ) {
+      return [source.tracks] as Stack[];
+    } else {
+      return source.tracks.children.flatMap(
+        (t) => t.children as Stack[]
+      ) as Stack[];
+    }
+  }, [source]);
+
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
     background: isDraggingOver ? "lightyellow" : "transparent",
     width: "100%",
   });
-
-  console.log({ source });
 
   const [interval, setInterval] = useState<[number, number] | null>(null);
 
@@ -78,43 +98,25 @@ const RemixSource = ({
         number,
       ]; // TODO trim to section interval (no selection outside of section)
 
-      // setInterval(selectionInterval);
-      setInterval([startT, endT] as [number, number]); // FIXME use block.id + interval on source media only
+      setInterval(selectionInterval as [number, number]);
+      // setInterval([startT, endT] as [number, number]); // FIXME use block.id + interval on source media only
       const block =
         source.find((b) => b.metadata.id === section.getAttribute("id")) ??
         null;
       // setBlock(block);
       console.log({ section, block, selectionInterval });
+      selection.removeAllRanges();
     }
   }, [source]);
 
   return (
-    <>
+    <div style={{ display: active ? "block" : "none" }}>
       <PlayerWrapper style={{}}>
         <p>source video here</p>
       </PlayerWrapper>
-
-      <SourceWrapper>
-        <BlockWrapper>
-          <p>transcript block</p>
-        </BlockWrapper>
-        <SelectedBlocksWrapper>
-          <BlockWrapper>
-            <p>
-              transcript <SelectionWrapper>block</SelectionWrapper>
-            </p>
-          </BlockWrapper>
-          <BlockWrapper>
-            <p>
-              <SelectionWrapper>transcript</SelectionWrapper> block
-            </p>
-          </BlockWrapper>
-        </SelectedBlocksWrapper>
-        <BlockWrapper>
-          <p>transcript block</p>
-        </BlockWrapper>
-      </SourceWrapper>
-      {/*  */}
+      <p>
+        Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}
+      </p>
       <SourceWrapper>
         <Droppable
           droppableId="droppable0"
@@ -129,14 +131,14 @@ const RemixSource = ({
               onClick={handleSourceClick}
             >
               <article>
-                {source.map((block: Clip, i, blocks) => (
+                {stacks.map((stack: Stack, i, stacks) => (
                   <Section
-                    key={block.metadata.id ?? `b-${i}`}
-                    data={block}
-                    offset={blocks
+                    key={stack?.metadata?.id ?? `S${i}`}
+                    stack={stack}
+                    offset={stacks
                       .slice(0, i)
                       .reduce(
-                        (acc, b) => acc + (b.source_range?.duration ?? 0),
+                        (acc, s) => acc + (s.source_range?.duration ?? 0),
                         0
                       )}
                     interval={interval}
@@ -154,7 +156,7 @@ const RemixSource = ({
           )}
         </Droppable>
       </SourceWrapper>
-    </>
+    </div>
   );
 };
 

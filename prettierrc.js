@@ -5,4 +5,5 @@ module.exports = {
   singleQuote: true,
   printWidth: 120,
   bracketSpacing: true,
+  files: ["./lib/*.ts", "./lib/*.tsx", "./src/*.ts", "./src/*.tsx"],
 };

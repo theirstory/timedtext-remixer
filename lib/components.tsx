@@ -3,7 +3,7 @@ import { Draggable } from "@hello-pangea/dnd";
 import { intersection } from "interval-operations";
 
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
-import type { Clip, TimedText } from "./interfaces";
+import type { Timeline, Stack, Track, Clip, TimedText } from "./interfaces";
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
   <div>{children}</div>
@@ -26,30 +26,31 @@ export const Span = ({ data }: { data: TimedText }) => {
 };
 
 export const Paragraph = ({
-  data,
+  clip,
   interval,
   dragHandleProps,
   isDragging,
   SelectionWrapper = PlainSpan as unknown as ElementType,
 }: {
-  data: Clip;
+  clip: Clip;
   interval?: [number, number] | null | undefined;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   isDragging?: boolean;
   SelectionWrapper?: ElementType;
 }) => {
-  const start = data.source_range.start_time;
-  const end = data.source_range.duration + start;
+  console.log({ clip });
+  const start = clip.source_range.start_time;
+  const end = clip.source_range.duration + start;
 
-  const attrs = Object.keys(data?.metadata?.data ?? {}).reduce((acc, key) => {
+  const attrs = Object.keys(clip?.metadata?.data ?? {}).reduce((acc, key) => {
     if (!key) return acc;
     return {
       ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
+      [`data-${key.replaceAll("_", "-")}`]: clip.metadata.data[key],
     };
   }, {});
 
-  const children = data?.timed_texts ?? [];
+  const children = clip?.timed_texts ?? [];
   let before: TimedText[] = [];
   let selected: TimedText[] = [];
   let after: TimedText[] = [];
@@ -80,24 +81,24 @@ export const Paragraph = ({
           {dragHandleProps && isDragging
             ? null
             : before.map((s, i) => (
-                <Span key={s.metadata.id ?? `s-${i}`} data={s} />
+                <Span key={s?.metadata?.id ?? `bs-${i}`} data={s} />
               ))}
           <SelectionWrapper>
             <span className="selection" {...dragHandleProps}>
               {selected.map((s, i) => (
-                <Span key={s.metadata.id ?? `s-${i}`} data={s} />
+                <Span key={s?.metadata?.id ?? `ss-${i}`} data={s} />
               ))}
             </span>
           </SelectionWrapper>
           {dragHandleProps && isDragging
             ? null
             : after.map((s, i) => (
-                <Span key={s.metadata.id ?? `s-${i}`} data={s} />
+                <Span key={s?.metadata?.id ?? `as2-${i}`} data={s} />
               ))}
         </>
       ) : (
         children.map((s, i) => (
-          <Span key={s.metadata.id ?? `s-${i}`} data={s} />
+          <Span key={s?.metadata?.id ?? `us-${i}`} data={s} />
         ))
       )}
     </p>
@@ -105,19 +106,19 @@ export const Paragraph = ({
 };
 
 export const Section = ({
-  data,
+  stack,
   offset = 0,
   interval,
-  BlockWrapper,
-  SelectedBlocksWrapper,
-  SelectionWrapper,
+  BlockWrapper = PlainDiv as unknown as ElementType,
+  SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
+  SelectionWrapper = PlainSpan as unknown as ElementType,
 }: {
-  data: Clip;
+  stack: Stack;
   offset?: number;
   interval?: [number, number] | null | undefined;
-  BlockWrapper: ElementType;
-  SelectedBlocksWrapper: ElementType;
-  SelectionWrapper: ElementType;
+  BlockWrapper?: ElementType;
+  SelectedBlocksWrapper?: ElementType;
+  SelectionWrapper?: ElementType;
 }) => {
   const getItemStyle = (
     isDragging: boolean,
@@ -128,28 +129,29 @@ export const Section = ({
     ...draggableStyle,
   });
 
-  console.log({ data });
+  console.log({ stack });
 
-  const start = data.source_range.start_time;
-  const end = data.source_range.duration + start;
+  const start = stack?.source_range?.start_time ?? 0;
+  const end = (stack?.source_range?.duration ?? 0) + start;
   const adjustedInterval =
     interval &&
     ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
-  const attrs = Object.keys(data.metadata.data).reduce((acc, key) => {
+  const attrs = Object.keys(stack.metadata.data).reduce((acc, key) => {
     return {
       ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
+      [`data-${key.replaceAll("_", "-")}`]: stack.metadata.data[key],
     } as Record<string, string>;
   }, {}) as unknown as Record<string, string>;
 
-  const children = data?.children?.filter(
-    (c: Clip) => c.OTIO_SCHEMA === "Clip.1"
+  // stack -> track[0] -> children
+  const children = stack.children?.[0]?.children?.filter(
+    (c: Clip | Stack) => c.OTIO_SCHEMA === "Clip.1"
   );
 
-  let before: Clip[] = [];
-  let selected: Clip[] = [];
-  let after: Clip[] = [];
+  let before: (Clip | Stack)[] = [];
+  let selected: (Clip | Stack)[] = [];
+  let after: (Clip | Stack)[] = [];
   let intersects = false;
 
   if (adjustedInterval && intersection([start, end], adjustedInterval)) {
@@ -157,30 +159,31 @@ export const Section = ({
     // attrs.style = { backgroundColor: "lightblue" };
 
     before = children.filter(
-      (p: Clip) =>
-        p.source_range.start_time + p.source_range.duration <
+      (p) =>
+        (p as Clip).source_range.start_time +
+          (p as Clip).source_range.duration <
         adjustedInterval[0]
     );
 
     after = children.filter(
-      (p: Clip) => p.source_range.start_time > adjustedInterval[1]
+      (p) => (p as Clip).source_range.start_time > adjustedInterval[1]
     );
 
-    selected = children.filter((p: Clip) => {
-      const pStart = p.source_range.start_time;
-      const pEnd = pStart + p.source_range.duration;
+    selected = children.filter((p) => {
+      const pStart = (p as Clip).source_range.start_time;
+      const pEnd = pStart + (p as Clip).source_range.duration;
       return intersection([pStart, pEnd], adjustedInterval);
     });
     // console.log({ before, selected, after });
   }
 
   return (
-    <section {...attrs} id={data.metadata.id}>
+    <section {...attrs} id={stack?.metadata?.id} data-offset={offset}>
       {intersects ? (
         <>
-          {before.map((p: Clip, i: number) => (
-            <BlockWrapper>
-              <Paragraph key={p.metadata.id ?? `p-${i}`} data={p} />
+          {before.map((p, i: number) => (
+            <BlockWrapper key={p?.metadata?.id ?? `bP-${i}`}>
+              <Paragraph clip={p as Clip} />
             </BlockWrapper>
           ))}
 
@@ -196,11 +199,10 @@ export const Section = ({
                   )}
                 >
                   <SelectedBlocksWrapper>
-                    {selected.map((p: Clip, i: number) => (
-                      <BlockWrapper>
+                    {selected.map((p, i: number) => (
+                      <BlockWrapper key={p?.metadata?.id ?? `sP-${i}`}>
                         <Paragraph
-                          key={p.metadata.id ?? `p-${i}`}
-                          data={p}
+                          clip={p as Clip}
                           interval={adjustedInterval}
                           dragHandleProps={provided.dragHandleProps}
                           isDragging={snapshot.isDragging}
@@ -213,18 +215,15 @@ export const Section = ({
                 {snapshot.isDragging && (
                   <>
                     <div
-                      style={getItemStyle(
-                        true,
-                        provided.draggableProps.style as CSSProperties
-                      )}
+                    // style={getItemStyle(
+                    //   true,
+                    //   provided.draggableProps.style as CSSProperties
+                    // )}
                     >
                       <SelectedBlocksWrapper>
-                        {selected.map((p: Clip, i: number) => (
-                          <BlockWrapper>
-                            <Paragraph
-                              key={p.metadata.id ?? `p-${i}`}
-                              data={p}
-                            />
+                        {selected.map((p, i: number) => (
+                          <BlockWrapper key={p?.metadata?.id ?? `s2P-${i}`}>
+                            <Paragraph clip={p as Clip} />
                           </BlockWrapper>
                         ))}
                       </SelectedBlocksWrapper>
@@ -235,16 +234,16 @@ export const Section = ({
             )}
           </Draggable>
 
-          {after.map((p: Clip, i: number) => (
-            <BlockWrapper>
-              <Paragraph key={p.metadata.id ?? `p-${i}`} data={p} />
+          {after.map((p, i: number) => (
+            <BlockWrapper key={p?.metadata?.id ?? `aP-${i}`}>
+              <Paragraph clip={p as Clip} />
             </BlockWrapper>
           ))}
         </>
       ) : (
-        children.map((p: Clip, i: number) => (
-          <BlockWrapper>
-            <Paragraph key={p.metadata.id ?? `p-${i}`} data={p} />
+        children.map((p, i: number) => (
+          <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`}>
+            <Paragraph clip={p as Clip} />
           </BlockWrapper>
         ))
       )}
