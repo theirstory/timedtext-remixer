@@ -47,7 +47,7 @@ export interface TimeRange {
 
 export interface Clip {
   OTIO_SCHEMA: string;
-  markers?: any[]; 
+  markers?: any[];
   effects?: Effect[];
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure
   metadata: Metadata;
@@ -59,7 +59,7 @@ export interface Clip {
 
 export interface Gap { // TODO: verify with OTIO spec
   OTIO_SCHEMA: string;
-  markers?: any[]; 
+  markers?: any[];
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure
   metadata: Metadata;
   name?: string;
@@ -71,7 +71,7 @@ export interface Track {
   // children: (Clip | Transition)[]; // Assuming Transition is another interface you have defined
   children: (Clip | Stack)[];
   kind: string;
-  markers?: any[]; 
+  markers?: any[];
   metadata?: Metadata;
   name?: string;
   // source_range: TimeRange | null;

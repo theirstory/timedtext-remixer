@@ -1,31 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useReducer, useEffect, useCallback } from "react";
-import { nanoid } from "nanoid";
-import { intersection, difference } from "interval-operations";
+import React, { useState, useReducer, useEffect, useCallback } from 'react';
+import { nanoid } from 'nanoid';
+import { intersection, difference } from 'interval-operations';
 
-import {
-  AppBar,
-  Box,
-  IconButton,
-  Grid,
-  Tab,
-  Tabs,
-  Toolbar,
-  Typography,
-  CssBaseline,
-} from "@mui/material";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import SearchIcon from "@mui/icons-material/Search";
-import TuneIcon from "@mui/icons-material/Tune";
+import { AppBar, Box, IconButton, Grid, Tab, Tabs, Toolbar, Typography, CssBaseline } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import SearchIcon from '@mui/icons-material/Search';
+import TuneIcon from '@mui/icons-material/Tune';
 
 // import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 import {
   MediaController,
@@ -37,21 +22,21 @@ import {
   MediaDurationDisplay,
   MediaCaptionsButton,
   MediaMuteButton,
-} from "media-chrome/dist/react";
-import { createComponent } from "@lit/react";
-import { TimedTextPlayer } from "../../timedtext-player/dist/timedtext-player.js";
+} from 'media-chrome/dist/react';
+import { createComponent } from '@lit/react';
+import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js';
 
-import track from "./data/test.json";
+import track from './data/test.json';
 
-import "./App.css";
+import './App.css';
 
 const TimedTextPlayerComponent = createComponent({
-  tagName: "timedtext-player",
+  tagName: 'timedtext-player',
   elementClass: TimedTextPlayer,
   react: React,
   events: {
-    onactivate: "activate",
-    onchange: "change",
+    onactivate: 'activate',
+    onchange: 'change',
   },
 });
 
@@ -63,9 +48,7 @@ interface Block {
 
 type State = Block[];
 
-type Action =
-  | { type: "move"; payload: DropResult }
-  | { type: "add"; payload: [DropResult, Block] };
+type Action = { type: 'move'; payload: DropResult } | { type: 'add'; payload: [DropResult, Block] };
 // | { type: "remove"; payload: { id: string } }
 // | { type: "update"; payload: Block };
 
@@ -99,21 +82,21 @@ function TabPanel(props: TabPanelProps) {
 
 const getItemStyle = (isDragging, draggableStyle) => ({
   // some basic styles to make the items look a bit nicer
-  userSelect: "none",
+  userSelect: 'none',
   // padding: 8 * 2,
   // margin: `0 0 ${grid}px 0`,
 
   // change background colour if dragging
-  background: isDragging ? "lightgreen" : "transparent",
+  background: isDragging ? 'lightgreen' : 'transparent',
 
   // styles we need to apply on draggables
   ...draggableStyle,
 });
 
 const getListStyle = (isDraggingOver) => ({
-  background: isDraggingOver ? "lightyellow" : "transparent",
+  background: isDraggingOver ? 'lightyellow' : 'transparent',
   // padding: 8,
-  width: "100%",
+  width: '100%',
 });
 
 function App() {
@@ -124,10 +107,7 @@ function App() {
   const [tabValue, setTabValue] = React.useState(0);
 
   const [sources, setSources] = useState<Block[][]>([track2blocks(track)]);
-  const [blocks, dispatch] = useReducer(
-    blockReducer,
-    track2blocks(track) ?? emptyState
-  );
+  const [blocks, dispatch] = useReducer(blockReducer, track2blocks(track) ?? emptyState);
 
   const [block, setBlock] = useState<Block | null>(null);
   const [interval, setInterval] = useState<[number, number] | null>(null);
@@ -156,46 +136,38 @@ function App() {
       // TODO handle space selection, <p>...
 
       // find root article
-      const article = start?.closest("article");
+      const article = start?.closest('article');
       if (!article) return;
 
       // find parent section
-      const section = start?.closest("section");
+      const section = start?.closest('section');
       if (!section) return;
 
       // find section's offset in article
-      const sections = Array.from(article?.querySelectorAll("section") ?? []); // TODO use proper selector
+      const sections = Array.from(article?.querySelectorAll('section') ?? []); // TODO use proper selector
       const sectionIndex = sections.indexOf(section);
       const previousSections = sections.slice(0, sectionIndex);
       const durations = previousSections.map((s) => {
-        const [start, end] = (s.getAttribute("data-t") ?? "0,0").split(",");
+        const [start, end] = (s.getAttribute('data-t') ?? '0,0').split(',');
         return parseFloat(end) - parseFloat(start) ?? 0;
       });
       const offset = durations.reduce((acc, d) => acc + d, 0);
 
       // find start and end time
-      if (start?.nodeName === "SPAN" && end?.nodeName === "SPAN") {
-        const [startT] = (start.getAttribute("data-t") ?? "0,0")
-          .split(",")
-          .map(parseFloat);
-        const [, endT] = (end.getAttribute("data-t") ?? "0,0")
-          .split(",")
-          .map(parseFloat);
+      if (start?.nodeName === 'SPAN' && end?.nodeName === 'SPAN') {
+        const [startT] = (start.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
+        const [, endT] = (end.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
 
-        const selectionInterval = [startT + offset, endT + offset] as [
-          number,
-          number,
-        ]; // TODO trim to section interval (no selection outside of section)
+        const selectionInterval = [startT + offset, endT + offset] as [number, number]; // TODO trim to section interval (no selection outside of section)
 
         setInterval(selectionInterval);
         setInterval2([startT, endT] as [number, number]); // FIXME use block.id + interval on source media only
-        const block =
-          sources[0].find((b) => b.id === section.getAttribute("id")) ?? null;
+        const block = sources[0].find((b) => b.id === section.getAttribute('id')) ?? null;
         setBlock(block);
         console.log({ section, block, selectionInterval });
       }
     },
-    [sources]
+    [sources],
   );
 
   const handleLeftDrawerToggle = () => {
@@ -217,35 +189,32 @@ function App() {
       return;
     }
 
-    if (
-      result.source.droppableId === result.destination.droppableId &&
-      result.source.droppableId === "droppable"
-    ) {
-      dispatch({ type: "move", payload: result });
+    if (result.source.droppableId === result.destination.droppableId && result.source.droppableId === 'droppable') {
+      dispatch({ type: 'move', payload: result });
       return;
     }
 
-    if (result.source.droppableId === "droppable0") {
+    if (result.source.droppableId === 'droppable0') {
       console.log({ result, block, interval2 });
       if (!block) return;
 
       const _block = trimBlock(block, interval2);
-      dispatch({ type: "add", payload: [result, _block] });
+      dispatch({ type: 'add', payload: [result, _block] });
       return;
     }
   };
 
   const width = 720;
   const height = 480;
-  const aspectRatio = "16/9";
+  const aspectRatio = '16/9';
 
   return (
     <Box
       sx={{
         flexGrow: 1,
-        border: "1px solid grey",
+        border: '1px solid grey',
         // borderRadius: 2,
-        overflow: "hidden",
+        overflow: 'hidden',
         width: 2 * width + 0,
       }}
     >
@@ -264,12 +233,7 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Remixer
           </Typography>
-          <IconButton
-            color="inherit"
-            aria-label="open right drawer"
-            onClick={handleRightDrawerToggle}
-            size="large"
-          >
+          <IconButton color="inherit" aria-label="open right drawer" onClick={handleRightDrawerToggle} size="large">
             {rightDrawerOpen ? <ChevronLeftIcon /> : <TuneIcon />}
           </IconButton>
         </Toolbar>
@@ -281,19 +245,9 @@ function App() {
               searchbox/etc.
             </Box>
           )}
-          <Box
-            flex={1}
-            display="flex"
-            flexDirection="column"
-            onClick={handleSourceClick}
-            style={{ width: width }}
-          >
-            <Box sx={{ borderBottom: 1, borderColor: "divider", padding: 0 }}>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                aria-label="tabbed content"
-              >
+          <Box flex={1} display="flex" flexDirection="column" onClick={handleSourceClick} style={{ width: width }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', padding: 0 }}>
+              <Tabs value={tabValue} onChange={handleTabChange} aria-label="tabbed content">
                 <Tab label="Transcript One" />
                 <Tab label="Transcript Two" />
                 <Tab label="Transcript Three" />
@@ -305,15 +259,15 @@ function App() {
                 width: width,
                 height: height,
                 aspectRatio: aspectRatio,
-                backgroundColor: "black",
+                backgroundColor: 'black',
               }}
             >
               <p>PLAYER</p>
             </div>
             <Box
               sx={{
-                overflowY: "auto",
-                height: "calc(100vh - 64px)",
+                overflowY: 'auto',
+                height: 'calc(100vh - 64px)',
                 width: width,
                 padding: 0,
               }}
@@ -335,13 +289,7 @@ function App() {
                           key={block.id}
                           data={block.data}
                           id={block.id}
-                          offset={blocks
-                            .slice(0, i)
-                            .reduce(
-                              (acc, b) =>
-                                acc + (b.data?.source_range?.duration ?? 0),
-                              0
-                            )}
+                          offset={blocks.slice(0, i).reduce((acc, b) => acc + (b.data?.source_range?.duration ?? 0), 0)}
                           interval={interval}
                         />
                       ))}
@@ -361,13 +309,13 @@ function App() {
                 width: width,
                 height: height,
                 aspectRatio: aspectRatio,
-                backgroundColor: "black",
+                backgroundColor: 'black',
                 marginTop: 49,
               }}
             >
               {showPlayer ? (
                 <MediaController id="myController">
-                  <MediaControlBar style={{ width: "100%" }}>
+                  <MediaControlBar style={{ width: '100%' }}>
                     <MediaPlayButton></MediaPlayButton>
                     <MediaMuteButton></MediaMuteButton>
                     <MediaVolumeRange></MediaVolumeRange>
@@ -389,7 +337,7 @@ function App() {
                 <button onClick={() => setShowPlayer(true)}>Show Player</button>
               )}
             </div>
-            <Box sx={{ overflowY: "auto", height: "calc(100vh - 64px)" }}>
+            <Box sx={{ overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
               {/* <DragDropContext onDragEnd={onDragEnd}> */}
               <article id="transcript">
                 <Droppable droppableId="droppable">
@@ -400,20 +348,13 @@ function App() {
                       style={getListStyle(snapshot.isDraggingOver)}
                     >
                       {blocks.map((block, index) => (
-                        <Draggable
-                          key={block.id}
-                          draggableId={block.id}
-                          index={index}
-                        >
+                        <Draggable key={block.id} draggableId={block.id} index={index}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              style={getItemStyle(
-                                snapshot.isDragging,
-                                provided.draggableProps.style
-                              )}
+                              style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                             >
                               <Section data={block.data} id={block.id} />
                             </div>
@@ -452,21 +393,19 @@ function Section({
 }) {
   const start = data.source_range.start_time;
   const end = data.source_range.duration + start;
-  const adjustedInterval =
-    interval &&
-    ([interval[0] - offset, interval[1] - offset] as [number, number]);
+  const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
   const attrs = Object.keys(data.metadata.data).reduce(
     (acc, key) => {
       return {
         ...acc,
-        [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
+        [`data-${key.replaceAll('_', '-')}`]: data.metadata.data[key],
       };
     },
-    { id }
+    { id },
   );
 
-  const children = data?.children?.filter((c) => c.OTIO_SCHEMA === "Clip.1");
+  const children = data?.children?.filter((c) => c.OTIO_SCHEMA === 'Clip.1');
   let before = [];
   let selected = [];
   let after = [];
@@ -474,16 +413,10 @@ function Section({
 
   if (adjustedInterval && intersection([start, end], adjustedInterval)) {
     intersects = true;
-    attrs.style = { backgroundColor: "lightblue" };
+    attrs.style = { backgroundColor: 'lightblue' };
 
-    before = children.filter(
-      (p) =>
-        p.source_range.start_time + p.source_range.duration <
-        adjustedInterval[0]
-    );
-    after = children.filter(
-      (p) => p.source_range.start_time > adjustedInterval[1]
-    );
+    before = children.filter((p) => p.source_range.start_time + p.source_range.duration < adjustedInterval[0]);
+    after = children.filter((p) => p.source_range.start_time > adjustedInterval[1]);
     selected = children.filter((p) => {
       const pStart = p.source_range.start_time;
       const pEnd = pStart + p.source_range.duration;
@@ -506,10 +439,7 @@ function Section({
                 <div
                   ref={provided.innerRef}
                   {...provided.draggableProps}
-                  style={getItemStyle(
-                    snapshot.isDragging,
-                    provided.draggableProps.style
-                  )}
+                  style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                 >
                   {selected.map((p, i) => (
                     <Paragraph
@@ -563,7 +493,7 @@ function Paragraph({
     if (!key) return acc;
     return {
       ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: data.metadata.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: data.metadata.data[key],
     };
   }, {});
 
@@ -575,11 +505,9 @@ function Paragraph({
 
   if (interval && intersection([start, end], interval)) {
     intersects = true;
-    attrs.style = { backgroundColor: "lightyellow" };
+    attrs.style = { backgroundColor: 'lightyellow' };
 
-    before = children.filter(
-      (p) => p.marked_range.start_time + p.marked_range.duration < interval[0]
-    );
+    before = children.filter((p) => p.marked_range.start_time + p.marked_range.duration < interval[0]);
     after = children.filter((p) => p.marked_range.start_time > interval[1]);
     selected = children.filter((p) => {
       const pStart = p.marked_range.start_time;
@@ -593,17 +521,13 @@ function Paragraph({
     <p {...attrs}>
       {intersects ? (
         <>
-          {dragHandleProps && isDragging
-            ? null
-            : before.map((s, i) => <Span key={`s${i}`} data={s} />)}
+          {dragHandleProps && isDragging ? null : before.map((s, i) => <Span key={`s${i}`} data={s} />)}
           <span className="selection" {...dragHandleProps}>
             {selected.map((s, i) => (
               <Span key={`s${i}`} data={s} />
             ))}
           </span>
-          {dragHandleProps && isDragging
-            ? null
-            : after.map((s, i) => <Span key={`s${i}`} data={s} />)}
+          {dragHandleProps && isDragging ? null : after.map((s, i) => <Span key={`s${i}`} data={s} />)}
         </>
       ) : (
         children.map((s, i) => <Span key={`s${i}`} data={s} />)
@@ -624,7 +548,7 @@ function Span({ data }: { data: any }) {
   const end = data.marked_range.duration + start;
   return (
     <>
-      <span data-t={`${start},${end}`}>{data.texts}</span>{" "}
+      <span data-t={`${start},${end}`}>{data.texts}</span>{' '}
     </>
   );
 }
@@ -647,7 +571,7 @@ function blockReducer(state: State, action: Action): State {
     //     block.id === action.payload.id ? { ...block, ...action.payload } : block
     //   );
 
-    case "add": {
+    case 'add': {
       const [result, block] = action.payload;
       const { source, destination } = result;
       const resultState = [...state];
@@ -656,7 +580,7 @@ function blockReducer(state: State, action: Action): State {
       return resultState;
     }
 
-    case "move": {
+    case 'move': {
       const { source, destination } = action.payload;
       const result = [...state];
       const [removed] = result.splice(source.index, 1);

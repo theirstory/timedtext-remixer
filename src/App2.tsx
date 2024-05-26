@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useReducer, useCallback, useMemo } from "react";
-import { Box, Tab, Tabs } from "@mui/material";
+import React, { useState, useReducer, useCallback, useMemo } from 'react';
+import { Box, Tab, Tabs } from '@mui/material';
 
 // import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
-import RemixContext from "../lib/RemixContext.js";
-import RemixSources from "../lib/RemixSources.js";
-import RemixDestination from "../lib/RemixDestination.js";
-import { ts2timeline } from "../lib/utils.js";
-import type { Timeline } from "../lib/interfaces";
+import RemixContext from '../lib/RemixContext.js';
+import RemixSources from '../lib/RemixSources.js';
+import RemixDestination from '../lib/RemixDestination.js';
+import { ts2timeline } from '../lib/utils.js';
+import type { Timeline } from '../lib/interfaces';
 
 // import track from "./data/test.json";
-import A from "./data/A.json";
-import B from "./data/B.json";
-import C from "./data/C.json";
+import A from './data/A.json';
+import B from './data/B.json';
+import C from './data/C.json';
+import E from './data/E.json';
 
-import "./App.css";
+import './App.css';
 
 // interface Block {
 //   id: string;
@@ -74,10 +75,8 @@ function App() {
 
   const width = 720;
 
-  const sources = useMemo(
-    () => [ts2timeline(A), ts2timeline(B), ts2timeline(C)] as Timeline[],
-    []
-  );
+  const sources = useMemo(() => [ts2timeline(A), ts2timeline(B), ts2timeline(C)] as Timeline[], []);
+  const remix = useMemo(() => ts2timeline(E), []);
 
   return (
     <>
@@ -100,25 +99,16 @@ function App() {
       <Box
         sx={{
           flexGrow: 1,
-          border: "1px solid grey",
-          overflow: "hidden",
+          border: '1px solid grey',
+          overflow: 'hidden',
           width: 2 * width + 0,
         }}
       >
-        <RemixContext sources={sources} remix={null}>
+        <RemixContext sources={sources} remix={remix}>
           <Box display="flex" flexGrow={1}>
-            <Box
-              flex={1}
-              display="flex"
-              flexDirection="column"
-              style={{ width: width }}
-            >
-              <Box sx={{ borderBottom: 1, borderColor: "divider", padding: 0 }}>
-                <Tabs
-                  value={tabValue}
-                  onChange={handleTabChange}
-                  aria-label="tabbed content"
-                >
+            <Box flex={1} display="flex" flexDirection="column" style={{ width: width }}>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', padding: 0 }}>
+                <Tabs value={tabValue} onChange={handleTabChange} aria-label="tabbed content">
                   <Tab label="Transcript One" />
                   <Tab label="Transcript Two" />
                   <Tab label="Transcript Three" />
@@ -127,8 +117,8 @@ function App() {
               {/* <TabPanel value={tabValue} index={0}> */}
               <Box
                 sx={{
-                  overflowY: "auto",
-                  height: "calc(100vh - 64px)",
+                  overflowY: 'auto',
+                  height: 'calc(100vh - 64px)',
                   width: width,
                   padding: 0,
                 }}
@@ -138,7 +128,7 @@ function App() {
               {/* </TabPanel> */}
             </Box>
             <Box flex={1}>
-              <Box sx={{ overflowY: "auto", height: "calc(100vh - 64px)" }}>
+              <Box sx={{ overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
                 <RemixDestination />
               </Box>
             </Box>

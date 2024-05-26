@@ -1,10 +1,10 @@
-import { ElementType, useContext, useMemo } from "react";
+import { ElementType, useContext, useMemo } from 'react';
 
-import { Context } from "./RemixContext";
-import { PlainDiv, PlainSpan } from "./components";
-import RemixSource from "./RemixSource";
+import { Context } from './RemixContext';
+import { PlainDiv, PlainSpan } from './components';
+import RemixSource from './RemixSource';
 
-import type { Timeline } from "./interfaces";
+import type { Timeline } from './interfaces';
 
 interface RemixSourcesProps {
   PlayerWrapper?: ElementType;
@@ -29,10 +29,7 @@ const RemixSources = ({
     state: { sources },
   } = useContext(Context);
 
-  const activeSource = useMemo(
-    () => sources?.find((source) => id(source) === active),
-    [active, sources, id]
-  );
+  const activeSource = useMemo(() => sources?.find((source) => id(source) === active), [active, sources, id]);
 
   return (
     <>

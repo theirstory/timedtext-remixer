@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PropsWithChildren, createContext, useReducer } from "react";
-import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { PropsWithChildren, createContext, useReducer } from 'react';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 
-import type { State, Action, Timeline } from "./interfaces";
+import type { State, Action, Timeline } from './interfaces';
 
 // type State = {
 //   metadata?: Metadata;
@@ -27,11 +27,7 @@ interface RemixContextProps extends PropsWithChildren {
   remix: Timeline | null | undefined;
 }
 
-const RemixContext = ({
-  sources = [],
-  remix = null,
-  children,
-}: RemixContextProps): JSX.Element => {
+const RemixContext = ({ sources = [], remix = null, children }: RemixContextProps): JSX.Element => {
   const initialState: State = {
     sources,
     remix,

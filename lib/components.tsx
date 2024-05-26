@@ -1,17 +1,13 @@
-import { ElementType, CSSProperties, PropsWithChildren } from "react";
-import { Draggable } from "@hello-pangea/dnd";
-import { intersection } from "interval-operations";
+import { ElementType, CSSProperties, PropsWithChildren } from 'react';
+import { Draggable } from '@hello-pangea/dnd';
+import { intersection } from 'interval-operations';
 
-import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
-import type { Timeline, Stack, Track, Clip, TimedText } from "./interfaces";
+import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
+import type { Timeline, Stack, Track, Clip, TimedText } from './interfaces';
 
-export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
-  <div>{children}</div>
-);
+export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
 
-export const PlainSpan = ({ children }: PropsWithChildren): JSX.Element => (
-  <span>{children}</span>
-);
+export const PlainSpan = ({ children }: PropsWithChildren): JSX.Element => <span>{children}</span>;
 
 export const Span = ({ data }: { data: TimedText }) => {
   const start = data.marked_range.start_time;
@@ -20,7 +16,7 @@ export const Span = ({ data }: { data: TimedText }) => {
     <>
       <span id={data.metadata?.id} data-t={`${start},${end}`}>
         {data.texts}
-      </span>{" "}
+      </span>{' '}
     </>
   );
 };
@@ -46,7 +42,7 @@ export const Paragraph = ({
     if (!key) return acc;
     return {
       ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: clip.metadata.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: clip.metadata.data[key],
     };
   }, {});
 
@@ -60,9 +56,7 @@ export const Paragraph = ({
     intersects = true;
     // attrs.style = { backgroundColor: "lightyellow" };
 
-    before = children.filter(
-      (p) => p.marked_range.start_time + p.marked_range.duration < interval[0]
-    );
+    before = children.filter((p) => p.marked_range.start_time + p.marked_range.duration < interval[0]);
 
     after = children.filter((p) => p.marked_range.start_time > interval[1]);
 
@@ -80,9 +74,7 @@ export const Paragraph = ({
         <>
           {dragHandleProps && isDragging
             ? null
-            : before.map((s, i) => (
-                <Span key={s?.metadata?.id ?? `bs-${i}`} data={s} />
-              ))}
+            : before.map((s, i) => <Span key={s?.metadata?.id ?? `bs-${i}`} data={s} />)}
           <SelectionWrapper>
             <span className="selection" {...dragHandleProps}>
               {selected.map((s, i) => (
@@ -92,14 +84,10 @@ export const Paragraph = ({
           </SelectionWrapper>
           {dragHandleProps && isDragging
             ? null
-            : after.map((s, i) => (
-                <Span key={s?.metadata?.id ?? `as2-${i}`} data={s} />
-              ))}
+            : after.map((s, i) => <Span key={s?.metadata?.id ?? `as2-${i}`} data={s} />)}
         </>
       ) : (
-        children.map((s, i) => (
-          <Span key={s?.metadata?.id ?? `us-${i}`} data={s} />
-        ))
+        children.map((s, i) => <Span key={s?.metadata?.id ?? `us-${i}`} data={s} />)
       )}
     </p>
   );
@@ -120,12 +108,9 @@ export const Section = ({
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
 }) => {
-  const getItemStyle = (
-    isDragging: boolean,
-    draggableStyle: CSSProperties
-  ): CSSProperties => ({
-    userSelect: "none",
-    background: isDragging ? "lightgreen" : "transparent",
+  const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
+    userSelect: 'none',
+    background: isDragging ? 'lightgreen' : 'transparent',
     ...draggableStyle,
   });
 
@@ -133,21 +118,17 @@ export const Section = ({
 
   const start = stack?.source_range?.start_time ?? 0;
   const end = (stack?.source_range?.duration ?? 0) + start;
-  const adjustedInterval =
-    interval &&
-    ([interval[0] - offset, interval[1] - offset] as [number, number]);
+  const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
   const attrs = Object.keys(stack.metadata.data).reduce((acc, key) => {
     return {
       ...acc,
-      [`data-${key.replaceAll("_", "-")}`]: stack.metadata.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: stack.metadata.data[key],
     } as Record<string, string>;
   }, {}) as unknown as Record<string, string>;
 
   // stack -> track[0] -> children
-  const children = stack.children?.[0]?.children?.filter(
-    (c: Clip | Stack) => c.OTIO_SCHEMA === "Clip.1"
-  );
+  const children = stack.children?.[0]?.children?.filter((c: Clip | Stack) => c.OTIO_SCHEMA === 'Clip.1');
 
   let before: (Clip | Stack)[] = [];
   let selected: (Clip | Stack)[] = [];
@@ -159,15 +140,10 @@ export const Section = ({
     // attrs.style = { backgroundColor: "lightblue" };
 
     before = children.filter(
-      (p) =>
-        (p as Clip).source_range.start_time +
-          (p as Clip).source_range.duration <
-        adjustedInterval[0]
+      (p) => (p as Clip).source_range.start_time + (p as Clip).source_range.duration < adjustedInterval[0],
     );
 
-    after = children.filter(
-      (p) => (p as Clip).source_range.start_time > adjustedInterval[1]
-    );
+    after = children.filter((p) => (p as Clip).source_range.start_time > adjustedInterval[1]);
 
     selected = children.filter((p) => {
       const pStart = (p as Clip).source_range.start_time;
@@ -193,10 +169,7 @@ export const Section = ({
                 <div
                   ref={provided.innerRef}
                   {...provided.draggableProps}
-                  style={getItemStyle(
-                    snapshot.isDragging,
-                    provided.draggableProps.style as CSSProperties
-                  )}
+                  style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                 >
                   <SelectedBlocksWrapper>
                     {selected.map((p, i: number) => (

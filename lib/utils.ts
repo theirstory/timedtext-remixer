@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { intersection } from "interval-operations";
+// import { intersection } from "interval-operations";
 import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
 import { nanoid } from "nanoid";
 
 export const ts2timeline = (ts: any): Timeline => {
     const { words, paragraphs } = ts.transcript;
     // const totalDuration = words[words.length - 1].end ?? ts.story.duration ?? 0;
-  
+
     const clips = paragraphs.map((p: any): Clip => {
       const timedTexts = words
         .filter((w: any) =>
@@ -30,7 +30,7 @@ export const ts2timeline = (ts: any): Timeline => {
             texts: w.text,
           } as TimedText;
         });
-  
+
       return {
         OTIO_SCHEMA: "Clip.1",
         metadata: {
@@ -58,7 +58,7 @@ export const ts2timeline = (ts: any): Timeline => {
 
     const clipsStart = firstClip?.source_range?.start_time ?? 0;
     const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time?.start_time + lastClip.source_range?.duration: duration;
-  
+
     const timeline: Timeline = {
       OTIO_SCHEMA: "Timeline.1",
       metadata: {
@@ -104,7 +104,7 @@ export const ts2timeline = (ts: any): Timeline => {
                 source_range: {
                     OTIO_SCHEMA: "TimeRange.1",
                     start_time: clipsStart,
-                    duration: clipsEnd - clipsStart, 
+                    duration: clipsEnd - clipsStart,
                 } as TimeRange,
                 children: [
                   {
@@ -120,6 +120,6 @@ export const ts2timeline = (ts: any): Timeline => {
         ] as Track[],
       } as Stack,
     };
-  
+
     return timeline;
-  }
+  };

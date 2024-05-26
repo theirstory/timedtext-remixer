@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useCallback } from "react";
+import React from 'react';
 
 import {
   MediaController,
@@ -10,25 +10,27 @@ import {
   MediaDurationDisplay,
   MediaCaptionsButton,
   MediaMuteButton,
-} from "media-chrome/dist/react";
-import { createComponent } from "@lit/react";
-import { TimedTextPlayer } from "../../timedtext-player/dist/timedtext-player.js";
+} from 'media-chrome/dist/react';
+import { createComponent } from '@lit/react';
+import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
 
 export const TimedTextPlayerComponent = createComponent({
-  tagName: "timedtext-player",
+  tagName: 'timedtext-player',
   elementClass: TimedTextPlayer,
   react: React,
   events: {
-    onactivate: "activate",
-    onchange: "change",
+    onactivate: 'activate',
+    onchange: 'change',
   },
 });
 
+// TODO player props
+// incl skip MediaController
 export const Player = () => {
   //
   return (
     <MediaController id="myController">
-      <MediaControlBar style={{ width: "100%" }}>
+      <MediaControlBar style={{ width: '100%' }}>
         <MediaPlayButton></MediaPlayButton>
         <MediaMuteButton></MediaMuteButton>
         <MediaVolumeRange></MediaVolumeRange>
@@ -40,8 +42,8 @@ export const Player = () => {
 
       <TimedTextPlayerComponent
         slot="media"
-        width={width}
-        height={height}
+        // width={width}
+        // height={height}
         // transcript="#transcript"
         player="#video1"
       ></TimedTextPlayerComponent>
