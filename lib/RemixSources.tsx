@@ -25,9 +25,7 @@ const RemixSources = ({
   id = (source: Timeline) => source?.metadata?.id,
   active,
 }: RemixSourcesProps): JSX.Element => {
-  const {
-    state: { sources },
-  } = useContext(Context);
+  const { sources } = useContext(Context);
 
   const activeSource = useMemo(() => sources?.find((source) => id(source) === active), [active, sources, id]);
 

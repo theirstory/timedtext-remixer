@@ -2,8 +2,8 @@ import { useMemo, useState, useCallback, ElementType, CSSProperties } from 'reac
 import { Droppable } from '@hello-pangea/dnd';
 
 import { PlainDiv, PlainSpan, Section } from './components';
-
-import type { Timeline, Stack, Track, Clip } from './interfaces';
+import { Player } from './Player';
+import type { Timeline, Stack } from './interfaces';
 
 interface RemixSourceProps {
   PlayerWrapper?: ElementType;
@@ -81,17 +81,17 @@ const RemixSource = ({
 
       setInterval(selectionInterval as [number, number]);
       // setInterval([startT, endT] as [number, number]); // FIXME use block.id + interval on source media only
-      const block = source.find((b) => b.metadata.id === section.getAttribute('id')) ?? null;
+      // const block = source.find((b) => b.metadata.id === section.getAttribute('id')) ?? null;
       // setBlock(block);
-      console.log({ section, block, selectionInterval });
+      // console.log({ section, block, selectionInterval });
       selection.removeAllRanges();
     }
-  }, [source]);
+  }, []);
 
   return (
     <div style={{ display: active ? 'block' : 'none' }}>
-      <PlayerWrapper style={{}}>
-        <p>source video here</p>
+      <PlayerWrapper>
+        <Player transcript={`#A${source?.metadata?.id}`} />
       </PlayerWrapper>
       <p>
         Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}
@@ -109,7 +109,7 @@ const RemixSource = ({
               style={getListStyle(snapshot.isDraggingOver)}
               onClick={handleSourceClick}
             >
-              <article>
+              <article id={'A' + source?.metadata?.id}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Section
                     key={stack?.metadata?.id ?? `S${i}`}

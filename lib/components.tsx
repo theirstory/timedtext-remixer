@@ -3,7 +3,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
-import type { Timeline, Stack, Track, Clip, TimedText } from './interfaces';
+import type { Stack, Clip, TimedText } from './interfaces';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
 
@@ -34,7 +34,7 @@ export const Paragraph = ({
   isDragging?: boolean;
   SelectionWrapper?: ElementType;
 }) => {
-  console.log({ clip });
+  // console.log({ clip });
   const start = clip.source_range.start_time;
   const end = clip.source_range.duration + start;
 
@@ -114,16 +114,16 @@ export const Section = ({
     ...draggableStyle,
   });
 
-  console.log({ stack });
+  // console.log({ stack });
 
   const start = stack?.source_range?.start_time ?? 0;
   const end = (stack?.source_range?.duration ?? 0) + start;
   const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
-  const attrs = Object.keys(stack.metadata.data).reduce((acc, key) => {
+  const attrs = Object.keys(stack?.metadata?.data).reduce((acc, key) => {
     return {
       ...acc,
-      [`data-${key.replaceAll('_', '-')}`]: stack.metadata.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: stack?.metadata?.data[key],
     } as Record<string, string>;
   }, {}) as unknown as Record<string, string>;
 

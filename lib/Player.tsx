@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   MediaController,
@@ -26,9 +26,10 @@ export const TimedTextPlayerComponent = createComponent({
 
 // TODO player props
 // incl skip MediaController
-export const Player = () => {
-  //
-  return (
+export const Player = ({ transcript }: { transcript: string }) => {
+  const [showPlayer, setShowPlayer] = useState(false);
+
+  return showPlayer ? (
     <MediaController id="myController">
       <MediaControlBar style={{ width: '100%' }}>
         <MediaPlayButton></MediaPlayButton>
@@ -44,9 +45,11 @@ export const Player = () => {
         slot="media"
         // width={width}
         // height={height}
-        // transcript="#transcript"
+        transcript={transcript}
         player="#video1"
       ></TimedTextPlayerComponent>
     </MediaController>
+  ) : (
+    <button onClick={() => setShowPlayer(true)}>show player</button>
   );
 };

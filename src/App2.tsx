@@ -17,6 +17,7 @@ import C from './data/C.json';
 import E from './data/E.json';
 
 import './App.css';
+import { captureRejectionSymbol } from 'events';
 
 // interface Block {
 //   id: string;
@@ -108,9 +109,6 @@ function App() {
                   {sources.map((source, i) => (
                     <Tab key={i} label={source?.metadata?.story?.title} />
                   ))}
-                  <Tab label="Transcript One" />
-                  <Tab label="Transcript Two" />
-                  <Tab label="Transcript Three" />
                 </Tabs>
               </Box>
               <Box
@@ -121,7 +119,10 @@ function App() {
                   padding: 0,
                 }}
               >
-                <RemixSources active={active} />
+                <RemixSources
+                  active={active}
+                  // PlayerWrapper={({ children }) => <div style={{ background: 'black' }}>{children}</div>}
+                />
               </Box>
             </Box>
             <Box flex={1}>

@@ -2,7 +2,7 @@
 import { DropResult } from "@hello-pangea/dnd";
 
 export type State = { // TODO: verify with OTIO spec, this is a Timeline
-  sources?: Timeline[] | undefined | null;
+  // sources?: Timeline[] | undefined | null;
   remix?: Timeline | undefined | null;
 };
 

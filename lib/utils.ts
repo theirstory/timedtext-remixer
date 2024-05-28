@@ -93,7 +93,8 @@ export const ts2timeline = (ts: any): Timeline => {
                 metadata: {
                     id: `S-${nanoid()}`,
                     data: {
-                        t: `${clipsStart},${clipsEnd}`
+                        t: `${clipsStart},${clipsEnd}`,
+                        "media-src": ts.videoURL,
                     },
                     transcript: ts.transcript,
                 },

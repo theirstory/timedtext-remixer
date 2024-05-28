@@ -3,6 +3,7 @@ import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
+import { Player } from './Player';
 
 import type { State, Action, Timeline, Stack, Track, Clip } from './interfaces';
 
@@ -10,7 +11,6 @@ interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
-  // source: Stack[];
 }
 
 const RemixDestination = ({
@@ -18,7 +18,7 @@ const RemixDestination = ({
   DestinationWrapper = PlainDiv as unknown as ElementType,
   BlockWrapper = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
-  const { state, dispatch } = useContext(Context);
+  const { sources, state, dispatch } = useContext(Context);
   const { remix } = state;
 
   const stacks: Stack[] = useMemo(() => {
@@ -42,15 +42,15 @@ const RemixDestination = ({
 
   return (
     <>
-      <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button>
-      <PlayerWrapper style={{}}>
-        <p>source video here</p>
+      {/* <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button> */}
+      <PlayerWrapper>
+        <Player transcript={`#B${remix?.metadata?.id}`} />
       </PlayerWrapper>
       <DestinationWrapper>
         <Droppable droppableId="droppable1">
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
-              <article>
+              <article id={`B${remix?.metadata?.id}`}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Draggable key={stack?.metadata?.id ?? `db-${i}`} draggableId={stack?.metadata?.id} index={i}>
                     {(provided, snapshot) => (
