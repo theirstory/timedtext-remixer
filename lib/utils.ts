@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 
 export const ts2timeline = (ts: any): Timeline => {
     const { words, paragraphs } = ts.transcript;
-    // const totalDuration = words[words.length - 1].end ?? ts.story.duration ?? 0;
+    const totalDuration = words[words.length - 1].end ?? ts.story.duration ?? 0;
 
     const clips = paragraphs.map((p: any): Clip => {
       const timedTexts = words
@@ -57,7 +57,7 @@ export const ts2timeline = (ts: any): Timeline => {
     const lastClip = clips?.[clips.length - 1];
 
     const clipsStart = firstClip?.source_range?.start_time ?? 0;
-    const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time?.start_time + lastClip.source_range?.duration: duration;
+    const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time + lastClip.source_range?.duration : totalDuration;
 
     const timeline: Timeline = {
       OTIO_SCHEMA: "Timeline.1",

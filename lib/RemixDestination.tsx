@@ -10,7 +10,7 @@ interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
-  source: Stack[];
+  // source: Stack[];
 }
 
 const RemixDestination = ({
