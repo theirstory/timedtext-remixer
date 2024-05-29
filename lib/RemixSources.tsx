@@ -34,6 +34,7 @@ const RemixSources = ({
       {sources?.map((source, i) => (
         <RemixSource
           key={id(source) ?? `T${i}`}
+          index={i}
           active={activeSource ? id(activeSource) === id(source) : i === 0}
           PlayerWrapper={PlayerWrapper}
           SourceWrapper={SourceWrapper}

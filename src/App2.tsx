@@ -121,7 +121,7 @@ function App() {
               >
                 <RemixSources
                   active={active}
-                  // PlayerWrapper={({ children }) => <div style={{ background: 'black' }}>{children}</div>}
+                  PlayerWrapper={({ children }) => <div style={{ background: 'black' }}>{children}</div>}
                 />
               </Box>
             </Box>
@@ -133,6 +133,10 @@ function App() {
           </Box>
         </RemixContext>
       </Box>
+      {/* <template id="video1">
+      <video controls src="${src}" width="${width}" height="${height}">
+      </video>
+    </template> */}
     </>
   );
 }

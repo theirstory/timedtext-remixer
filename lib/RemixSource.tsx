@@ -5,6 +5,8 @@ import { PlainDiv, PlainSpan, Section } from './components';
 import { Player } from './Player';
 import type { Timeline, Stack } from './interfaces';
 
+import { timelineStacks } from './utils';
+
 interface RemixSourceProps {
   PlayerWrapper?: ElementType;
   SourceWrapper?: ElementType;
@@ -13,6 +15,7 @@ interface RemixSourceProps {
   SelectionWrapper?: ElementType;
   source: Timeline;
   active: boolean;
+  index: number;
 }
 
 const RemixSource = ({
@@ -23,13 +26,15 @@ const RemixSource = ({
   SelectionWrapper = PlainSpan as unknown as ElementType,
   source,
   active,
+  index,
 }: RemixSourceProps): JSX.Element => {
   const stacks: Stack[] = useMemo(() => {
-    if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
-      return [source.tracks] as Stack[];
-    } else {
-      return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
-    }
+    // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
+    //   return [source.tracks] as Stack[];
+    // } else {
+    //   return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
+    // }
+    return timelineStacks(source);
   }, [source]);
 
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
@@ -77,14 +82,10 @@ const RemixSource = ({
       const [startT] = (start.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
       const [, endT] = (end.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
 
-      const selectionInterval = [startT + offset, endT + offset] as [number, number]; // TODO trim to section interval (no selection outside of section)
+      const selectionInterval = [startT + offset, endT + offset] as [number, number]; // TODO TBD trim to section interval (no selection outside of section)
 
       setInterval(selectionInterval as [number, number]);
-      // setInterval([startT, endT] as [number, number]); // FIXME use block.id + interval on source media only
-      // const block = source.find((b) => b.metadata.id === section.getAttribute('id')) ?? null;
-      // setBlock(block);
-      // console.log({ section, block, selectionInterval });
-      selection.removeAllRanges();
+      selection.removeAllRanges(); // TODO TBD this breaks Hypothes.is
     }
   }, []);
 
@@ -98,7 +99,7 @@ const RemixSource = ({
       </p>
       <SourceWrapper>
         <Droppable
-          droppableId="droppable0"
+          droppableId={`Source-${index}-${interval ? interval[0] : 0}-${interval ? interval[1] : 0}`}
           // type="BLOCK"
           isDropDisabled={true}
         >

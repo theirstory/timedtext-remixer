@@ -47,7 +47,7 @@ const RemixDestination = ({
         <Player transcript={`#B${remix?.metadata?.id}`} />
       </PlayerWrapper>
       <DestinationWrapper>
-        <Droppable droppableId="droppable1">
+        <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
               <article id={`B${remix?.metadata?.id}`}>

@@ -9,7 +9,7 @@ export type State = { // TODO: verify with OTIO spec, this is a Timeline
 export type Action =
 | { type: "test"; payload: any }
 | { type: "move"; payload: DropResult }
-| { type: "add"; payload: [DropResult, Clip] };
+| { type: "add"; payload: [DropResult, Timeline, [number, number]] };
 
 export interface Stack {
   OTIO_SCHEMA: string;

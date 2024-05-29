@@ -124,3 +124,11 @@ export const ts2timeline = (ts: any): Timeline => {
 
     return timeline;
   };
+
+export const timelineStacks = (source: Timeline): Stack[] => {
+  if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
+    return [source.tracks] as Stack[];
+  } else {
+    return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
+  }
+};

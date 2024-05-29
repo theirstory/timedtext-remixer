@@ -2,8 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PropsWithChildren, createContext, useReducer } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
+import { original, produce } from 'immer';
+import { useImmerReducer } from 'use-immer';
+import { intersection } from 'interval-operations';
+import { nanoid } from 'nanoid';
 
-import type { State, Action, Timeline } from './interfaces';
+import type { State, Action, Timeline, Stack, Track, Clip, TimedText } from './interfaces';
+import { timelineStacks } from './utils';
 
 // type State = {
 //   metadata?: Metadata;
@@ -42,19 +47,21 @@ const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: Re
       return;
     }
 
-    if (result.source.droppableId === result.destination.droppableId && result.source.droppableId === 'droppable') {
+    if (
+      result.source.droppableId === result.destination.droppableId &&
+      result.source.droppableId.startsWith('Remix-')
+    ) {
       dispatch({ type: 'move', payload: result });
       return;
     }
 
-    // if (result.source.droppableId === "droppable0") {
-    //   console.log({ result, block, interval2 });
-    //   if (!block) return;
+    if (result.source.droppableId.startsWith('Source-')) {
+      const [, index, start, end] = result.source.droppableId.split('-');
+      const source = sources[parseInt(index)];
 
-    //   const _block = trimBlock(block, interval2);
-    //   dispatch({ type: "add", payload: [result, _block] });
-    //   return;
-    // }
+      dispatch({ type: 'add', payload: [result, source, [parseFloat(start), parseFloat(end)]] });
+      return;
+    }
   };
 
   return (
@@ -65,47 +72,85 @@ const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: Re
 };
 
 const reducer = (state: State, action: Action): State => {
-  console.log({ action });
-  const { sources, remix } = state;
+  console.log({ action, state });
+  const nextState = produce(state, (draftState) => {
+    switch (action.type) {
+      // case "add":
+      //   // Prevent adding a block with a duplicate ID
+      //   if (state.find((block) => block.id === action.payload.id)) {
+      //     console.warn("Block with this ID already exists.");
+      //     return state;
+      //   }
+      //   return [...state, action.payload];
 
-  switch (action.type) {
-    // case "add":
-    //   // Prevent adding a block with a duplicate ID
-    //   if (state.find((block) => block.id === action.payload.id)) {
-    //     console.warn("Block with this ID already exists.");
-    //     return state;
-    //   }
-    //   return [...state, action.payload];
+      // case "remove":
+      //   return state.filter((block) => block.id !== action.payload.id);
 
-    // case "remove":
-    //   return state.filter((block) => block.id !== action.payload.id);
+      // case "update":
+      //   return state.map((block) =>
+      //     block.id === action.payload.id ? { ...block, ...action.payload } : block
+      //   );
 
-    // case "update":
-    //   return state.map((block) =>
-    //     block.id === action.payload.id ? { ...block, ...action.payload } : block
-    //   );
+      case 'add': {
+        const [result, source, [start, end]] = action.payload;
+        const stack = subClip(source, start, end);
 
-    // case 'add': {
-    //   const [result, block] = action.payload;
-    //   const { source, destination } = result;
-    //   const resultState = [...state];
-    //   // const [removed] = resultState.splice(source.index, 1);
-    //   resultState.splice(destination.index, 0, block);
-    //   return resultState;
-    // }
+        console.log({ stack });
 
-    // case 'move': {
-    //   const { source, destination } = action.payload;
+        if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
+        return draftState;
+      }
 
-    //   const result = [...state];
-    //   const [removed] = result.splice(source.index, 1);
-    //   result.splice(destination.index, 0, removed);
-    //   return result;
-    // }
+      case 'move': {
+        const { source, destination } = action.payload;
 
-    default:
-      throw new Error(`Unhandled action type: ${action.type}`);
-  }
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        const [removed] = draftState.remix?.tracks.children[0].children.splice(source.index, 1) as Stack[];
+        draftState.remix?.tracks.children[0].children.splice(destination?.index ?? 0, 0, removed);
+        return draftState;
+      }
+
+      default:
+        throw new Error(`Unhandled action type: ${action.type}`);
+    }
+  }) as State;
+
+  console.log({ nextState: nextState });
+  return nextState;
+};
+
+const subClip = (source: Timeline, start: number, end: number): Stack | undefined => {
+  const stacks = timelineStacks(source);
+
+  // find stack that intersects the time range start,end
+  const stackIndex = stacks.findIndex((s, i, arr) => {
+    const offset = arr.slice(0, i).reduce((acc, p) => acc + (p.source_range?.duration ?? 0), 0);
+    const start_time = s.source_range?.start_time ?? 0;
+    const end_time = start_time + (s.source_range?.duration ?? 0);
+
+    // return start_time <= start - offset && end - offset <= end_time;
+    return intersection([start_time, end_time], [start - offset, end - offset]);
+  });
+
+  const stack = stacks[stackIndex];
+  const offset = stacks.slice(0, stackIndex).reduce((acc, p) => acc + (p.source_range?.duration ?? 0), 0);
+
+  const trimmedStack = produce(stack, (draft) => {
+    // select intersecting clips
+    const clips = draft?.children?.[0].children.filter((c) => {
+      const start_time = (c as Clip).source_range?.start_time ?? 0;
+      const end_time = start_time + ((c as Clip).source_range?.duration ?? 0);
+
+      return intersection([start_time, end_time], [start - offset, end - offset]);
+    });
+
+    draft.children[0].children = clips;
+
+    if (!draft.metadata) draft.metadata = {};
+    draft.metadata.id = `SS-${nanoid()}`;
+  });
+
+  return trimmedStack;
 };
 
 export default RemixContext;
