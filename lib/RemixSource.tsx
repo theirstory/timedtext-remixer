@@ -92,7 +92,7 @@ const RemixSource = ({
   return (
     <div style={{ display: active ? 'block' : 'none' }}>
       <PlayerWrapper>
-        <Player transcript={`#A${source?.metadata?.id}`} />
+        <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} />
       </PlayerWrapper>
       <p>
         Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}

@@ -21,6 +21,8 @@ const RemixDestination = ({
   const { sources, state, dispatch } = useContext(Context);
   const { remix } = state;
 
+  console.log({ remix });
+
   const stacks: Stack[] = useMemo(() => {
     if (remix?.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
       return [remix.tracks] as Stack[];
@@ -44,7 +46,7 @@ const RemixDestination = ({
     <>
       {/* <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button> */}
       <PlayerWrapper>
-        <Player transcript={`#B${remix?.metadata?.id}`} />
+        <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} />
       </PlayerWrapper>
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>

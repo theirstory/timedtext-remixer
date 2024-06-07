@@ -10,7 +10,7 @@ export default defineConfig({
     dts({ include: ['lib'] })
   ],
   build: {
-    // copyPublicDir: false,
+    copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
       formats: ['es']

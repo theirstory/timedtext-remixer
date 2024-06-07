@@ -26,8 +26,14 @@ export const TimedTextPlayerComponent = createComponent({
 
 // TODO player props
 // incl skip MediaController
-export const Player = ({ transcript }: { transcript: string }) => {
-  const [showPlayer, setShowPlayer] = useState(false);
+export const Player = ({
+  transcript,
+  pauseMutationObserver = false,
+}: {
+  transcript: string;
+  pauseMutationObserver: boolean;
+}) => {
+  const [showPlayer, setShowPlayer] = useState(true);
 
   return showPlayer ? (
     <MediaController id="myController">
@@ -43,10 +49,11 @@ export const Player = ({ transcript }: { transcript: string }) => {
 
       <TimedTextPlayerComponent
         slot="media"
-        // width={width}
+        width={700}
         // height={height}
         transcript={transcript}
         player="#video1"
+        pause-mutation-observer={pauseMutationObserver}
       ></TimedTextPlayerComponent>
     </MediaController>
   ) : (

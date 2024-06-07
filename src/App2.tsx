@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useReducer, useCallback, useMemo } from 'react';
+import React, { useState, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 
 // import { DragDropContext, DropResult } from "@hello-pangea/dnd";
@@ -14,52 +14,10 @@ import type { Timeline } from '../lib/interfaces';
 import A from './data/A.json';
 import B from './data/B.json';
 import C from './data/C.json';
-import E from './data/E.json';
+// import E from './data/E.json';
+import { EMPTY_REMIX } from '../lib/utils.js';
 
 import './App.css';
-import { captureRejectionSymbol } from 'events';
-
-// interface Block {
-//   id: string;
-//   data: any; // Replace 'any' with a more specific type if possible
-//   metadata: any; // Replace 'any' with a more specific type if possible
-// }
-
-// type State = Block[];
-
-// type Action =
-//   | { type: "move"; payload: DropResult }
-//   | { type: "add"; payload: [DropResult, Block] };
-// // | { type: "remove"; payload: { id: string } }
-// // | { type: "update"; payload: Block };
-
-// const emptyState: State = [];
-
-// interface TabPanelProps {
-//   children?: React.ReactNode;
-//   index: any;
-//   value: any;
-// }
-
-// function TabPanel(props: TabPanelProps) {
-//   const { children, value, index, ...other } = props;
-
-//   return (
-//     <div
-//       role="tabpanel"
-//       hidden={value !== index}
-//       id={`simple-tabpanel-${index}`}
-//       aria-labelledby={`simple-tab-${index}`}
-//       {...other}
-//     >
-//       {value === index && (
-//         <Box sx={{ p: 3 }}>
-//           <Typography>{children}</Typography>
-//         </Box>
-//       )}
-//     </div>
-//   );
-// }
 
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
@@ -71,19 +29,79 @@ function App() {
   const width = 720;
 
   const sources = useMemo(() => [ts2timeline(A), ts2timeline(B), ts2timeline(C)] as Timeline[], []);
-  const remix = useMemo(() => ts2timeline(E), []);
+  // const remix = useMemo(() => ts2timeline(E), []);
+  const remix = EMPTY_REMIX;
 
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
+  const remixRef = React.useRef<any>();
+  const [css, setCss] = useState<string>('');
+  useEffect(() => {
+    console.log('remixRef.current', remixRef.current);
+    if (!remixRef.current) return;
+
+    remixRef.current!.addEventListener('playhead', (e: any) => {
+      const { transcript, media, section, clip, timedText, offset } = e.detail;
+      console.log('playhead', { transcript, media, section, clip, timedText, offset });
+
+      if (timedText) {
+        const { selector, element } = timedText.metadata;
+
+        const cssText = `
+          ${transcript} {
+            ${selector} {
+              color: red !important;
+            }
+
+            ${selector} ~ span {
+              color: #cccccc !important;
+            }
+
+            ${clip.metadata.selector} ~ p, div:has(span[data-t="${element.getAttribute('data-t')}"]) ~ div {
+              color: #cccccc;
+            }
+
+            ${section.metadata.selector} ~ section, div[data-rfd-draggable-id="${section.metadata.selector.replace('#', '')}"] ~ div {
+              color: #cccccc;
+            }
+          }
+
+          article:not(${transcript}) {
+            section[data-media-src="${media}"] {
+              span[data-t="${element.getAttribute('data-t')}"] {
+                 outline: 1px solid red !important;
+              }
+            }
+          }
+        `;
+
+        setCss(cssText);
+      } else {
+        // css.textContent = '';
+      }
+    });
+  }, [remixRef]);
+
   return (
     <>
+      {/* <template id="video1">
+        <video controls src="${src}" width="${width}" height="${height}" style={{ width: '100%' }}>
+          {`<!-- -->`}
+        </video>
+      </template> */}
       <style>
         {`
+          ${css}
+
           section::before {
             content: '§ 'attr(data-t)' + 'attr(data-offset)' 'attr(data-media-src);
             display: block;
             font-size: 0.8em;
             color: red;
+          }
+          section {
+            outline: 1px solid red;
+            margin: 5px;
           }
           p::before {
             content: '¶ 'attr(data-t);
@@ -100,6 +118,7 @@ function App() {
           overflow: 'hidden',
           width: 2 * width + 0,
         }}
+        ref={remixRef}
       >
         <RemixContext sources={sources} remix={remix}>
           <Box display="flex" flexGrow={1}>
@@ -121,22 +140,19 @@ function App() {
               >
                 <RemixSources
                   active={active}
-                  PlayerWrapper={({ children }) => <div style={{ background: 'black' }}>{children}</div>}
+                  // PlayerWrapper={({ children }) => <div style={{ background: 'black' }}>{children}</div>}
                 />
               </Box>
             </Box>
             <Box flex={1}>
               <Box sx={{ overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
+                <div style={{ height: 59 }}></div>
                 <RemixDestination />
               </Box>
             </Box>
           </Box>
         </RemixContext>
       </Box>
-      {/* <template id="video1">
-      <video controls src="${src}" width="${width}" height="${height}">
-      </video>
-    </template> */}
     </>
   );
 }

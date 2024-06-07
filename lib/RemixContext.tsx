@@ -144,10 +144,30 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
       return intersection([start_time, end_time], [start - offset, end - offset]);
     });
 
+    (clips[0] as Clip).timed_texts = (clips[0] as Clip)?.timed_texts?.filter((tt) =>
+      intersection(
+        [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
+        [start - offset, end - offset],
+      ),
+    );
+
+    (clips[clips.length - 1] as Clip).timed_texts = (clips[clips.length - 1] as Clip)?.timed_texts?.filter((tt) =>
+      intersection(
+        [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
+        [start - offset, end - offset],
+      ),
+    );
+
+    if (draft.source_range) {
+      draft.source_range.start_time = start - offset;
+      draft.source_range.duration = end - start;
+    }
+
     draft.children[0].children = clips;
 
     if (!draft.metadata) draft.metadata = {};
     draft.metadata.id = `SS-${nanoid()}`;
+    draft.metadata.data.t = [start - offset, end];
   });
 
   return trimmedStack;
