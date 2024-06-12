@@ -35,17 +35,41 @@ function App() {
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
   const remixRef = React.useRef<any>();
-  const [css, setCss] = useState<string>('');
+  const remixListener = React.useRef<any>();
+  // const [css, setCss] = useState({} as any);
+  const [css, dispatchCss] = useReducer((state, action) => ({ ...state, ...action }), {});
+
   useEffect(() => {
-    console.log('remixRef.current', remixRef.current);
+    // console.log('remixRef.current', remixRef.current);
     if (!remixRef.current) return;
 
-    remixRef.current!.addEventListener('playhead', (e: any) => {
-      const { transcript, media, section, clip, timedText, offset } = e.detail;
-      console.log('playhead', { transcript, media, section, clip, timedText, offset });
+    remixListener.current = remixRef.current!.addEventListener('playhead', (e: any) => {
+      // console.log({ e });
+      const { pseudo, transcript, media, section, clip, timedText, offset } = e.detail;
+      console.log('playhead', e.detail);
+
+      const { sid } = section?.metadata?.data ?? { sid: 'default' };
 
       if (timedText) {
         const { selector, element } = timedText.metadata;
+
+        const time = element?.getAttribute('data-t')?.split(',')?.[0];
+        const players = Array.from(document.querySelectorAll(`div[data-sid="${sid}"] timedtext-player`));
+        players.forEach((player) => {
+          // if (e.target === player) element.scrollIntoView({ behavior: 'instant', block: 'center' });
+          if (pseudo) {
+            document.querySelector(selector)!.scrollIntoView({ behavior: 'instant', block: 'center' });
+            const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
+            // console.log({ source });
+            setTabValue(sourceIndex);
+          }
+          if (pseudo || !time || e.target === player) return;
+          // (player as HTMLMediaElement).currentTime = parseFloat(time);
+          (player as any).currentPseudoTime = parseFloat(time);
+          // element.scrollIntoView({ behavior: 'instant', block: 'center' });
+        });
+
+        // document.querySelector(clip.metadata.selector)!.scrollIntoView({ behavior: 'instant', block: 'center' });
 
         const cssText = `
           ${transcript} {
@@ -66,21 +90,25 @@ function App() {
             }
           }
 
-          article:not(${transcript}) {
-            section[data-media-src="${media}"] {
-              span[data-t="${element.getAttribute('data-t')}"] {
+          ____article:not(${transcript}) {
+            ____section[data-media-src="${media}"] {
+              ____span[data-t="${element.getAttribute('data-t')}"] {
                  outline: 1px solid red !important;
               }
             }
           }
         `;
 
-        setCss(cssText);
+        // setCss({ ...css, [transcript]: cssText });
+        dispatchCss({ [transcript]: cssText });
+        // setCss({ [transcript]: cssText });
       } else {
         // css.textContent = '';
       }
     });
-  }, [remixRef]);
+
+    return () => remixRef.current!.removeEventListener('playhead', remixListener.current);
+  }, [sources]);
 
   return (
     <>
@@ -91,7 +119,7 @@ function App() {
       </template> */}
       <style>
         {`
-          ${css}
+          ${Object.values(css).join('\n\n')}
 
           section::before {
             content: '§ 'attr(data-t)' + 'attr(data-offset)' 'attr(data-media-src);

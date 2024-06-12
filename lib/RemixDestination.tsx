@@ -67,6 +67,7 @@ const RemixDestination = ({
                           stack={stack}
                           offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
                           BlockWrapper={BlockWrapper}
+                          sourceId={stack?.metadata?.sid}
                         />
                       </div>
                     )}

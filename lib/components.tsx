@@ -97,6 +97,7 @@ export const Section = ({
   stack,
   offset = 0,
   interval,
+  sourceId,
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
@@ -104,6 +105,7 @@ export const Section = ({
   stack: Stack;
   offset?: number;
   interval?: [number, number] | null | undefined;
+  sourceId?: string;
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
@@ -154,7 +156,7 @@ export const Section = ({
   }
 
   return (
-    <section {...attrs} id={stack?.metadata?.id} data-offset={offset}>
+    <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
       {intersects ? (
         <>
           {before.map((p, i: number) => (

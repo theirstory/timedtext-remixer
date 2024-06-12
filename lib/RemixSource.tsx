@@ -90,7 +90,7 @@ const RemixSource = ({
   }, []);
 
   return (
-    <div style={{ display: active ? 'block' : 'none' }}>
+    <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} />
       </PlayerWrapper>
@@ -110,13 +110,14 @@ const RemixSource = ({
               style={getListStyle(snapshot.isDraggingOver)}
               onClick={handleSourceClick}
             >
-              <article id={'A' + source?.metadata?.id}>
+              <article id={'A' + source?.metadata?.id} data-sid={source?.metadata?.sid}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Section
                     key={stack?.metadata?.id ?? `S${i}`}
                     stack={stack}
                     offset={stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)}
                     interval={interval}
+                    sourceId={source?.metadata?.sid}
                     {...{
                       BlockWrapper,
                       SelectedBlocksWrapper,

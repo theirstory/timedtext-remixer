@@ -63,6 +63,7 @@ export const ts2timeline = (ts: any): Timeline => {
     const timeline: Timeline = {
       OTIO_SCHEMA: "Timeline.1",
       metadata: {
+        sid: ts.transcript._id, // TODO TBD
         id: ts.transcript._id, // TODO TBD
         story: ts.story,
         videoURL: ts.videoURL,
@@ -92,6 +93,7 @@ export const ts2timeline = (ts: any): Timeline => {
               {
                 OTIO_SCHEMA: "Stack.1",
                 metadata: {
+                    sid: ts.transcript._id, // TODO TBD
                     id: `S-${nanoid()}`,
                     data: {
                         t: `${clipsStart},${clipsEnd}`,
@@ -175,6 +177,7 @@ export const EMPTY_REMIX = {
                   {
                       "OTIO_SCHEMA": "Stack.1",
                       "metadata": {
+                          "sid": "S-EMPTY2", // source id?
                           "id": "S-EMPTY2",
                           "data": {
                               "t": "1,2",

@@ -135,6 +135,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
   const stack = stacks[stackIndex];
   const offset = stacks.slice(0, stackIndex).reduce((acc, p) => acc + (p.source_range?.duration ?? 0), 0);
 
+  // console.log({ stack, offset });
   const trimmedStack = produce(stack, (draft) => {
     // select intersecting clips
     const clips = draft?.children?.[0].children.filter((c) => {
