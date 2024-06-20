@@ -34,28 +34,33 @@ export const Player = ({
   pauseMutationObserver: boolean;
 }) => {
   const [showPlayer, setShowPlayer] = useState(true);
+  const [playerKey, setPlayerKey] = useState(0);
 
   return showPlayer ? (
-    <MediaController id="myController">
-      <MediaControlBar style={{ width: '100%' }}>
-        <MediaPlayButton></MediaPlayButton>
-        <MediaMuteButton></MediaMuteButton>
-        <MediaVolumeRange></MediaVolumeRange>
-        <MediaTimeDisplay></MediaTimeDisplay>
-        <MediaTimeRange></MediaTimeRange>
-        <MediaDurationDisplay></MediaDurationDisplay>
-        <MediaCaptionsButton></MediaCaptionsButton>
-      </MediaControlBar>
+    <>
+      <MediaController id="myController">
+        <MediaControlBar style={{ width: '100%' }}>
+          <MediaPlayButton></MediaPlayButton>
+          <MediaMuteButton></MediaMuteButton>
+          <MediaVolumeRange></MediaVolumeRange>
+          <MediaTimeDisplay></MediaTimeDisplay>
+          <MediaTimeRange></MediaTimeRange>
+          <MediaDurationDisplay></MediaDurationDisplay>
+          <MediaCaptionsButton></MediaCaptionsButton>
+        </MediaControlBar>
 
-      <TimedTextPlayerComponent
-        slot="media"
-        width={700}
-        // height={height}
-        transcript={transcript}
-        player="#video1"
-        pause-mutation-observer={pauseMutationObserver}
-      ></TimedTextPlayerComponent>
-    </MediaController>
+        <TimedTextPlayerComponent
+          key={playerKey}
+          slot="media"
+          width={700}
+          // height={height}
+          transcript={transcript}
+          player="#video1"
+          pause-mutation-observer={pauseMutationObserver}
+        ></TimedTextPlayerComponent>
+      </MediaController>
+      {/* <button onClick={() => setPlayerKey(Date.now())}>reload transcript</button> */}
+    </>
   ) : (
     <button onClick={() => setShowPlayer(true)}>show player</button>
   );

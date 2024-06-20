@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useReducer, useCallback, useMemo, useEffect, useRef, PropsWithChildren } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 
 // import { DragDropContext, DropResult } from "@hello-pangea/dnd";
@@ -89,14 +89,6 @@ function App() {
               color: #cccccc;
             }
           }
-
-          ____article:not(${transcript}) {
-            ____section[data-media-src="${media}"] {
-              ____span[data-t="${element.getAttribute('data-t')}"] {
-                 outline: 1px solid red !important;
-              }
-            }
-          }
         `;
 
         // setCss({ ...css, [transcript]: cssText });
@@ -109,6 +101,40 @@ function App() {
 
     return () => remixRef.current!.removeEventListener('playhead', remixListener.current);
   }, [sources]);
+
+  const tools = useMemo(
+    () => [
+      {
+        name: 'title',
+        template: '#title',
+        draggable: true,
+        toolBarComponent: <div>Title</div>,
+        timelineComponent: (
+          <div>
+            <fieldset>
+              <legend>Title</legend>
+              <input type="text" value={'title'}></input>
+            </fieldset>
+          </div>
+        ),
+      },
+      {
+        name: 'FIN',
+        template: '#fin',
+        draggable: true,
+        toolBarComponent: <div>FIN</div>,
+        timelineComponent: (
+          <div>
+            <fieldset>
+              <legend>Fade IN</legend>
+              <input type="range" />
+            </fieldset>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <>
@@ -131,11 +157,17 @@ function App() {
             outline: 1px solid red;
             margin: 5px;
           }
-          p::before {
+          ____p::before {
             content: '¶ 'attr(data-t);
             display: block;
             font-size: 0.8em;
             color: blue;
+          }
+
+          #S-EMPTY2:only-child {
+            _display: none;
+            border: 1px solid blue;
+            opacity: 0;
           }
         `}
       </style>
@@ -175,7 +207,7 @@ function App() {
             <Box flex={1}>
               <Box sx={{ overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
                 <div style={{ height: 59 }}></div>
-                <RemixDestination />
+                <RemixDestination tools={tools} />
               </Box>
             </Box>
           </Box>
@@ -184,5 +216,9 @@ function App() {
     </>
   );
 }
+
+const ToolBarWrapper = ({ children }: PropsWithChildren): JSX.Element => (
+  <div style={{ border: '1px solid green' }}>{children}</div>
+);
 
 export default App;

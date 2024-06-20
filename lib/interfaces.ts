@@ -3,6 +3,7 @@ import { DropResult } from "@hello-pangea/dnd";
 
 export type State = { // TODO: verify with OTIO spec, this is a Timeline
   // sources?: Timeline[] | undefined | null;
+  timestamp?: number;
   remix?: Timeline | undefined | null;
 };
 
@@ -69,7 +70,7 @@ export interface Gap { // TODO: verify with OTIO spec
 export interface Track {
   OTIO_SCHEMA: string;
   // children: (Clip | Transition)[]; // Assuming Transition is another interface you have defined
-  children: (Clip | Stack)[];
+  children: (Clip | Stack | Gap)[];
   kind: string;
   markers?: any[];
   metadata?: Metadata;

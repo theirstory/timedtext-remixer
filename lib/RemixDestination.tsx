@@ -11,15 +11,18 @@ interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tools: any[] | undefined;
 }
 
 const RemixDestination = ({
   PlayerWrapper = PlainDiv as unknown as ElementType,
   DestinationWrapper = PlainDiv as unknown as ElementType,
   BlockWrapper = PlainDiv as unknown as ElementType,
+  tools = [],
 }: RemixDestinationProps): JSX.Element => {
   const { sources, state, dispatch } = useContext(Context);
-  const { remix } = state;
+  const { remix, timestamp } = state;
 
   console.log({ remix });
 
@@ -46,8 +49,37 @@ const RemixDestination = ({
     <>
       {/* <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button> */}
       <PlayerWrapper>
-        <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} />
+        <Player key={timestamp} transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} />
       </PlayerWrapper>
+
+      <div style={{ border: '1px solid blue' }}>
+        <Droppable droppableId="toolbar" isDropDisabled={true}>
+          {(provided, snapshot) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
+              {tools.map((tool, i) => (
+                <Draggable draggableId={tool.name} index={i}>
+                  {(provided, snapshot) => (
+                    <>
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
+                        style={provided.draggableProps.style as CSSProperties}
+                      >
+                        {snapshot.isDragging ? tool.timelineComponent : tool.toolBarComponent}
+                      </div>
+                      {snapshot.isDragging && tool.toolBarComponent}
+                    </>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
+
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
           {(provided, snapshot) => (

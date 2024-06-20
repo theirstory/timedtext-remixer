@@ -9,6 +9,7 @@ import { nanoid } from 'nanoid';
 
 import type { State, Action, Timeline, Stack, Track, Clip, TimedText } from './interfaces';
 import { timelineStacks } from './utils';
+import { Tty } from '@mui/icons-material';
 
 // type State = {
 //   metadata?: Metadata;
@@ -22,6 +23,7 @@ import { timelineStacks } from './utils';
 export const Context = createContext({
   sources: [] as Timeline[],
   state: {
+    timestamp: Date.now(),
     remix: null,
   } as State,
   dispatch: (action: any) => action,
@@ -74,6 +76,7 @@ const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: Re
 const reducer = (state: State, action: Action): State => {
   console.log({ action, state });
   const nextState = produce(state, (draftState) => {
+    draftState.timestamp = Date.now();
     switch (action.type) {
       // case "add":
       //   // Prevent adding a block with a duplicate ID
@@ -145,19 +148,36 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
       return intersection([start_time, end_time], [start - offset, end - offset]);
     });
 
-    (clips[0] as Clip).timed_texts = (clips[0] as Clip)?.timed_texts?.filter((tt) =>
-      intersection(
-        [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
-        [start - offset, end - offset],
-      ),
-    );
+    (clips[0] as Clip).timed_texts = (clips[0] as Clip)?.timed_texts
+      ?.filter((tt) =>
+        intersection(
+          [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
+          [start - offset, end - offset],
+        ),
+      )
+      .map((tt) => {
+        tt.metadata.id = `TTC-${nanoid()}`;
+        return tt;
+      });
 
-    (clips[clips.length - 1] as Clip).timed_texts = (clips[clips.length - 1] as Clip)?.timed_texts?.filter((tt) =>
-      intersection(
-        [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
-        [start - offset, end - offset],
-      ),
-    );
+    clips.slice(1, -1).forEach((c) => {
+      (c as Clip).timed_texts = (c as Clip)?.timed_texts?.map((tt) => {
+        tt.metadata.id = `TTC-${nanoid()}`;
+        return tt;
+      });
+    });
+
+    (clips[clips.length - 1] as Clip).timed_texts = (clips[clips.length - 1] as Clip)?.timed_texts
+      ?.filter((tt) =>
+        intersection(
+          [tt.marked_range.start_time, tt.marked_range.start_time + tt.marked_range.duration],
+          [start - offset, end - offset],
+        ),
+      )
+      .map((tt) => {
+        tt.metadata.id = `TTC-${nanoid()}`;
+        return tt;
+      });
 
     if (draft.source_range) {
       draft.source_range.start_time = start - offset;

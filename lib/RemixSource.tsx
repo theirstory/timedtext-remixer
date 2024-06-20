@@ -16,6 +16,8 @@ interface RemixSourceProps {
   source: Timeline;
   active: boolean;
   index: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tools: any[] | undefined;
 }
 
 const RemixSource = ({
@@ -27,6 +29,7 @@ const RemixSource = ({
   source,
   active,
   index,
+  tools = [],
 }: RemixSourceProps): JSX.Element => {
   const stacks: Stack[] = useMemo(() => {
     // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
@@ -94,9 +97,9 @@ const RemixSource = ({
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} />
       </PlayerWrapper>
-      <p>
+      {/* <p>
         Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}
-      </p>
+      </p> */}
       <SourceWrapper>
         <Droppable
           droppableId={`Source-${index}-${interval ? interval[0] : 0}-${interval ? interval[1] : 0}`}
