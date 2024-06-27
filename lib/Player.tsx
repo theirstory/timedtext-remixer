@@ -12,7 +12,7 @@ import {
   MediaMuteButton,
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
-import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
+import { TimedTextPlayer } from '../timedtext-player-2/dist/timedtext-player.js'; // FIXME
 
 export const TimedTextPlayerComponent = createComponent({
   tagName: 'timedtext-player',

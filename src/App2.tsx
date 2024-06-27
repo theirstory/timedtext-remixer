@@ -16,10 +16,6 @@ import { EMPTY_REMIX } from '../lib/utils.js';
 
 import './App.css';
 
-// Fixed player dimensions for now
-const width = 620; // width of the video player
-const height = 360; // height of the video player
-
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
 
@@ -76,7 +72,7 @@ function App() {
         const cssText = `
           ${transcript} {
             ${selector} {
-              color: red !important;
+              color: #239B8B !important;
             }
 
             ${selector} ~ span {
@@ -135,11 +131,6 @@ function App() {
         {`
           ${Object.values(css).join('\n\n')}
 
-          section {
-            outline: 1px solid darkgrey;
-            margin: 5px;
-            padding: 5px;
-          }
 
           /* temp style of the empty remix entry */
           #S-EMPTY2:only-child {
@@ -149,56 +140,58 @@ function App() {
           }
         `}
       </style>
-      <Box
-        sx={{
-          flexGrow: 1,
-          border: '1px solid grey',
-          overflow: 'hidden',
-          width: 2 * width + 10, // 2 x player width + spacer middle column
-        }}
-        ref={remixRef}
-      >
-        {/* RemixContext needs to wrap both RemixSources and RemixDestination */}
+      <Box id="container" ref={remixRef}>
         <RemixContext sources={sources} remix={remix}>
-          <Box display="flex" flexGrow={1}>
-            {/* Left column */}
-            <Box flex={1} display="flex" flexDirection="column" style={{ width: width }}>
-              <Box sx={{ borderBottom: 1, borderColor: 'divider', padding: 0 }}>
-                <Tabs value={tabValue} onChange={handleTabChange} aria-label="tabbed content">
-                  {sources.map((source, i) => (
-                    <Tab key={i} label={source?.metadata?.story?.title} />
-                  ))}
-                </Tabs>
-              </Box>
-              <Box
-                sx={{
-                  height: 'calc(100vh - 64px)', // 64px is the height of the tabs
-                  width: width,
-                }}
-              >
-                <RemixSources
-                  active={active}
-                  PlayerWrapper={PlayerWrapper}
-                  SourceWrapper={SourceWrapper}
-                  BlockWrapper={BlockWrapper}
-                  SelectionWrapper={SelectionWrapper}
+          <Box id="tabs-container">
+            <Tabs
+              TabIndicatorProps={{ style: { display: 'none' } }}
+              value={tabValue}
+              onChange={handleTabChange}
+              aria-label="tabbed content"
+              sx={{ minHeight: '0px' }}
+            >
+              {sources.map((source, i) => (
+                <Tab
+                  sx={{
+                    borderRadius: '8px 8px 0px 0px',
+                    borderTop: '1px solid var(--Dark-20, #D9DCDE)',
+                    borderRight: '1px solid var(--Dark-20, #D9DCDE)',
+                    borderLeft: '1px solid var(--Dark-20, #D9DCDE)',
+                    backgroundColor: 'var(--Light-100, #FFF)',
+                    textTransform: 'none',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    minHeight: '0px',
+                    padding: '6px 8px 6px 8px',
+                    lineHeight: '20px',
+                    '&.Mui-selected': {
+                      color: '#239B8B',
+                    },
+                  }}
+                  key={i}
+                  label={source?.metadata?.story?.title}
                 />
-              </Box>
+              ))}
+            </Tabs>
+          </Box>
+          <Box id="columns-container" display="flex" columnGap="20px">
+            <Box id="left-column-container" borderRadius="8px" sx={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+              <RemixSources
+                active={active}
+                PlayerWrapper={LeftPlayerWrapper}
+                SourceWrapper={SourceWrapper}
+                BlockWrapper={BlockWrapper}
+                SelectionWrapper={SelectionWrapper}
+              />
             </Box>
-            <Box flex={1} display="flex" flexDirection="column" style={{ width: 10 }}>
-              {/* middle spacer column */}
-            </Box>
-            {/* Right column */}
-            <Box flex={1}>
-              <Box sx={{ height: 'calc(100vh - 64px)' }}>
-                <div style={{ height: 49 }}>{/* spacer for lining up due to tabs on left */}</div>
-                <RemixDestination
-                  PlayerWrapper={PlayerWrapper}
-                  DestinationWrapper={DestinationWrapper}
-                  BlockWrapper={BlockWrapper}
-                  tools={tools}
-                />
-              </Box>
+
+            <Box id="right-column-container" borderRadius="8px" sx={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+              <RemixDestination
+                PlayerWrapper={RightPlayerWrapper}
+                DestinationWrapper={DestinationWrapper}
+                BlockWrapper={BlockWrapper}
+                tools={tools}
+              />
             </Box>
           </Box>
         </RemixContext>
@@ -209,35 +202,74 @@ function App() {
 
 // Wrappers
 
-// Player wrapper, 44px is player controls height
-const PlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <div className="PlayerWrapper" style={{ width, height: height + 44, backgroundColor: 'black' }}>
+const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
+  <Box
+    id="playerWrapper"
+    paddingTop="16px"
+    borderRadius="0px 8px 0px 0px"
+    sx={{ backgroundColor: '#FFFFFF', textAlign: 'center' }}
+  >
     {children}
-  </div>
+  </Box>
+);
+const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
+  <Box
+    id="playerWrapper"
+    paddingTop="16px"
+    borderRadius="8px 8px 0px 0px"
+    sx={{ backgroundColor: '#FFFFFF', textAlign: 'center' }}
+  >
+    {children}
+  </Box>
 );
 
 // Left transcript
 const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <div
-    className="DestinationWrapper"
-    style={{ height: `calc(100vh - ${64 + 44 + height}px)`, overflowY: 'auto', padding: 0 }}
+  <Box
+    id="sourceWrapper"
+    sx={{
+      backgroundColor: '#FFFFFF',
+      padding: '16px',
+      maxHeight: 'calc(100vh - 570px)',
+      overflowY: 'auto',
+      borderRadius: '8px',
+      '& p': {
+        fontFamily: 'Public Sans, sans-serif',
+        color: '#000000',
+        fontSize: '14px',
+        fontWeight: 400,
+        lineHeight: '20px',
+      },
+    }}
   >
     {children}
-  </div>
+  </Box>
 );
 
 // Right transcript
 const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <div
-    className="DestinationWrapper"
-    style={{ height: `calc(100vh - ${64 + 44 + height}px)`, overflowY: 'auto', padding: 0 }}
+  <Box
+    id="destinationWrapper"
+    sx={{
+      backgroundColor: '#FFFFFF',
+      padding: '16px',
+      maxHeight: 'calc(100vh - 602px)',
+      overflowY: 'auto',
+      borderRadius: '8px',
+      '& p': {
+        color: '#000000',
+        fontSize: '14px',
+        fontWeight: 400,
+        lineHeight: '20px',
+      },
+    }}
   >
     {children}
-  </div>
+  </Box>
 );
 
 const SelectionWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <span className="SelectionWrapper" style={{ borderBottom: '1px solid blue' }}>
+  <span className="SelectionWrapper" style={{ backgroundColor: '#d3ebe8' }}>
     {children}
   </span>
 );

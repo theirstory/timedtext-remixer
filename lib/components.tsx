@@ -112,7 +112,7 @@ export const Section = ({
 }) => {
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
     userSelect: 'none',
-    background: isDragging ? 'lightgreen' : 'transparent',
+    background: isDragging ? '#239B8B26' : 'transparent',
     ...draggableStyle,
   });
 

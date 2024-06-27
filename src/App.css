@@ -2,8 +2,5 @@
   margin: 0 auto;
 }
 
-/* draggable text selection, you can also style this from the SelectionWrapper */
-p span.selection {
-  background-color: lightblue;
-}
+
 

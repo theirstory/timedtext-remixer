@@ -35,13 +35,14 @@ const RemixDestination = ({
   }, [remix]);
 
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
-    background: isDraggingOver ? 'lightyellow' : 'transparent',
-    width: '100%',
+    background: isDraggingOver ? '#F1F2F3' : 'transparent',
+    borderRadius: '8px',
+    // width: '100%',
   });
 
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
     userSelect: 'none',
-    background: isDragging ? 'lightgreen' : 'transparent',
+    background: isDragging ? '#239B8B26' : 'transparent',
     ...draggableStyle,
   });
 
