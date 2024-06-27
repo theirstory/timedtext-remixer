@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useReducer, useMemo, useEffect, PropsWithChildren } from 'react';
-import { Box, Tab, Tabs, TextField, Chip, Slider } from '@mui/material';
-// import scrollIntoView from 'smooth-scroll-into-view-if-needed';
+import { Box, Tab, Tabs, TextField, Chip } from '@mui/material';
+import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
 import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
@@ -39,6 +39,8 @@ function App() {
   useEffect(() => {
     if (!remixRef.current) return;
 
+    const scrollEnabled = true;
+
     remixListener.current = remixRef.current!.addEventListener('playhead', (e: any) => {
       const { pseudo, transcript, section, clip, timedText } = e.detail;
       console.log('playhead', e.detail);
@@ -55,21 +57,21 @@ function App() {
             const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
             setTabValue(sourceIndex);
           } else {
-            // const node = document.querySelector(selector);
-            // if (node)
-            //   scrollIntoView(node, {
-            //     behavior: 'smooth',
-            //   });
+            const node = document.querySelector(selector);
+            if (node && scrollEnabled)
+              scrollIntoView(node, {
+                behavior: 'smooth',
+              });
           }
           if (pseudo || !time || e.target === player) return;
           (player as any).currentPseudoTime = parseFloat(time);
         });
 
-        // const node = document.querySelector(clip.metadata.selector);
-        // if (node)
-        //   scrollIntoView(node, {
-        //     behavior: 'smooth',
-        //   });
+        const node = document.querySelector(clip.metadata.selector);
+        if (node && scrollEnabled)
+          scrollIntoView(node, {
+            behavior: 'smooth',
+          });
 
         const cssText = `
           ${transcript} {
@@ -78,15 +80,15 @@ function App() {
             }
 
             ${selector} ~ span {
-              color: #cccccc !important;
+              color: #717171 !important;
             }
 
             ${clip.metadata.selector} ~ p, div:has(span[data-t="${element.getAttribute('data-t')}"]) ~ div {
-              color: #cccccc;
+              color: #717171;
             }
 
             ${section.metadata.selector} ~ section, div[data-rfd-draggable-id="${section.metadata.selector.replace('#', '')}"] ~ div {
-              color: #cccccc;
+              color: #717171;
             }
           }
         `;
