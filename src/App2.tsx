@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useReducer, useMemo, useEffect, PropsWithChildren } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
-import scrollIntoView from 'smooth-scroll-into-view-if-needed';
+import { Box, Tab, Tabs, TextField, Chip, Slider } from '@mui/material';
+// import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
 import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
@@ -23,7 +23,7 @@ const height = 360; // height of the video player
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
@@ -34,7 +34,7 @@ function App() {
 
   const remixRef = React.useRef<any>();
   const remixListener = React.useRef<any>();
-  const [css, dispatchCss] = useReducer((state, action) => ({ ...state, ...action }), {});
+  const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
   useEffect(() => {
     if (!remixRef.current) return;
@@ -105,30 +105,24 @@ function App() {
         name: 'title',
         template: '#title',
         draggable: true,
-        toolBarComponent: <div>Title</div>,
+        toolBarComponent: <Chip label="Title" variant="outlined" />,
         timelineComponent: (
-          <div>
-            <fieldset>
-              <legend>Title</legend>
-              <input type="text" value={'title'}></input>
-            </fieldset>
+          <div style={{ backgroundColor: 'white', padding: 5 }}>
+            <TextField label="Title" value={'Sample title'} style={{ width: '100%' }} />
           </div>
         ),
       },
-      {
-        name: 'FIN',
-        template: '#fin',
-        draggable: true,
-        toolBarComponent: <div>FIN</div>,
-        timelineComponent: (
-          <div>
-            <fieldset>
-              <legend>Fade IN</legend>
-              <input type="range" />
-            </fieldset>
-          </div>
-        ),
-      },
+      // {
+      //   name: 'FIN',
+      //   template: '#fin',
+      //   draggable: true,
+      //   toolBarComponent: <Chip label="Fade In" variant="outlined" />,
+      //   timelineComponent: (
+      //     <div style={{ backgroundColor: 'white', padding: 5 }}>
+      //       <Slider size="small" style={{ width: '90%' }} />
+      //     </div>
+      //   ),
+      // },
     ],
     [],
   );
@@ -139,22 +133,11 @@ function App() {
         {`
           ${Object.values(css).join('\n\n')}
 
-          /*
-          section::before {
-            content: '§ 'attr(data-t)' + 'attr(data-offset)' 'attr(data-media-src);
-            display: block;
-            font-size: 0.8em;
-            color: red;
-          }
-          */
-
-
           section {
             outline: 1px solid darkgrey;
             margin: 5px;
             padding: 5px;
           }
-
 
           /* temp style of the empty remix entry */
           #S-EMPTY2:only-child {
@@ -173,6 +156,7 @@ function App() {
         }}
         ref={remixRef}
       >
+        {/* RemixContext needs to wrap both RemixSources and RemixDestination */}
         <RemixContext sources={sources} remix={remix}>
           <Box display="flex" flexGrow={1}>
             {/* Left column */}
@@ -205,7 +189,7 @@ function App() {
             {/* Right column */}
             <Box flex={1}>
               <Box sx={{ height: 'calc(100vh - 64px)' }}>
-                <div style={{ height: 60 }}>{/* spacer for lining up due to tabs on left */}</div>
+                <div style={{ height: 49 }}>{/* spacer for lining up due to tabs on left */}</div>
                 <RemixDestination
                   PlayerWrapper={PlayerWrapper}
                   DestinationWrapper={DestinationWrapper}

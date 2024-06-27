@@ -52,7 +52,8 @@ const RemixDestination = ({
         <Player key={timestamp} transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} />
       </PlayerWrapper>
 
-      <div style={{ border: '1px solid blue' }}>
+      {/* this will be ToolBarWrapper */}
+      <div className="ToolBarWrapper" style={{ padding: 5 }}>
         <Droppable droppableId="toolbar" isDropDisabled={true}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
