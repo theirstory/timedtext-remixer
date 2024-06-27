@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState, useCallback, ElementType, CSSProperties } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 
@@ -17,7 +18,7 @@ interface RemixSourceProps {
   active: boolean;
   index: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tools: any[] | undefined;
+  tools?: any[] | undefined;
 }
 
 const RemixSource = ({
@@ -29,7 +30,7 @@ const RemixSource = ({
   source,
   active,
   index,
-  tools = [],
+  // tools = [],
 }: RemixSourceProps): JSX.Element => {
   const stacks: Stack[] = useMemo(() => {
     // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
@@ -56,8 +57,16 @@ const RemixSource = ({
 
     const range = selection.getRangeAt(0);
     console.log(range);
-    const start = range.startContainer.parentElement;
-    const end = range.endContainer.parentElement;
+
+    const start =
+      range.startContainer.parentElement?.nodeName === 'SPAN'
+        ? range.startContainer.parentElement
+        : (range.startContainer as any).nextElementSibling;
+    let end =
+      range.endContainer.parentElement?.nodeName === 'SPAN'
+        ? range.endContainer.parentElement
+        : (range.endContainer as any).previousElementSibling;
+
     console.log(start, end);
 
     // TODO handle space selection, <p>...
@@ -71,24 +80,37 @@ const RemixSource = ({
     if (!section) return;
 
     // find section's offset in article
-    const sections = Array.from(article?.querySelectorAll('section') ?? []); // TODO use proper selector
+    const sections = Array.from(article?.querySelectorAll('section') ?? []); // TODO use proper selector?
     const sectionIndex = sections.indexOf(section);
     const previousSections = sections.slice(0, sectionIndex);
     const durations = previousSections.map((s) => {
-      const [start, end] = (s.getAttribute('data-t') ?? '0,0').split(',');
+      const [start, end] = ((s as Element).getAttribute('data-t') ?? '0,0').split(',');
       return parseFloat(end) - parseFloat(start) ?? 0;
     });
     const offset = durations.reduce((acc, d) => acc + d, 0);
 
+    // const startNode = start?.nodeName === 'SPAN' ? start : start?.nextElementSibling;
+    // const endNode = end?.nodeName === 'SPAN' ? end : end?.previousElementSibling;
     // find start and end time
     if (start?.nodeName === 'SPAN' && end?.nodeName === 'SPAN') {
       const [startT] = (start.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
       const [, endT] = (end.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
 
-      const selectionInterval = [startT + offset, endT + offset] as [number, number]; // TODO TBD trim to section interval (no selection outside of section)
+      const selectionInterval = [startT + offset, endT + offset] as [number, number];
 
       setInterval(selectionInterval as [number, number]);
-      selection.removeAllRanges(); // TODO TBD this breaks Hypothes.is
+      selection.removeAllRanges();
+    } else if (start?.nodeName === 'SPAN' && range.endContainer?.nodeName === 'P') {
+      end = range.endContainer;
+      const [startT] = (start.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
+      const [startP] = (end.getAttribute('data-t') ?? '0,0').split(',').map(parseFloat);
+
+      const selectionInterval = [startT + offset, startP + offset] as [number, number];
+
+      setInterval(selectionInterval as [number, number]);
+      selection.removeAllRanges();
+    } else {
+      console.log('Invalid selection:', start?.nodeName, end?.nodeName, start, end);
     }
   }, []);
 

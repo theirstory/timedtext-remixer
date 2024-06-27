@@ -15,7 +15,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
-    "docs": "vite --config vite.docs.config.ts"
+    "docs": "vite build --config vite.docs.config.ts"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -50,7 +50,8 @@
     "media-chrome": "^3.0.2",
     "nanoid": "^5.0.6",
     "react-beautiful-dnd": "^13.1.1",
-    "timedtext-player": "./../timedtext-player/dist/timedtext-player.js",
+    "smooth-scroll-into-view-if-needed": "^2.0.2",
+    "timedtext-player": "./timedtext-player/timedtext-player.js",
     "use-immer": "^0.9.0"
   }
 }
