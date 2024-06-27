@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PropsWithChildren, createContext, useReducer } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { original, produce } from 'immer';
-import { useImmerReducer } from 'use-immer';
+import { produce } from 'immer';
+// import { useImmerReducer } from 'use-immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
 
-import type { State, Action, Timeline, Stack, Track, Clip, TimedText } from './interfaces';
+import type { State, Action, Timeline, Stack, Clip } from './interfaces';
 import { timelineStacks } from './utils';
-import { Tty } from '@mui/icons-material';
 
 // type State = {
 //   metadata?: Metadata;
@@ -156,13 +154,13 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
         ),
       )
       .map((tt) => {
-        tt.metadata.id = `TTC-${nanoid()}`;
+        tt.metadata!.id = `TTC-${nanoid()}`;
         return tt;
       });
 
     clips.slice(1, -1).forEach((c) => {
       (c as Clip).timed_texts = (c as Clip)?.timed_texts?.map((tt) => {
-        tt.metadata.id = `TTC-${nanoid()}`;
+        tt.metadata!.id = `TTC-${nanoid()}`;
         return tt;
       });
     });
@@ -175,7 +173,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
         ),
       )
       .map((tt) => {
-        tt.metadata.id = `TTC-${nanoid()}`;
+        tt.metadata!.id = `TTC-${nanoid()}`;
         return tt;
       });
 

@@ -442,4 +442,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-*.mp4
+public/*.mp4
+public/*.ts
+public/*.m3u8
+

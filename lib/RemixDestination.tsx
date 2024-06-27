@@ -1,18 +1,18 @@
-import { useContext, useMemo, useState, useCallback, ElementType, CSSProperties } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
 import { Player } from './Player';
 
-import type { State, Action, Timeline, Stack, Track, Clip } from './interfaces';
+import type { Stack } from './interfaces';
 
 interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tools: any[] | undefined;
+  tools?: any[] | undefined;
 }
 
 const RemixDestination = ({
@@ -21,7 +21,7 @@ const RemixDestination = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   tools = [],
 }: RemixDestinationProps): JSX.Element => {
-  const { sources, state, dispatch } = useContext(Context);
+  const { state } = useContext(Context);
   const { remix, timestamp } = state;
 
   console.log({ remix });
@@ -84,7 +84,7 @@ const RemixDestination = ({
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
-              <article id={`B${remix?.metadata?.id}`}>
+              <article id={`B${remix?.metadata?.id}`} style={{ minHeight: '100%' }}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Draggable key={stack?.metadata?.id ?? `db-${i}`} draggableId={stack?.metadata?.id} index={i}>
                     {(provided, snapshot) => (

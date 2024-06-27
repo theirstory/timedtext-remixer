@@ -34,7 +34,8 @@ export const Player = ({
   pauseMutationObserver: boolean;
 }) => {
   const [showPlayer, setShowPlayer] = useState(true);
-  const [playerKey, setPlayerKey] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const [playerKey, setPlayerKey] = useState(0);
 
   return showPlayer ? (
     <>
@@ -50,10 +51,10 @@ export const Player = ({
         </MediaControlBar>
 
         <TimedTextPlayerComponent
-          key={playerKey}
+          // key={playerKey}
           slot="media"
-          width={700}
-          // height={height}
+          width={620}
+          height={360}
           transcript={transcript}
           player="#video1"
           pause-mutation-observer={pauseMutationObserver}

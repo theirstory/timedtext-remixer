@@ -1,15 +1,9 @@
 #root {
-  /* max-width: 1280px; */
   margin: 0 auto;
-  /* padding: 2rem; */
-  /* text-align: center; */
 }
 
+/* draggable text selection, you can also style this from the SelectionWrapper */
 p span.selection {
-  /* color: #f00; */
   background-color: lightblue;
 }
 
-/* .MuiBox-root {
-  padding: 0;
-} */
