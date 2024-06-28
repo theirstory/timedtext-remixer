@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useReducer, useMemo, useEffect, PropsWithChildren } from 'react';
-import { Box, Tab, Tabs, TextField, Chip } from '@mui/material';
+import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext } from 'react';
+import { Box, Tab, Tabs, TextField, Chip, Typography } from '@mui/material';
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
 import RemixContext from '../lib/RemixContext.js';
@@ -18,7 +18,6 @@ import './App.css';
 
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
-
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -31,6 +30,8 @@ function App() {
   const remixRef = React.useRef<any>();
   const remixListener = React.useRef<any>();
   const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
+
+  const isDestinationEmpty = remix?.tracks?.children[0].children.length === 1;
 
   useEffect(() => {
     if (!remixRef.current) return;
@@ -156,7 +157,7 @@ function App() {
                     borderRadius: '8px 8px 0px 0px',
                     borderTop: '1px solid var(--Dark-20, #D9DCDE)',
                     borderRight: '1px solid var(--Dark-20, #D9DCDE)',
-                    borderLeft: '1px solid var(--Dark-20, #D9DCDE)',
+                    // borderLeft: '1px solid var(--Dark-20, #D9DCDE)',
                     backgroundColor: 'var(--Light-100, #FFF)',
                     textTransform: 'none',
                     fontSize: '14px',
@@ -166,7 +167,9 @@ function App() {
                     lineHeight: '20px',
                     '&.Mui-selected': {
                       color: '#239B8B',
+                      borderBottom: 'none',
                     },
+                    borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
                   }}
                   key={i}
                   label={source?.metadata?.story?.title}
@@ -175,7 +178,12 @@ function App() {
             </Tabs>
           </Box>
           <Box id="columns-container" display="flex" columnGap="20px">
-            <Box id="left-column-container" borderRadius="8px" sx={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+            <Box
+              id="left-column-container"
+              borderRadius="0px 8px 8px 8px"
+              sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
+              paddingX="24px"
+            >
               <RemixSources
                 active={active}
                 PlayerWrapper={LeftPlayerWrapper}
@@ -185,9 +193,22 @@ function App() {
               />
             </Box>
 
-            <Box id="right-column-container" borderRadius="8px" sx={{ backgroundColor: '#FFFFFF', flex: 1 }}>
+            <Box
+              id="right-column-container"
+              borderRadius="8px"
+              sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
+              display="flex"
+              flexDirection="column"
+              paddingX="24px"
+            >
+              <Typography color="#464C53" fontSize="14px" fontWeight={700} lineHeight="20px">
+                Remix
+              </Typography>
               <RemixDestination
-                PlayerWrapper={RightPlayerWrapper}
+                PlayerWrapper={
+                  // isDestinationEmpty ? EmptyPlayer :
+                  RightPlayerWrapper
+                }
                 DestinationWrapper={DestinationWrapper}
                 BlockWrapper={BlockWrapper}
                 tools={tools}
@@ -202,23 +223,25 @@ function App() {
 
 // Wrappers
 
+const EmptyPlayer = (): JSX.Element => (
+  <Box id="EmptyPlayer" height="302px" borderRadius="8px" sx={{ backgroundColor: '#464C53', textAlign: 'center' }}>
+    <Typography>TheirStory</Typography>
+  </Box>
+);
+
 const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   <Box
-    id="playerWrapper"
-    paddingTop="16px"
-    borderRadius="0px 8px 0px 0px"
-    sx={{ backgroundColor: '#FFFFFF', textAlign: 'center' }}
+    id="leftPlayerWrapper"
+    marginTop="16px"
+    borderRadius="8px"
+    paddingY="16px"
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}
   >
     {children}
   </Box>
 );
 const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <Box
-    id="playerWrapper"
-    paddingTop="16px"
-    borderRadius="8px 8px 0px 0px"
-    sx={{ backgroundColor: '#FFFFFF', textAlign: 'center' }}
-  >
+  <Box id="rightPlayerWrapper" borderRadius="8px" sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}>
     {children}
   </Box>
 );
@@ -229,8 +252,9 @@ const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="sourceWrapper"
     sx={{
       backgroundColor: '#FFFFFF',
-      padding: '16px',
-      maxHeight: 'calc(100vh - 570px)',
+      paddingY: '16px',
+      marginTop: '16px',
+      maxHeight: 'calc(100vh - 595px)',
       overflowY: 'auto',
       borderRadius: '8px',
       '& p': {
@@ -252,8 +276,8 @@ const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="destinationWrapper"
     sx={{
       backgroundColor: '#FFFFFF',
-      padding: '16px',
-      maxHeight: 'calc(100vh - 602px)',
+      paddingY: '16px',
+      maxHeight: 'calc(100vh - 622px)',
       overflowY: 'auto',
       borderRadius: '8px',
       '& p': {
@@ -261,6 +285,14 @@ const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
         fontSize: '14px',
         fontWeight: 400,
         lineHeight: '20px',
+        margin: '0px',
+      },
+      '& section': {
+        backgroundColor: '#F7F9FC',
+        borderRadius: '8px',
+        border: '1px solid #D9DCDE',
+        padding: '12px',
+        marginBottom: '12px',
       },
     }}
   >
