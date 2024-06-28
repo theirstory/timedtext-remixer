@@ -201,9 +201,6 @@ function App() {
               flexDirection="column"
               paddingX="24px"
             >
-              <Typography color="#464C53" fontSize="14px" fontWeight={700} lineHeight="20px">
-                Remix
-              </Typography>
               <RemixDestination
                 PlayerWrapper={
                   // isDestinationEmpty ? EmptyPlayer :
@@ -234,14 +231,18 @@ const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="leftPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    paddingY="16px"
     sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}
   >
     {children}
   </Box>
 );
 const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <Box id="rightPlayerWrapper" borderRadius="8px" sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}>
+  <Box
+    id="rightPlayerWrapper"
+    marginTop="16px"
+    borderRadius="8px"
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}
+  >
     {children}
   </Box>
 );
