@@ -56,9 +56,9 @@ export const Paragraph = ({
     intersects = true;
     // attrs.style = { backgroundColor: "lightyellow" };
 
-    before = children.filter((p) => p.marked_range.start_time + p.marked_range.duration < interval[0]);
+    before = children.filter((p) => p.marked_range.start_time + p.marked_range.duration <= interval[0]);
 
-    after = children.filter((p) => p.marked_range.start_time > interval[1]);
+    after = children.filter((p) => p.marked_range.start_time >= interval[1]);
 
     selected = children.filter((p) => {
       const pStart = p.marked_range.start_time;
