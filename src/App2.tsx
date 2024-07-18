@@ -140,10 +140,10 @@ function App() {
 
 
           /* temp style of the empty remix entry */
-          #____S-EMPTY2:only-child {
-            _display: none;
+          #S-EMPTY2:only-child {
+            display: none;
             border: 1px solid blue;
-            opacity: 0;
+            opacity: 10;
           }
         `}
       </style>
@@ -215,6 +215,7 @@ function App() {
                 DestinationWrapper={DestinationWrapper}
                 BlockWrapper={BlockWrapper}
                 tools={tools}
+                Empty={EmptyRemix}
               />
             </Box>
           </Box>
@@ -245,6 +246,13 @@ const TitleTool = ({ id, value }: { id: string; value: string }): JSX.Element =>
 };
 
 // Wrappers
+
+const EmptyRemix = (): JSX.Element => (
+  <Box id="EmptyRemix" height="302px" borderRadius="8px" sx={{ backgroundColor: '#f6e52c', textAlign: 'center' }}>
+    <Typography>TheirStory</Typography>
+    <p>Drop here</p>
+  </Box>
+);
 
 const EmptyPlayer = (): JSX.Element => (
   <Box id="EmptyPlayer" height="302px" borderRadius="8px" sx={{ backgroundColor: '#464C53', textAlign: 'center' }}>

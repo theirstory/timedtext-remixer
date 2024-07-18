@@ -13,6 +13,7 @@ interface RemixDestinationProps {
   BlockWrapper?: ElementType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
+  Empty?: ElementType | undefined;
 }
 
 const RemixDestination = ({
@@ -20,6 +21,7 @@ const RemixDestination = ({
   DestinationWrapper = PlainDiv as unknown as ElementType,
   BlockWrapper = PlainDiv as unknown as ElementType,
   tools = [],
+  Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, timestamp } = state;
@@ -116,7 +118,7 @@ const RemixDestination = ({
                     )}
                   </Draggable>
                 ))}
-                {stacks.length === 0 && <div style={{ height: '100%', backgroundColor: 'yellow' }}>Drop here</div>}
+                {stacks.length === 1 && <Empty />}
               </article>
 
               {provided.placeholder}
