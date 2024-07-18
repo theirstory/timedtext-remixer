@@ -39,7 +39,6 @@ const RemixDestination = ({
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
     background: isDraggingOver ? '#F1F2F3' : 'transparent',
     borderRadius: '8px',
-    // width: '100%',
     height: '100%',
   });
 
