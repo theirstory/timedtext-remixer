@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState, useCallback, ElementType, CSSProperties } from 'react';
+import { useMemo, useState, useCallback, ElementType, CSSProperties, useEffect } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 
 import { PlainDiv, PlainSpan, Section } from './components';
@@ -19,6 +19,7 @@ interface RemixSourceProps {
   index: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
+  timestamp?: number;
 }
 
 const RemixSource = ({
@@ -31,6 +32,7 @@ const RemixSource = ({
   active,
   index,
   // tools = [],
+  timestamp = 0,
 }: RemixSourceProps): JSX.Element => {
   const stacks: Stack[] = useMemo(() => {
     // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
@@ -47,6 +49,8 @@ const RemixSource = ({
   });
 
   const [interval, setInterval] = useState<[number, number] | null>(null);
+
+  useEffect(() => setInterval(null), [timestamp]);
 
   const handleSourceClick = useCallback(() => {
     const selection = window.getSelection();

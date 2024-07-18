@@ -51,7 +51,7 @@
     "nanoid": "^5.0.6",
     "react-beautiful-dnd": "^13.1.1",
     "smooth-scroll-into-view-if-needed": "^2.0.2",
-    "timedtext-player": "./timedtext-player/timedtext-player.js",
+    "timedtext-player": "../timedtext-player/dist/timedtext-player.js",
     "use-immer": "^0.9.0"
   }
 }

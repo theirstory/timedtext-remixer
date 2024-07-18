@@ -35,7 +35,7 @@ export const Player = ({
 }) => {
   const [showPlayer, setShowPlayer] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [playerKey, setPlayerKey] = useState(0);
+  const [playerKey, setPlayerKey] = useState(0);
 
   return showPlayer ? (
     <>
@@ -51,7 +51,7 @@ export const Player = ({
         </MediaControlBar>
 
         <TimedTextPlayerComponent
-          // key={playerKey}
+          key={playerKey}
           slot="media"
           width={620}
           height={360}

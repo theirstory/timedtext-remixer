@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PropsWithChildren, createContext, useReducer } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { produce } from 'immer';
+import { produce, current } from 'immer';
 // import { useImmerReducer } from 'use-immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
 
 import type { State, Action, Timeline, Stack, Clip } from './interfaces';
-import { timelineStacks } from './utils';
+import { timelineStacks, EMPTY_VIDEO } from './utils';
 
 // type State = {
 //   metadata?: Metadata;
@@ -62,6 +62,11 @@ const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: Re
       dispatch({ type: 'add', payload: [result, source, [parseFloat(start), parseFloat(end)]] });
       return;
     }
+
+    if (result.source.droppableId.startsWith('Toolbar')) {
+      dispatch({ type: 'add-widget', payload: { result, metadata: { component: 'title' } } });
+      return;
+    }
   };
 
   return (
@@ -92,11 +97,115 @@ const reducer = (state: State, action: Action): State => {
       //     block.id === action.payload.id ? { ...block, ...action.payload } : block
       //   );
 
+      case 'metadata': {
+        const { id, metadata } = action.payload;
+        const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
+        if (stackIndex === -1) return draftState;
+
+        const stack = draftState.remix?.tracks.children[0].children?.[stackIndex];
+        stack!.metadata = { ...stack?.metadata, ...metadata };
+
+        const nextStack = draftState.remix?.tracks.children[0].children?.[stackIndex + 1] as Stack;
+        console.log({ nextStack: current(nextStack) });
+        if (nextStack) {
+          if (!nextStack.effects) nextStack.effects = [];
+          const effectIndex = nextStack?.effects?.findIndex((e) => e.metadata?.id === id) ?? -1;
+          const effect = nextStack?.effects?.[effectIndex];
+          effect!.metadata = {
+            ...effect?.metadata,
+            ...metadata,
+            data: { ...effect?.metadata?.data, text: metadata.value },
+          };
+        }
+
+        return draftState;
+      }
+
+      case 'add-widget': {
+        const { result, metadata } = action.payload;
+        const stack = {
+          OTIO_SCHEMA: 'Stack.1',
+          metadata: {
+            id: `E-${nanoid()}`,
+            type: 'effect',
+            data: {
+              t: '0,0',
+              'media-src': EMPTY_VIDEO,
+            },
+            ...metadata,
+          },
+          source_range: {
+            OTIO_SCHEMA: 'TimeRange.1',
+            start_time: 0,
+            duration: 0,
+          },
+          media_reference: {
+            OTIO_SCHEMA: 'MediaReference.1',
+            target: EMPTY_VIDEO,
+          },
+          children: [
+            {
+              OTIO_SCHEMA: 'Track.1',
+              kind: 'video',
+              children: [
+                {
+                  OTIO_SCHEMA: 'Clip.1',
+                  metadata: {
+                    id: 'C-EMPTY2',
+                    speaker: 'SPEAKER_0',
+                    data: {
+                      t: '0,0',
+                    },
+                  },
+                  media_reference: {
+                    OTIO_SCHEMA: 'MediaReference.1',
+                    target: EMPTY_VIDEO,
+                  },
+                  source_range: {
+                    OTIO_SCHEMA: 'TimeRange.1',
+                    start_time: 0,
+                    duration: 0,
+                  },
+                },
+              ],
+            },
+          ],
+        };
+
+        if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
+
+        const nextStack = draftState.remix?.tracks.children[0].children?.[result?.destination?.index + 1 ?? 1] as Stack;
+        if (nextStack) {
+          if (!nextStack.effects) nextStack.effects = [];
+          const nextStackStart = nextStack.source_range?.start_time ?? 0;
+          const effect = {
+            OTIO_SCHEMA: 'Effect.1',
+            name: 'title',
+            metadata: {
+              id: stack.metadata?.id,
+              data: {
+                t: `${nextStackStart},${nextStackStart + 1}`,
+                effect: '#overlay',
+                text: metadata.value ?? 'title placeholder',
+              },
+              ...metadata,
+            },
+            source_range: {
+              OTIO_SCHEMA: 'TimeRange.1',
+              start_time: 0,
+              duration: 0,
+            },
+          };
+
+          nextStack.effects = [effect, ...(nextStack?.effects ?? [])];
+        }
+
+        return draftState;
+      }
+
       case 'add': {
         const [result, source, [start, end]] = action.payload;
         const stack = subClip(source, start, end);
-
-        console.log({ stack });
 
         if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
         return draftState;
@@ -108,6 +217,48 @@ const reducer = (state: State, action: Action): State => {
         // eslint-disable-next-line no-unsafe-optional-chaining
         const [removed] = draftState.remix?.tracks.children[0].children.splice(source.index, 1) as Stack[];
         draftState.remix?.tracks.children[0].children.splice(destination?.index ?? 0, 0, removed);
+
+        draftState.remix?.tracks.children[0].children.forEach((stack, i, arr) => {
+          if (stack.metadata?.type === 'effect' && i < arr.length - 1) {
+            const nextStack = arr[i + 1] as Stack;
+            if (nextStack) {
+              if (!nextStack.effects) nextStack.effects = [];
+              const nextStackStart = nextStack.source_range?.start_time ?? 0;
+              const effect = {
+                OTIO_SCHEMA: 'Effect.1',
+                name: 'title',
+                metadata: {
+                  id: stack.metadata?.id,
+                  ...stack?.metadata,
+                  data: {
+                    t: `${nextStackStart},${nextStackStart + 1}`,
+                    effect: '#overlay',
+                    text: stack?.metadata.value ?? 'title placeholder',
+                  },
+                },
+                source_range: {
+                  OTIO_SCHEMA: 'TimeRange.1',
+                  start_time: 0,
+                  duration: 0,
+                },
+              };
+
+              nextStack.effects = [effect, ...(nextStack?.effects ?? [])];
+            }
+          } else if (stack.metadata?.type !== 'effect' && i > 0) {
+            const prevStack = arr[i - 1] as Stack;
+            if (prevStack && (stack as Stack).effects) {
+              (stack as Stack).effects = (stack as Stack).effects?.filter((effect) => {
+                return effect.metadata?.id === prevStack.metadata?.id;
+              });
+            }
+          } else if (stack.metadata?.type !== 'effect' && i === 0) {
+            if ((stack as Stack).effects) {
+              (stack as Stack).effects = [];
+            }
+          }
+        });
+
         return draftState;
       }
 

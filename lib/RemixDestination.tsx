@@ -1,4 +1,4 @@
-import { useContext, useMemo, ElementType, CSSProperties } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties, cloneElement } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { PlainDiv, Section } from './components';
@@ -55,7 +55,7 @@ const RemixDestination = ({
 
       {/* this will be ToolBarWrapper */}
       <div className="ToolBarWrapper" style={{ padding: 5 }}>
-        <Droppable droppableId="toolbar" isDropDisabled={true}>
+        <Droppable droppableId="Toolbar" isDropDisabled={true}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
               {tools.map((tool, i) => (
@@ -96,17 +96,27 @@ const RemixDestination = ({
                         {...provided.dragHandleProps}
                         style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                       >
-                        <Section
-                          key={stack?.metadata?.id ?? `S-${i}`}
-                          stack={stack}
-                          offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
-                          BlockWrapper={BlockWrapper}
-                          sourceId={stack?.metadata?.sid}
-                        />
+                        {stack.metadata?.component ? (
+                          <Tool
+                            key={stack?.metadata?.id ?? `T-${i}`}
+                            Component={tools.find((t) => t.type === stack.metadata?.component).timelineComponent}
+                            stack={stack}
+                            id={stack?.metadata?.id}
+                          />
+                        ) : (
+                          <Section
+                            key={stack?.metadata?.id ?? `S-${i}`}
+                            stack={stack}
+                            offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
+                            BlockWrapper={BlockWrapper}
+                            sourceId={stack?.metadata?.sid}
+                          />
+                        )}
                       </div>
                     )}
                   </Draggable>
                 ))}
+                {stacks.length === 0 && <div style={{ height: '100%', backgroundColor: 'yellow' }}>Drop here</div>}
               </article>
 
               {provided.placeholder}
@@ -116,6 +126,22 @@ const RemixDestination = ({
       </DestinationWrapper>
     </>
   );
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Tool = ({
+  Component,
+  stack,
+  id,
+}: {
+  Component: React.ComponentType<{ value?: any }>;
+  stack: Stack;
+  id: string;
+}): JSX.Element => {
+  const value = stack?.metadata?.value;
+  // return Component;
+  // return <Component value={value} />;
+  return cloneElement(Component, { value, id });
 };
 
 export default RemixDestination;

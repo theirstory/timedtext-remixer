@@ -9,6 +9,8 @@ export type State = { // TODO: verify with OTIO spec, this is a Timeline
 
 export type Action =
 | { type: "test"; payload: any }
+| { type: "add-widget"; payload: any }
+| { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
 | { type: "add"; payload: [DropResult, Timeline, [number, number]] };
 
@@ -19,6 +21,7 @@ export interface Stack {
   media_reference?: any | null;
   source_range?: TimeRange;
   children: Track[];
+  effects?: Effect[];
 }
 
 export interface Timeline {

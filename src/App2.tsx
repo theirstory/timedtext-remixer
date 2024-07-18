@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext } from 'react';
+import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback } from 'react';
 import { Box, Tab, Tabs, TextField, Chip, Typography } from '@mui/material';
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
-import RemixContext from '../lib/RemixContext.js';
+import RemixContext, { Context } from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
@@ -84,6 +84,10 @@ function App() {
               color: #717171;
             }
 
+            ${clip.metadata.selector.replace('> p', '')} ~ div.BlockWrapper, div:has(span[data-t="${element.getAttribute('data-t')}"]) ~ div {
+              color: #717171 !important;
+            }
+
             ${section.metadata.selector} ~ section, div[data-rfd-draggable-id="${section.metadata.selector.replace('#', '')}"] ~ div {
               color: #717171;
             }
@@ -102,14 +106,16 @@ function App() {
     () => [
       {
         name: 'title',
+        type: 'title',
         template: '#title',
         draggable: true,
         toolBarComponent: <Chip label="Title" variant="outlined" />,
-        timelineComponent: (
-          <div style={{ backgroundColor: 'white', padding: 5 }}>
-            <TextField label="Title" value={'Sample title'} style={{ width: '100%' }} />
-          </div>
-        ),
+        // timelineComponent: (
+        //   <div style={{ backgroundColor: 'white', padding: 5 }}>
+        //     <TextField label="Title" value={'Sample title'} style={{ width: '100%' }} />
+        //   </div>
+        // ),
+        timelineComponent: <TitleTool />,
       },
       // {
       //   name: 'FIN',
@@ -134,7 +140,7 @@ function App() {
 
 
           /* temp style of the empty remix entry */
-          #S-EMPTY2:only-child {
+          #____S-EMPTY2:only-child {
             _display: none;
             border: 1px solid blue;
             opacity: 0;
@@ -218,6 +224,26 @@ function App() {
   );
 }
 
+// Tools
+
+const TitleTool = ({ id, value }: { id: string; value: string }): JSX.Element => {
+  const { dispatch } = useContext(Context);
+  const [text, setText] = useState<string>(value);
+
+  return (
+    <div style={{ backgroundColor: 'white', padding: 5 }}>
+      <TextField
+        label="Title"
+        value={text}
+        style={{ width: '100%' }}
+        onChange={({ target: { value } }) => setText(value)}
+        onBlur={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}
+      />
+      {/* <button onClick={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}>ok</button> */}
+    </div>
+  );
+};
+
 // Wrappers
 
 const EmptyPlayer = (): JSX.Element => (
@@ -260,7 +286,7 @@ const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => (
       borderRadius: '8px',
       '& p': {
         fontFamily: 'Public Sans, sans-serif',
-        color: '#000000',
+        // color: '#000000',
         fontSize: '14px',
         fontWeight: 400,
         lineHeight: '20px',
@@ -282,7 +308,7 @@ const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
       overflowY: 'auto',
       borderRadius: '8px',
       '& p': {
-        color: '#000000',
+        // color: '#000000',
         fontSize: '14px',
         fontWeight: 400,
         lineHeight: '20px',

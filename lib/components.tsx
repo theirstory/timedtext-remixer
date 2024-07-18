@@ -3,7 +3,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
-import type { Stack, Clip, TimedText } from './interfaces';
+import type { Stack, Clip, TimedText, Gap } from './interfaces';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
 
@@ -68,6 +68,11 @@ export const Paragraph = ({
     // console.log({ before, selected, after });
   }
 
+  // // FIXME
+  // if (clip.OTIO_SCHEMA === 'Gap.1') {
+  //   return <p {...attrs}>GAP</p>;
+  // }
+
   return (
     <p {...attrs}>
       {intersects ? (
@@ -130,11 +135,13 @@ export const Section = ({
   }, {}) as unknown as Record<string, string>;
 
   // stack -> track[0] -> children
-  const children = stack.children?.[0]?.children?.filter((c: Clip | Stack) => c.OTIO_SCHEMA === 'Clip.1');
+  const children = stack.children?.[0]?.children?.filter(
+    (c: Clip | Stack | Gap) => c.OTIO_SCHEMA === 'Clip.1' || c.OTIO_SCHEMA === 'Gap.1', // FIXME TBD
+  );
 
-  let before: (Clip | Stack)[] = [];
-  let selected: (Clip | Stack)[] = [];
-  let after: (Clip | Stack)[] = [];
+  let before: (Clip | Stack | Gap)[] = [];
+  let selected: (Clip | Stack | Gap)[] = [];
+  let after: (Clip | Stack | Gap)[] = [];
   let intersects = false;
 
   if (adjustedInterval && intersection([start, end], adjustedInterval)) {
@@ -142,10 +149,10 @@ export const Section = ({
     // attrs.style = { backgroundColor: "lightblue" };
 
     before = children.filter(
-      (p) => (p as Clip).source_range.start_time + (p as Clip).source_range.duration < adjustedInterval[0],
+      (p) => (p as Clip).source_range.start_time + (p as Clip).source_range.duration <= adjustedInterval[0],
     );
 
-    after = children.filter((p) => (p as Clip).source_range.start_time > adjustedInterval[1]);
+    after = children.filter((p) => (p as Clip).source_range.start_time >= adjustedInterval[1]);
 
     selected = children.filter((p) => {
       const pStart = (p as Clip).source_range.start_time;
@@ -157,6 +164,7 @@ export const Section = ({
 
   return (
     <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
+      <Effects stack={stack} />
       {intersects ? (
         <>
           {before.map((p, i: number) => (
@@ -224,4 +232,19 @@ export const Section = ({
       )}
     </section>
   );
+};
+
+const Effects = ({ stack }: { stack: Stack }) => {
+  return stack?.effects?.map((e, i) => <Effect key={e?.metadata?.id ?? `e-${i}`} effect={e} />);
+};
+
+const Effect = ({ effect }: { effect: any }) => {
+  const attrs = Object.keys(effect?.metadata?.data ?? {}).reduce((acc, key) => {
+    return {
+      ...acc,
+      [`data-${key.replaceAll('_', '-')}`]: effect?.metadata?.data[key],
+    } as Record<string, string>;
+  }, {}) as unknown as Record<string, string>;
+
+  return <div {...attrs}>{effect?.name}</div>;
 };

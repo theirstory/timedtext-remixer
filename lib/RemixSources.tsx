@@ -1,4 +1,4 @@
-import { ElementType, useContext, useMemo } from 'react';
+import { ElementType, useContext, useMemo, useState, useEffect } from 'react';
 
 import { Context } from './RemixContext';
 import { PlainDiv, PlainSpan } from './components';
@@ -25,9 +25,17 @@ const RemixSources = ({
   id = (source: Timeline) => source?.metadata?.id,
   active,
 }: RemixSourcesProps): JSX.Element => {
-  const { sources } = useContext(Context);
+  const {
+    sources,
+    state: { timestamp = 0 },
+  } = useContext(Context);
 
+  const [activeSourceLastChange, setActiveSourceLastChange] = useState(0);
   const activeSource = useMemo(() => sources?.find((source) => id(source) === active), [active, sources, id]);
+
+  useEffect(() => setActiveSourceLastChange(Date.now()), [activeSource]);
+
+  const latestTimestamp = Math.max(timestamp, activeSourceLastChange);
 
   return (
     <>
@@ -42,6 +50,7 @@ const RemixSources = ({
           SelectedBlocksWrapper={SelectedBlocksWrapper}
           SelectionWrapper={SelectionWrapper}
           source={source}
+          timestamp={latestTimestamp}
         />
       ))}
     </>

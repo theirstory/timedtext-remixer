@@ -152,7 +152,7 @@ function dataURLtoBlob(dataurl: string): Blob {
   return new Blob([u8arr], {type:mime});
 }
 
-const EMPTY_VIDEO = URL.createObjectURL(dataURLtoBlob(EMPTY_VIDEO_DATAURL));
+export const EMPTY_VIDEO = URL.createObjectURL(dataURLtoBlob(EMPTY_VIDEO_DATAURL));
 // console.log(EMPTY_VIDEO)
 
 export const EMPTY_REMIX = {
@@ -174,6 +174,54 @@ export const EMPTY_REMIX = {
                   "id": "T-EMPTY"
               },
               "children": [
+                  // {
+                  //     "OTIO_SCHEMA": "Stack.1",
+                  //     "metadata": {
+                  //         "id": "C-T",
+                  //         "component": "title",
+                  //         "value": "Sample Title",
+                  //         "data": {
+                  //             "t": "0,0",
+                  //             "media-src": EMPTY_VIDEO
+                  //         }
+                  //     },
+                  //     "source_range": {
+                  //         "OTIO_SCHEMA": "TimeRange.1",
+                  //         "start_time": 0,
+                  //         "duration": 0
+                  //     },
+                  //     "media_reference": {
+                  //         "OTIO_SCHEMA": "MediaReference.1",
+                  //         "target": EMPTY_VIDEO
+                  //     },
+                  //     "children": [
+                  //         {
+                  //             "OTIO_SCHEMA": "Track.1",
+                  //             "kind": "video",
+                  //             "children": [
+                  //                 {
+                  //                     "OTIO_SCHEMA": "Clip.1",
+                  //                     "metadata": {
+                  //                         "id": "C-EMPTY2",
+                  //                         "speaker": "SPEAKER_0",
+                  //                         "data": {
+                  //                             "t": "0,0"
+                  //                         }
+                  //                     },
+                  //                     "media_reference": {
+                  //                         "OTIO_SCHEMA": "MediaReference.1",
+                  //                         "target": EMPTY_VIDEO
+                  //                     },
+                  //                     "source_range": {
+                  //                         "OTIO_SCHEMA": "TimeRange.1",
+                  //                         "start_time": 0,
+                  //                         "duration": 0
+                  //                     },
+                  //                 }
+                  //             ]
+                  //         }
+                  //     ]
+                  // },
                   {
                       "OTIO_SCHEMA": "Stack.1",
                       "metadata": {
@@ -236,6 +284,25 @@ export const EMPTY_REMIX = {
                                   }
                               ]
                           }
+                      ],
+                      "effects": [
+                          // {
+                          //     "OTIO_SCHEMA": "Effect.1",
+                          //     "name": "title",
+                          //     "metadata": {
+                          //         "id": "E-title-test",
+                          //         "data": {
+                          //             "t": "1,2",
+                          //             "effect": "#overlay",
+                          //             "text": "Sample Title"
+                          //         }
+                          //     },
+                          //     "source_range": {
+                          //         "OTIO_SCHEMA": "TimeRange.1",
+                          //         "start_time": 1,
+                          //         "duration": 1
+                          //     }
+                          // }
                       ]
                   }
               ]
