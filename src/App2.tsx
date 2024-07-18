@@ -313,6 +313,7 @@ const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
       backgroundColor: '#FFFFFF',
       paddingY: '16px',
       maxHeight: 'calc(100vh - 622px)',
+      minHeight: 'calc(100vh - 622px)',
       overflowY: 'auto',
       borderRadius: '8px',
       '& p': {
