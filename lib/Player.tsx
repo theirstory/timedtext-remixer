@@ -10,6 +10,7 @@ import {
   MediaDurationDisplay,
   MediaCaptionsButton,
   MediaMuteButton,
+  MediaFullscreenButton,
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
 import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
@@ -35,7 +36,7 @@ export const Player = ({
 }) => {
   const [showPlayer, setShowPlayer] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [playerKey, setPlayerKey] = useState(0);
+  const [playerKey] = useState(0); // setPlayerKey
 
   return showPlayer ? (
     <>
@@ -48,6 +49,7 @@ export const Player = ({
           <MediaTimeRange></MediaTimeRange>
           <MediaDurationDisplay></MediaDurationDisplay>
           <MediaCaptionsButton></MediaCaptionsButton>
+          <MediaFullscreenButton></MediaFullscreenButton>
         </MediaControlBar>
 
         <TimedTextPlayerComponent

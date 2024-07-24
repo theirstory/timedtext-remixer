@@ -47,7 +47,7 @@
     "@mui/material": "^5.15.14",
     "immer": "^10.1.1",
     "interval-operations": "^2.0.0",
-    "media-chrome": "^3.0.2",
+    "media-chrome": "^3.2.4",
     "nanoid": "^5.0.6",
     "react-beautiful-dnd": "^13.1.1",
     "smooth-scroll-into-view-if-needed": "^2.0.2",
