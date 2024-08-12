@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState, useCallback, ElementType, CSSProperties, useEffect } from 'react';
+import { useContext, useMemo, useState, useCallback, ElementType, CSSProperties, useEffect } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 
 import { PlainDiv, PlainSpan, Section } from './components';
+import { Context } from './RemixContext';
 import { Player } from './Player';
 import type { Timeline, Stack } from './interfaces';
 
@@ -34,6 +35,9 @@ const RemixSource = ({
   // tools = [],
   timestamp = 0,
 }: RemixSourceProps): JSX.Element => {
+  const { state } = useContext(Context);
+  const { poster, width, height } = state;
+
   const stacks: Stack[] = useMemo(() => {
     // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
     //   return [source.tracks] as Stack[];
@@ -121,7 +125,7 @@ const RemixSource = ({
   return (
     <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
       <PlayerWrapper>
-        <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} />
+        <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
       {/* <p>
         Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}

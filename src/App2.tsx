@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback } from 'react';
-import { Box, Tab, Tabs, TextField, Chip, Typography } from '@mui/material';
+import { Box, Tab, Tabs, TextField, Chip, Typography, Slider } from '@mui/material';
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
 import RemixContext, { Context } from '../lib/RemixContext.js';
@@ -31,7 +31,7 @@ function App() {
   const remixListener = React.useRef<any>();
   const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
-  const isDestinationEmpty = remix?.tracks?.children[0].children.length === 1;
+  const isDestinationEmpty = remix?.tracks?.children?.[0]?.children?.length ?? 1 === 1;
 
   useEffect(() => {
     if (!remixRef.current) return;
@@ -43,6 +43,7 @@ function App() {
       console.log('playhead', e.detail);
 
       const { sid } = section?.metadata?.data ?? { sid: 'default' };
+      const sectionEl = document.querySelector(section.metadata.selector);
 
       if (timedText) {
         const { selector, element } = timedText.metadata;
@@ -54,17 +55,18 @@ function App() {
             const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
             setTabValue(sourceIndex);
           } else {
-            const node = document.querySelector(selector);
-            if (node && scrollEnabled)
-              scrollIntoView(node, {
-                behavior: 'smooth',
-              });
+            // const node = document.querySelector(selector);
+            // if (node && scrollEnabled)
+            //   scrollIntoView(node, {
+            //     behavior: 'smooth',
+            //   });
           }
           if (pseudo || !time || e.target === player) return;
           (player as any).currentPseudoTime = parseFloat(time);
         });
 
-        const node = document.querySelector(clip.metadata.selector);
+        const node = sectionEl.querySelector(clip.metadata.selector);
+        console.log('node', clip.metadata.selector);
         if (node && scrollEnabled)
           scrollIntoView(node, {
             behavior: 'smooth',
@@ -73,7 +75,8 @@ function App() {
         const cssText = `
           ${transcript} {
             ${selector} {
-              color: #239B8B !important;
+              color: #0944f3 !important;
+              text-decoration: underline;
             }
 
             ${selector} ~ span {
@@ -140,15 +143,33 @@ function App() {
 
 
           /* temp style of the empty remix entry */
-          #S-EMPTY2:only-child {
+          #___S-EMPTY2:only-child {
             display: none;
             border: 1px solid blue;
             opacity: 10;
           }
+
+          #EmptyRemix {
+            display: none;
+          }
+
+          div[data-rfd-draggable-id="S-EMPTY"] section {
+            display: none;
+          }
+
+          div[data-rfd-draggable-id="S-EMPTY"] ~ #EmptyRemix {
+            display: block;
+          }
         `}
       </style>
       <Box id="container" ref={remixRef}>
-        <RemixContext sources={sources} remix={remix}>
+        <RemixContext
+          sources={sources}
+          remix={remix}
+          poster="https://cdn.theirstory.com/their-story/2021/08/their-story-logo.png"
+          width={620}
+          height={360}
+        >
           <Box id="tabs-container">
             <Tabs
               TabIndicatorProps={{ style: { display: 'none' } }}
@@ -240,6 +261,16 @@ const TitleTool = ({ id, value }: { id: string; value: string }): JSX.Element =>
         onChange={({ target: { value } }) => setText(value)}
         onBlur={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}
       />
+      <Slider
+        size="small"
+        defaultValue={3}
+        aria-label="Small"
+        valueLabelDisplay="auto"
+        step={10}
+        marks
+        min={1}
+        max={10}
+      />
       {/* <button onClick={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}>ok</button> */}
     </div>
   );
@@ -265,7 +296,7 @@ const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="leftPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: 610, height: 360 }}
   >
     {children}
   </Box>
@@ -275,7 +306,7 @@ const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="rightPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center' }}
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: 610, height: 360 }}
   >
     {children}
   </Box>

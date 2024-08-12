@@ -5,6 +5,9 @@ export type State = { // TODO: verify with OTIO spec, this is a Timeline
   // sources?: Timeline[] | undefined | null;
   timestamp?: number;
   remix?: Timeline | undefined | null;
+  poster?: string;
+  width?: number;
+  height?: number;
 };
 
 export type Action =

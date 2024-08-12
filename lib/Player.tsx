@@ -14,6 +14,7 @@ import {
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
 import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
+// import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const TimedTextPlayerComponent = createComponent({
   tagName: 'timedtext-player',
@@ -29,9 +30,15 @@ export const TimedTextPlayerComponent = createComponent({
 // incl skip MediaController
 export const Player = ({
   transcript,
+  poster,
+  width = 620,
+  height = 360,
   pauseMutationObserver = false,
 }: {
   transcript: string;
+  poster: string | undefined;
+  width?: number | undefined;
+  height?: number | undefined;
   pauseMutationObserver: boolean;
 }) => {
   const [showPlayer, setShowPlayer] = useState(true);
@@ -55,8 +62,9 @@ export const Player = ({
         <TimedTextPlayerComponent
           key={playerKey}
           slot="media"
-          width={620}
-          height={360}
+          width={width}
+          height={height}
+          poster={poster}
           transcript={transcript}
           player="#video1"
           pause-mutation-observer={pauseMutationObserver}
