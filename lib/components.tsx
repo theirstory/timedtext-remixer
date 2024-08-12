@@ -127,7 +127,7 @@ export const Section = ({
   const end = (stack?.source_range?.duration ?? 0) + start;
   const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
-  const attrs = Object.keys(stack?.metadata?.data).reduce((acc, key) => {
+  const attrs = Object.keys(stack?.metadata?.data ?? {}).reduce((acc, key) => {
     return {
       ...acc,
       [`data-${key.replaceAll('_', '-')}`]: stack?.metadata?.data[key],
@@ -162,6 +162,9 @@ export const Section = ({
     // console.log({ before, selected, after });
   }
 
+  // FIXME
+  if (interval) globalThis.foo = `selection-${interval?.[0]}-${interval?.[1]}`;
+
   return (
     <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
       <Effects stack={stack} />
@@ -173,10 +176,11 @@ export const Section = ({
             </BlockWrapper>
           ))}
 
-          <Draggable draggableId="selection" index={0}>
+          <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
             {(provided, snapshot) => (
               <>
                 <div
+                  key={`${interval?.[0]}-${interval?.[1]}`}
                   ref={provided.innerRef}
                   {...provided.draggableProps}
                   style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
@@ -224,7 +228,7 @@ export const Section = ({
           ))}
         </>
       ) : (
-        children.map((p, i: number) => (
+        children?.map((p, i: number) => (
           <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`}>
             <Paragraph clip={p as Clip} />
           </BlockWrapper>

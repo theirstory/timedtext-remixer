@@ -24,12 +24,12 @@ const RemixDestination = ({
   Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
-  const { remix, timestamp } = state;
+  const { remix, timestamp, poster, width, height } = state;
 
   console.log({ remix });
 
   const stacks: Stack[] = useMemo(() => {
-    if (remix?.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
+    if ((remix?.tracks?.children?.[0]?.children ?? []).every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
       return [remix.tracks] as Stack[];
     } else {
       return remix?.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
@@ -52,7 +52,12 @@ const RemixDestination = ({
     <>
       {/* <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button> */}
       <PlayerWrapper>
-        <Player key={timestamp} transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} />
+        <Player
+          // key={timestamp}
+          transcript={`#B${remix?.metadata?.id}`}
+          pauseMutationObserver={false}
+          {...{ poster, width, height }}
+        />
       </PlayerWrapper>
 
       {/* this will be ToolBarWrapper */}
@@ -61,7 +66,7 @@ const RemixDestination = ({
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
               {tools.map((tool, i) => (
-                <Draggable draggableId={tool.name} index={i}>
+                <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
                   {(provided, snapshot) => (
                     <>
                       <div

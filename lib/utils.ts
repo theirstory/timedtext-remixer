@@ -57,7 +57,12 @@ export const ts2timeline = (ts: any): Timeline => {
     const lastClip = clips?.[clips.length - 1];
 
     let clipsStart = firstClip?.source_range?.start_time ?? 0;
-    if (clipsStart === 0) clipsStart = 1/5; // FIXME: hack to avoid black frame at start, and fix player zero bug
+    // if (clipsStart === 0) clipsStart = 1/5; // FIXME: hack to avoid black frame at start, and fix player zero bug
+    // if (clipsStart === 0) {
+    //   const firstTTstart = clips[0].timed_texts[0].marked_range.start_time;
+    //   const firstTTend = clips[0].timed_texts[0].marked_range.start_time + clips[0].timed_texts[0].marked_range.duration;
+    //   clipsStart = firstTTstart + ((firstTTend - firstTTstart) / 2);
+    // }
     const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time + lastClip.source_range?.duration : totalDuration;
 
     const timeline: Timeline = {
@@ -171,6 +176,7 @@ export const EMPTY_REMIX = {
               "OTIO_SCHEMA": "Track.1",
               "kind": "video",
               "metadata": {
+                  "remove": true,
                   "id": "T-EMPTY"
               },
               "children": [
@@ -222,89 +228,89 @@ export const EMPTY_REMIX = {
                   //         }
                   //     ]
                   // },
-                  {
-                      "OTIO_SCHEMA": "Stack.1",
-                      "metadata": {
-                          "sid": "S-EMPTY2", // source id?
-                          "id": "S-EMPTY2",
-                          "data": {
-                              "t": "1,2",
-                              "media-src": EMPTY_VIDEO
-                          }
-                      },
-                      "media_reference": {
-                          "OTIO_SCHEMA": "MediaReference.1",
-                          "target": EMPTY_VIDEO
-                      },
-                      "source_range": {
-                          "OTIO_SCHEMA": "TimeRange.1",
-                          "start_time": 1,
-                          "duration": 1
-                      },
-                      "children": [
-                          {
-                              "OTIO_SCHEMA": "Track.1",
-                              "kind": "video",
-                              "children": [
-                                  {
-                                      "OTIO_SCHEMA": "Clip.1",
-                                      "metadata": {
-                                          "id": "C-EMPTY",
-                                          "speaker": "SPEAKER_0",
-                                          "data": {
-                                              "t": "1,2"
-                                          }
-                                      },
-                                      "media_reference": {
-                                          "OTIO_SCHEMA": "MediaReference.1",
-                                          "target": EMPTY_VIDEO
-                                      },
-                                      "source_range": {
-                                          "OTIO_SCHEMA": "TimeRange.1",
-                                          "start_time": 1,
-                                          "duration": 1
-                                      },
-                                      "timed_texts": [
-                                          {
-                                              "OTIO_SCHEMA": "TimedText.1",
-                                              "metadata": {
-                                                  "id": "TT-EMPTY",
-                                                  "data": {
-                                                      "t": "1,2"
-                                                  }
-                                              },
-                                              "marked_range": {
-                                                  "OTIO_SCHEMA": "TimeRange.1",
-                                                  "start_time": 1,
-                                                  "duration": 1
-                                              },
-                                              "texts": "EMPTY"
-                                          }
-                                      ]
-                                  }
-                              ]
-                          }
-                      ],
-                      "effects": [
-                          // {
-                          //     "OTIO_SCHEMA": "Effect.1",
-                          //     "name": "title",
-                          //     "metadata": {
-                          //         "id": "E-title-test",
-                          //         "data": {
-                          //             "t": "1,2",
-                          //             "effect": "#overlay",
-                          //             "text": "Sample Title"
-                          //         }
-                          //     },
-                          //     "source_range": {
-                          //         "OTIO_SCHEMA": "TimeRange.1",
-                          //         "start_time": 1,
-                          //         "duration": 1
-                          //     }
-                          // }
-                      ]
-                  }
+                  // {
+                  //     "OTIO_SCHEMA": "Stack.1",
+                  //     "metadata": {
+                  //         "sid": "S-EMPTY2", // source id?
+                  //         "id": "S-EMPTY2",
+                  //         "data": {
+                  //             "t": "1,2",
+                  //             "media-src": EMPTY_VIDEO
+                  //         }
+                  //     },
+                  //     "media_reference": {
+                  //         "OTIO_SCHEMA": "MediaReference.1",
+                  //         "target": EMPTY_VIDEO
+                  //     },
+                  //     "source_range": {
+                  //         "OTIO_SCHEMA": "TimeRange.1",
+                  //         "start_time": 1,
+                  //         "duration": 1
+                  //     },
+                  //     "children": [
+                  //         {
+                  //             "OTIO_SCHEMA": "Track.1",
+                  //             "kind": "video",
+                  //             "children": [
+                  //                 {
+                  //                     "OTIO_SCHEMA": "Clip.1",
+                  //                     "metadata": {
+                  //                         "id": "C-EMPTY",
+                  //                         "speaker": "SPEAKER_0",
+                  //                         "data": {
+                  //                             "t": "1,2"
+                  //                         }
+                  //                     },
+                  //                     "media_reference": {
+                  //                         "OTIO_SCHEMA": "MediaReference.1",
+                  //                         "target": EMPTY_VIDEO
+                  //                     },
+                  //                     "source_range": {
+                  //                         "OTIO_SCHEMA": "TimeRange.1",
+                  //                         "start_time": 1,
+                  //                         "duration": 1
+                  //                     },
+                  //                     "timed_texts": [
+                  //                         {
+                  //                             "OTIO_SCHEMA": "TimedText.1",
+                  //                             "metadata": {
+                  //                                 "id": "TT-EMPTY",
+                  //                                 "data": {
+                  //                                     "t": "1,2"
+                  //                                 }
+                  //                             },
+                  //                             "marked_range": {
+                  //                                 "OTIO_SCHEMA": "TimeRange.1",
+                  //                                 "start_time": 1,
+                  //                                 "duration": 1
+                  //                             },
+                  //                             "texts": "EMPTY"
+                  //                         }
+                  //                     ]
+                  //                 }
+                  //             ]
+                  //         }
+                  //     ],
+                  //     "effects": [
+                  //         // {
+                  //         //     "OTIO_SCHEMA": "Effect.1",
+                  //         //     "name": "title",
+                  //         //     "metadata": {
+                  //         //         "id": "E-title-test",
+                  //         //         "data": {
+                  //         //             "t": "1,2",
+                  //         //             "effect": "#overlay",
+                  //         //             "text": "Sample Title"
+                  //         //         }
+                  //         //     },
+                  //         //     "source_range": {
+                  //         //         "OTIO_SCHEMA": "TimeRange.1",
+                  //         //         "start_time": 1,
+                  //         //         "duration": 1
+                  //         //     }
+                  //         // }
+                  //     ]
+                  // } // Stack EMPTY2
               ]
           }
       ]

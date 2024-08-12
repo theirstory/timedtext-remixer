@@ -30,12 +30,25 @@ export const Context = createContext({
 interface RemixContextProps extends PropsWithChildren {
   sources: Timeline[] | undefined;
   remix: Timeline | null | undefined;
+  poster?: string;
+  width?: number;
+  height?: number;
 }
 
-const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: RemixContextProps): JSX.Element => {
+const RemixContext = ({
+  sources = [] as Timeline[],
+  remix = null,
+  poster,
+  width,
+  height,
+  children,
+}: RemixContextProps): JSX.Element => {
   const initialState: State = {
     // sources,
     remix,
+    poster,
+    width,
+    height,
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -43,7 +56,10 @@ const RemixContext = ({ sources = [] as Timeline[], remix = null, children }: Re
   const onDragEnd = (result: DropResult) => {
     console.log({ result });
     // dropped outside the list
-    if (!result.destination) {
+    if (
+      (!result.destination || result.draggableId !== globalThis?.foo) &&
+      result.source.droppableId !== 'Remix-EMPTY'
+    ) {
       return;
     }
 
@@ -212,6 +228,16 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'move': {
+        const { source, destination } = action.payload;
+
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        const [removed] = draftState.remix?.tracks.children[0].children.splice(source.index, 1) as Stack[];
+        draftState.remix?.tracks.children[0].children.splice(destination?.index ?? 0, 0, removed);
+        return draftState;
+      }
+
+      // move
+      case 'test': {
         const { source, destination } = action.payload;
 
         // eslint-disable-next-line no-unsafe-optional-chaining
