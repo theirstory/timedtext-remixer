@@ -32,7 +32,7 @@ const RemixSource = ({
   source,
   active,
   index,
-  // tools = [],
+  tools = [],
   timestamp = 0,
 }: RemixSourceProps): JSX.Element => {
   const { state } = useContext(Context);
@@ -93,7 +93,8 @@ const RemixSource = ({
     const previousSections = sections.slice(0, sectionIndex);
     const durations = previousSections.map((s) => {
       const [start, end] = ((s as Element).getAttribute('data-t') ?? '0,0').split(',');
-      return parseFloat(end) - parseFloat(start) ?? 0;
+      const duration = parseFloat(end) - parseFloat(start);
+      return duration < 0 ? 0 : duration;
     });
     const offset = durations.reduce((acc, d) => acc + d, 0);
 
@@ -127,9 +128,12 @@ const RemixSource = ({
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
-      {/* <p>
-        Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}
-      </p> */}
+
+      {/* this will be ToolBarWrapper */}
+      <div className="ToolBarWrapper" style={{ padding: 5 }}>
+        {tools.map((tool) => tool.toolBarComponent)}
+      </div>
+
       <SourceWrapper>
         <Droppable
           droppableId={`Source-${index}-${interval ? interval[0] : 0}-${interval ? interval[1] : 0}`}

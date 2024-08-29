@@ -106,6 +106,7 @@ export const Section = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
+  SectionContentWrapper = PlainDiv as unknown as ElementType,
 }: {
   stack: Stack;
   offset?: number;
@@ -114,6 +115,7 @@ export const Section = ({
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
+  SectionContentWrapper?: ElementType;
 }) => {
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
     userSelect: 'none',
@@ -167,73 +169,85 @@ export const Section = ({
 
   return (
     <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
-      <Effects stack={stack} />
-      {intersects ? (
-        <>
-          {before.map((p, i: number) => (
-            <BlockWrapper key={p?.metadata?.id ?? `bP-${i}`}>
+      <SectionContentWrapper metadata={stack?.metadata}>
+        <Effects stack={stack} />
+        {intersects ? (
+          <>
+            {before.map((p, i: number) => (
+              <BlockWrapper key={p?.metadata?.id ?? `bP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+                <Paragraph clip={p as Clip} />
+              </BlockWrapper>
+            ))}
+
+            <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
+              {(provided, snapshot) => (
+                <>
+                  <div
+                    key={`${interval?.[0]}-${interval?.[1]}`}
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
+                  >
+                    <SelectedBlocksWrapper>
+                      {selected.map((p, i: number) => (
+                        <BlockWrapper
+                          key={p?.metadata?.id ?? `sP-${i}`}
+                          metadata={p?.metadata}
+                          start={start}
+                          offset={offset}
+                        >
+                          <Paragraph
+                            clip={p as Clip}
+                            interval={adjustedInterval}
+                            dragHandleProps={provided.dragHandleProps}
+                            isDragging={snapshot.isDragging}
+                            SelectionWrapper={SelectionWrapper}
+                          />
+                        </BlockWrapper>
+                      ))}
+                    </SelectedBlocksWrapper>
+                  </div>
+                  {snapshot.isDragging && (
+                    <>
+                      <div
+                      // style={getItemStyle(
+                      //   true,
+                      //   provided.draggableProps.style as CSSProperties
+                      // )}
+                      >
+                        <SelectedBlocksWrapper>
+                          {selected.map((p, i: number) => (
+                            <BlockWrapper
+                              key={p?.metadata?.id ?? `s2P-${i}`}
+                              metadata={p?.metadata}
+                              start={start}
+                              offset={offset}
+                            >
+                              <Paragraph clip={p as Clip} />
+                            </BlockWrapper>
+                          ))}
+                        </SelectedBlocksWrapper>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </Draggable>
+
+            {after.map((p, i: number) => (
+              <BlockWrapper key={p?.metadata?.id ?? `aP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+                <Paragraph clip={p as Clip} />
+              </BlockWrapper>
+            ))}
+          </>
+        ) : (
+          children?.map((p, i: number) => (
+            <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
               <Paragraph clip={p as Clip} />
             </BlockWrapper>
-          ))}
-
-          <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
-            {(provided, snapshot) => (
-              <>
-                <div
-                  key={`${interval?.[0]}-${interval?.[1]}`}
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
-                >
-                  <SelectedBlocksWrapper>
-                    {selected.map((p, i: number) => (
-                      <BlockWrapper key={p?.metadata?.id ?? `sP-${i}`}>
-                        <Paragraph
-                          clip={p as Clip}
-                          interval={adjustedInterval}
-                          dragHandleProps={provided.dragHandleProps}
-                          isDragging={snapshot.isDragging}
-                          SelectionWrapper={SelectionWrapper}
-                        />
-                      </BlockWrapper>
-                    ))}
-                  </SelectedBlocksWrapper>
-                </div>
-                {snapshot.isDragging && (
-                  <>
-                    <div
-                    // style={getItemStyle(
-                    //   true,
-                    //   provided.draggableProps.style as CSSProperties
-                    // )}
-                    >
-                      <SelectedBlocksWrapper>
-                        {selected.map((p, i: number) => (
-                          <BlockWrapper key={p?.metadata?.id ?? `s2P-${i}`}>
-                            <Paragraph clip={p as Clip} />
-                          </BlockWrapper>
-                        ))}
-                      </SelectedBlocksWrapper>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </Draggable>
-
-          {after.map((p, i: number) => (
-            <BlockWrapper key={p?.metadata?.id ?? `aP-${i}`}>
-              <Paragraph clip={p as Clip} />
-            </BlockWrapper>
-          ))}
-        </>
-      ) : (
-        children?.map((p, i: number) => (
-          <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`}>
-            <Paragraph clip={p as Clip} />
-          </BlockWrapper>
-        ))
-      )}
+          ))
+        )}
+      </SectionContentWrapper>
     </section>
   );
 };
@@ -242,6 +256,7 @@ const Effects = ({ stack }: { stack: Stack }) => {
   return stack?.effects?.map((e, i) => <Effect key={e?.metadata?.id ?? `e-${i}`} effect={e} />);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Effect = ({ effect }: { effect: any }) => {
   const attrs = Object.keys(effect?.metadata?.data ?? {}).reduce((acc, key) => {
     return {

@@ -31,23 +31,19 @@ export const TimedTextPlayerComponent = createComponent({
 export const Player = ({
   transcript,
   poster,
-  width = 620,
-  height = 360,
+  // width = 620,
+  // height = 360,
   pauseMutationObserver = false,
 }: {
   transcript: string;
   poster: string | undefined;
-  width?: number | undefined;
-  height?: number | undefined;
+  // width?: number | undefined;
+  // height?: number | undefined;
   pauseMutationObserver: boolean;
 }) => {
-  const [showPlayer, setShowPlayer] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [playerKey] = useState(0); // setPlayerKey
-
-  return showPlayer ? (
+  return (
     <>
-      <MediaController id="myController">
+      <MediaController id="myController" style={{ width: '100%', height: '100%' }}>
         <MediaControlBar style={{ width: '100%' }}>
           <MediaPlayButton></MediaPlayButton>
           <MediaMuteButton></MediaMuteButton>
@@ -60,19 +56,15 @@ export const Player = ({
         </MediaControlBar>
 
         <TimedTextPlayerComponent
-          key={playerKey}
           slot="media"
-          width={width}
-          height={height}
+          pause-mutation-observer={pauseMutationObserver}
+          // width={width}
+          // height={height}
           poster={poster}
           transcript={transcript}
-          player="#video1"
-          pause-mutation-observer={pauseMutationObserver}
+          player="#video1" // FIXME
         ></TimedTextPlayerComponent>
       </MediaController>
-      {/* <button onClick={() => setPlayerKey(Date.now())}>reload transcript</button> */}
     </>
-  ) : (
-    <button onClick={() => setShowPlayer(true)}>show player</button>
   );
 };

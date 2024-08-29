@@ -1,7 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback } from 'react';
-import { Box, Tab, Tabs, TextField, Chip, Typography, Slider } from '@mui/material';
+import {
+  Box,
+  Tab,
+  Tabs,
+  TextField,
+  Chip,
+  Typography,
+  IconButton,
+  Select,
+  MenuItem,
+  ToggleButtonGroup,
+  ToggleButton,
+  SelectChangeEvent,
+  FormGroup,
+  FormControlLabel,
+  Switch,
+} from '@mui/material';
+import TitleIcon from '@mui/icons-material/Title';
+import ShortTextIcon from '@mui/icons-material/ShortText';
+import SubjectIcon from '@mui/icons-material/Subject';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
+import Timecode from 'smpte-timecode';
 
 import RemixContext, { Context } from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
@@ -18,8 +40,12 @@ import './App.css';
 
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
+  const [autoscroll, setAutoscroll] = React.useState(false);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+  const handleAutoscrollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAutoscroll(event.target.checked);
   };
 
   const sources = useMemo(() => [ts2timeline(A), ts2timeline(B), ts2timeline(C)] as Timeline[], []);
@@ -28,17 +54,18 @@ function App() {
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
   const remixRef = React.useRef<any>();
-  const remixListener = React.useRef<any>();
+  const autoscrollRef = React.useRef<any>();
   const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
-  const isDestinationEmpty = remix?.tracks?.children?.[0]?.children?.length ?? 1 === 1;
+  useEffect(() => {
+    autoscrollRef.current = autoscroll;
+  }, [autoscroll]);
 
   useEffect(() => {
     if (!remixRef.current) return;
 
-    const scrollEnabled = true;
-
-    remixListener.current = remixRef.current!.addEventListener('playhead', (e: any) => {
+    const remixRefCurrent = remixRef.current;
+    const listener = remixRefCurrent.addEventListener('playhead', (e: any) => {
       const { pseudo, transcript, section, clip, timedText } = e.detail;
       console.log('playhead', e.detail);
 
@@ -51,12 +78,12 @@ function App() {
         const time = element?.getAttribute('data-t')?.split(',')?.[0];
         const players = Array.from(document.querySelectorAll(`div[data-sid="${sid}"] timedtext-player`));
         players.forEach((player) => {
-          if (pseudo) {
+          if (pseudo && autoscrollRef.current) {
             const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
             setTabValue(sourceIndex);
           } else {
             // const node = document.querySelector(selector);
-            // if (node && scrollEnabled)
+            // if (node && autoscrollRef.current)
             //   scrollIntoView(node, {
             //     behavior: 'smooth',
             //   });
@@ -67,10 +94,17 @@ function App() {
 
         const node = sectionEl.querySelector(clip.metadata.selector);
         console.log('node', clip.metadata.selector);
-        if (node && scrollEnabled)
+        if (node && (autoscrollRef.current || !pseudo)) {
+          // console.log('scrolling', {
+          //   node,
+          //   selector: clip.metadata.selector,
+          //   autoscroll: autoscrollRef.current,
+          //   pseudo,
+          // });
           scrollIntoView(node, {
             behavior: 'smooth',
           });
+        }
 
         const cssText = `
           ${transcript} {
@@ -101,36 +135,56 @@ function App() {
       }
     });
 
-    return () => remixRef.current!.removeEventListener('playhead', remixListener.current);
+    return () => remixRefCurrent.removeEventListener('playhead', listener);
   }, [sources]);
 
-  // Toolbar tools
+  // Left Toolbar tools
+  const toolsLeft = useMemo(
+    () => [
+      // {
+      //   name: 'scroll',
+      //   type: 'scroll',
+      //   draggable: false,
+      //   toolBarComponent: <Checkbox defaultChecked />, // <Chip label="Scroll" variant="outlined" />,
+      //   timelineComponent: null,
+      //   defaults: {
+      //     value: true,
+      //   },
+      // },
+    ],
+    [],
+  );
+
+  // Right Toolbar tools
   const tools = useMemo(
     () => [
       {
         name: 'title',
         type: 'title',
-        template: '#title',
         draggable: true,
         toolBarComponent: <Chip label="Title" variant="outlined" />,
-        // timelineComponent: (
-        //   <div style={{ backgroundColor: 'white', padding: 5 }}>
-        //     <TextField label="Title" value={'Sample title'} style={{ width: '100%' }} />
-        //   </div>
-        // ),
-        timelineComponent: <TitleTool />,
+        // timelineComponent: <TitleTool />,
+        timelineComponent: TitleTool,
+        defaults: {
+          title: 'Title',
+          subtitle: 'Subtitle',
+          template: '#title-full',
+          duration: 5,
+        },
       },
-      // {
-      //   name: 'FIN',
-      //   template: '#fin',
-      //   draggable: true,
-      //   toolBarComponent: <Chip label="Fade In" variant="outlined" />,
-      //   timelineComponent: (
-      //     <div style={{ backgroundColor: 'white', padding: 5 }}>
-      //       <Slider size="small" style={{ width: '90%' }} />
-      //     </div>
-      //   ),
-      // },
+      {
+        name: 'fin',
+        type: 'fin',
+        draggable: true,
+        toolBarComponent: <Chip label="Fade" variant="outlined" />,
+        // timelineComponent: <FadeInTool />,
+        timelineComponent: FadeInTool,
+        defaults: {
+          title: 'Fade',
+          template: '#fin',
+          duration: 5,
+        },
+      },
     ],
     [],
   );
@@ -160,17 +214,29 @@ function App() {
           div[data-rfd-draggable-id="S-EMPTY"] ~ #EmptyRemix {
             display: block;
           }
+
+          section p {
+            cursor: pointer;
+          }
+
         `}
       </style>
       <Box id="container" ref={remixRef}>
         <RemixContext
           sources={sources}
           remix={remix}
-          poster="https://cdn.theirstory.com/their-story/2021/08/their-story-logo.png"
+          poster="https://placehold.co/640x360?text=16:9"
           width={620}
           height={360}
+          tools={tools}
         >
           <Box id="tabs-container">
+            <FormGroup style={{ float: 'right' }}>
+              <FormControlLabel
+                control={<Switch checked={autoscroll} onChange={handleAutoscrollChange} size="small" />}
+                label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
+              />
+            </FormGroup>
             <Tabs
               TabIndicatorProps={{ style: { display: 'none' } }}
               value={tabValue}
@@ -215,8 +281,9 @@ function App() {
                 active={active}
                 PlayerWrapper={LeftPlayerWrapper}
                 SourceWrapper={SourceWrapper}
-                BlockWrapper={BlockWrapper}
+                BlockWrapper={BlockWrapperLeft}
                 SelectionWrapper={SelectionWrapper}
+                tools={toolsLeft}
               />
             </Box>
 
@@ -234,7 +301,8 @@ function App() {
                   RightPlayerWrapper
                 }
                 DestinationWrapper={DestinationWrapper}
-                BlockWrapper={BlockWrapper}
+                SectionContentWrapper={SectionContentWrapper}
+                BlockWrapper={BlockWrapperRight}
                 tools={tools}
                 Empty={EmptyRemix}
               />
@@ -247,31 +315,112 @@ function App() {
 }
 
 // Tools
-
-const TitleTool = ({ id, value }: { id: string; value: string }): JSX.Element => {
+const FadeInTool = (props: { id?: string; name?: string; template?: string; duration?: number }): JSX.Element => {
   const { dispatch } = useContext(Context);
-  const [text, setText] = useState<string>(value);
+  const id = props.id ?? `FIN-${Date.now()}`;
+  const { template } = props;
+  const name = props.name ?? 'Fade In';
+
+  const [duration, setDuration] = useState<number>(props.duration ?? 5);
+
+  const handleDurationChange = useCallback(
+    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
+    [],
+  );
+  const handleSave = useCallback(
+    () => dispatch({ type: 'metadata', payload: { id, metadata: { id, template, duration } } }),
+    [id, template, duration, dispatch],
+  );
+  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
 
   return (
-    <div style={{ backgroundColor: 'white', padding: 5 }}>
+    <div style={{ backgroundColor: 'white', padding: 5 }} className="widget">
+      <TitleIcon />
+      {name}
+      <IconButton onClick={handleRemove}>
+        <DeleteIcon />
+      </IconButton>
+      <Select value={duration as any} label="seconds" onChange={handleDurationChange} onBlur={handleSave}>
+        <MenuItem value={5}>5</MenuItem>
+        <MenuItem value={10}>10</MenuItem>
+        <MenuItem value={15}>15</MenuItem>
+      </Select>
+    </div>
+  );
+};
+
+const TitleTool = (props: {
+  id?: string;
+  name?: string;
+  title?: string;
+  subtitle?: string;
+  template?: string;
+  duration?: number;
+}): JSX.Element => {
+  const { dispatch } = useContext(Context);
+  const id = props.id ?? `Title-${Date.now()}`;
+  const name = props.name ?? 'Title';
+  const [title, setTitle] = useState<string>(props.title ?? '');
+  const [subtitle, setSubtitle] = useState<string>(props.subtitle ?? '');
+  const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
+  const [duration, setDuration] = useState<number>(props.duration ?? 5);
+
+  const handleTitleChange = useCallback(
+    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setTitle(value),
+    [],
+  );
+  const handleSubtitleChange = useCallback(
+    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setSubtitle(value),
+    [],
+  );
+  const handleTemplateChange = useCallback(
+    (_event: React.MouseEvent<HTMLElement>, value: string) => setTemplate(value),
+    [],
+  );
+  const handleDurationChange = useCallback(
+    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
+    [],
+  );
+  const handleSave = useCallback(
+    () => dispatch({ type: 'metadata', payload: { id, metadata: { id, title, subtitle, template, duration } } }),
+    [id, title, subtitle, template, duration, dispatch],
+  );
+  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
+
+  return (
+    <div style={{ backgroundColor: 'white', padding: 5 }} className="widget">
+      <TitleIcon />
+      {name}
+      <IconButton onClick={handleRemove}>
+        <DeleteIcon />
+      </IconButton>
+      <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
+        <ToggleButton value="#title-lower3rds">
+          <ShortTextIcon />
+        </ToggleButton>
+        <ToggleButton value="#title-full">
+          <SubjectIcon />
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <Select value={duration as any} label="seconds" onChange={handleDurationChange} onBlur={handleSave}>
+        <MenuItem value={5}>5</MenuItem>
+        <MenuItem value={10}>10</MenuItem>
+        <MenuItem value={15}>15</MenuItem>
+      </Select>
       <TextField
         label="Title"
-        value={text}
+        value={title}
         style={{ width: '100%' }}
-        onChange={({ target: { value } }) => setText(value)}
-        onBlur={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}
+        onChange={handleTitleChange}
+        onBlur={handleSave}
       />
-      <Slider
-        size="small"
-        defaultValue={3}
-        aria-label="Small"
-        valueLabelDisplay="auto"
-        step={10}
-        marks
-        min={1}
-        max={10}
+      <TextField
+        label="Subtitle"
+        value={subtitle}
+        style={{ width: '100%' }}
+        onChange={handleSubtitleChange}
+        onBlur={handleSave}
       />
-      {/* <button onClick={() => dispatch({ type: 'metadata', payload: { id, metadata: { value: text } } })}>ok</button> */}
     </div>
   );
 };
@@ -285,18 +434,18 @@ const EmptyRemix = (): JSX.Element => (
   </Box>
 );
 
-const EmptyPlayer = (): JSX.Element => (
-  <Box id="EmptyPlayer" height="302px" borderRadius="8px" sx={{ backgroundColor: '#464C53', textAlign: 'center' }}>
-    <Typography>TheirStory</Typography>
-  </Box>
-);
+// const EmptyPlayer = (): JSX.Element => (
+//   <Box id="EmptyPlayer" height="302px" borderRadius="8px" sx={{ backgroundColor: '#464C53', textAlign: 'center' }}>
+//     <Typography>TheirStory</Typography>
+//   </Box>
+// );
 
 const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   <Box
     id="leftPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: 610, height: 360 }}
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
   >
     {children}
   </Box>
@@ -306,7 +455,7 @@ const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
     id="rightPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: 610, height: 360 }}
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
   >
     {children}
   </Box>
@@ -373,8 +522,59 @@ const SelectionWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   </span>
 );
 
-// Paragraph wrapper, todo: add speaker data
-const BlockWrapper = ({ children }: PropsWithChildren): JSX.Element => <div className="BlockWrapper">{children}</div>;
+// Paragraph wrapper
+interface BlockWrapperProps extends PropsWithChildren {
+  metadata?: { [key: string]: any };
+  start?: number;
+  offset?: number;
+}
+
+const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: BlockWrapperProps): JSX.Element => {
+  const {
+    data: { t },
+    speaker,
+  } = metadata ?? { data: { t: '' }, speaker: '' };
+  const timecode = useMemo(() => {
+    const [pStart = 0] = t.split(',').map(parseFloat);
+    return new Timecode((pStart - start + offset) * 30, 30).toString().split(':').slice(0, 3).join(':');
+  }, [t, start, offset]);
+  return (
+    <div className="BlockWrapper">
+      <div style={{ userSelect: 'none' }}>
+        <small>
+          <code>{timecode}</code> {speaker}
+        </small>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+const BlockWrapperRight = ({ children }: BlockWrapperProps): JSX.Element => (
+  <div className="BlockWrapper">{children}</div>
+);
+
+interface SectionContentWrapperProps extends PropsWithChildren {
+  metadata?: { [key: string]: any };
+}
+
+const SectionContentWrapper = ({ metadata, children }: SectionContentWrapperProps): JSX.Element => {
+  const { dispatch } = useContext(Context);
+  const { id, title } = metadata ?? { title: 'No title?' };
+  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
+
+  return (
+    <div className="SectionContentWrapper">
+      <div style={{ userSelect: 'none' }}>
+        <small>Title: {title}</small>
+        <IconButton onClick={handleRemove}>
+          <DeleteIcon />
+        </IconButton>
+      </div>
+      {children}
+    </div>
+  );
+};
 
 // Not used yet
 // const ToolBarWrapper = ({ children }: PropsWithChildren): JSX.Element => (

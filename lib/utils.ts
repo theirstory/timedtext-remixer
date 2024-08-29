@@ -20,7 +20,7 @@ export const ts2timeline = (ts: any): Timeline => {
               id: `TT-${nanoid()}`,
               data: {
                 t: `${w.start},${w.end}`
-              }
+              },
             },
             marked_range: {
               OTIO_SCHEMA: "TimeRange.1",
@@ -37,7 +37,8 @@ export const ts2timeline = (ts: any): Timeline => {
           id: `C-${nanoid()}`,
           speaker: p.speaker,
           data: {
-            t: `${p.start},${p.end}`
+            t: `${p.start},${p.end}`,
+            speaker: p.speaker,
           }
         } as Metadata,
         media_reference: {
@@ -71,12 +72,14 @@ export const ts2timeline = (ts: any): Timeline => {
         sid: ts.transcript._id, // TODO TBD
         id: ts.transcript._id, // TODO TBD
         story: ts.story,
+        title: ts.story.title,
         videoURL: ts.videoURL,
       } as Metadata,
       tracks: {
         OTIO_SCHEMA: "Stack.1",
         metadata: {
             id: `S-${nanoid()}`,
+            title: ts.story.title,
         },
         // media_reference: {
         //   OTIO_SCHEMA: "MediaReference.1",
@@ -105,6 +108,7 @@ export const ts2timeline = (ts: any): Timeline => {
                         "media-src": ts.videoURL,
                     },
                     transcript: ts.transcript,
+                    title: ts.story.title,
                 },
                 media_reference: {
                     OTIO_SCHEMA: "MediaReference.1",

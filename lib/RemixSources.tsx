@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ElementType, useContext, useMemo, useState, useEffect } from 'react';
 
 import { Context } from './RemixContext';
@@ -14,6 +15,7 @@ interface RemixSourcesProps {
   SelectionWrapper?: ElementType;
   id?: (t: Timeline) => string | undefined;
   active: string | undefined;
+  tools?: any[] | undefined;
 }
 
 const RemixSources = ({
@@ -24,6 +26,7 @@ const RemixSources = ({
   SelectionWrapper = PlainSpan as unknown as ElementType,
   id = (source: Timeline) => source?.metadata?.id,
   active,
+  tools = [],
 }: RemixSourcesProps): JSX.Element => {
   const {
     sources,
@@ -51,6 +54,7 @@ const RemixSources = ({
           SelectionWrapper={SelectionWrapper}
           source={source}
           timestamp={latestTimestamp}
+          tools={tools}
         />
       ))}
     </>

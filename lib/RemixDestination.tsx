@@ -11,6 +11,7 @@ interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
+  SectionContentWrapper?: ElementType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
@@ -20,17 +21,19 @@ const RemixDestination = ({
   PlayerWrapper = PlainDiv as unknown as ElementType,
   DestinationWrapper = PlainDiv as unknown as ElementType,
   BlockWrapper = PlainDiv as unknown as ElementType,
+  SectionContentWrapper = PlainDiv as unknown as ElementType,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
-  const { remix, timestamp, poster, width, height } = state;
+  const { remix, poster, width, height } = state;
 
   console.log({ remix });
 
   const stacks: Stack[] = useMemo(() => {
+    // TODO decide which to use and not allow both
     if ((remix?.tracks?.children?.[0]?.children ?? []).every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
-      return [remix.tracks] as Stack[];
+      return [remix?.tracks] as Stack[];
     } else {
       return remix?.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
     }
@@ -76,7 +79,7 @@ const RemixDestination = ({
                         // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                         style={provided.draggableProps.style as CSSProperties}
                       >
-                        {snapshot.isDragging ? tool.timelineComponent : tool.toolBarComponent}
+                        {snapshot.isDragging ? <tool.timelineComponent /> : tool.toolBarComponent}
                       </div>
                       {snapshot.isDragging && tool.toolBarComponent}
                     </>
@@ -116,6 +119,7 @@ const RemixDestination = ({
                             stack={stack}
                             offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
                             BlockWrapper={BlockWrapper}
+                            SectionContentWrapper={SectionContentWrapper}
                             sourceId={stack?.metadata?.sid}
                           />
                         )}
@@ -141,14 +145,14 @@ const Tool = ({
   stack,
   id,
 }: {
-  Component: React.ComponentType<{ value?: any }>;
+  Component: React.ComponentType<{ value?: unknown; id: string }>;
   stack: Stack;
   id: string;
 }): JSX.Element => {
-  const value = stack?.metadata?.value;
+  const props = stack?.metadata ?? {};
   // return Component;
-  // return <Component value={value} />;
-  return cloneElement(Component, { value, id });
+  return <Component id={id} {...props} />;
+  // return cloneElement(Component, { id, ...props });
 };
 
 export default RemixDestination;

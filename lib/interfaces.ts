@@ -15,6 +15,7 @@ export type Action =
 | { type: "add-widget"; payload: any }
 | { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
+| { type: "remove"; payload: any }
 | { type: "add"; payload: [DropResult, Timeline, [number, number]] };
 
 export interface Stack {
