@@ -13,6 +13,7 @@ interface RemixSourcesProps {
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
+  ToolbarWrapper?: ElementType;
   id?: (t: Timeline) => string | undefined;
   active: string | undefined;
   tools?: any[] | undefined;
@@ -24,6 +25,7 @@ const RemixSources = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
+  ToolbarWrapper = PlainDiv as unknown as ElementType,
   id = (source: Timeline) => source?.metadata?.id,
   active,
   tools = [],
@@ -52,6 +54,7 @@ const RemixSources = ({
           BlockWrapper={BlockWrapper}
           SelectedBlocksWrapper={SelectedBlocksWrapper}
           SelectionWrapper={SelectionWrapper}
+          ToolbarWrapper={ToolbarWrapper}
           source={source}
           timestamp={latestTimestamp}
           tools={tools}

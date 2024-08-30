@@ -15,6 +15,7 @@ interface RemixSourceProps {
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
+  ToolbarWrapper?: ElementType;
   source: Timeline;
   active: boolean;
   index: number;
@@ -29,6 +30,7 @@ const RemixSource = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
+  ToolbarWrapper = PlainDiv as unknown as ElementType,
   source,
   active,
   index,
@@ -129,10 +131,7 @@ const RemixSource = ({
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
 
-      {/* this will be ToolBarWrapper */}
-      <div className="ToolBarWrapper" style={{ padding: 5 }}>
-        {tools.map((tool) => tool.toolBarComponent)}
-      </div>
+      <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper>
 
       <SourceWrapper>
         <Droppable

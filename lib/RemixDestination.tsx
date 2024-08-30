@@ -12,6 +12,7 @@ interface RemixDestinationProps {
   DestinationWrapper?: ElementType;
   BlockWrapper?: ElementType;
   SectionContentWrapper?: ElementType;
+  ToolbarWrapper?: ElementType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
@@ -22,6 +23,7 @@ const RemixDestination = ({
   DestinationWrapper = PlainDiv as unknown as ElementType,
   BlockWrapper = PlainDiv as unknown as ElementType,
   SectionContentWrapper = PlainDiv as unknown as ElementType,
+  ToolbarWrapper = PlainDiv as unknown as ElementType,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
@@ -63,8 +65,7 @@ const RemixDestination = ({
         />
       </PlayerWrapper>
 
-      {/* this will be ToolBarWrapper */}
-      <div className="ToolBarWrapper" style={{ padding: 5 }}>
+      <ToolbarWrapper>
         <Droppable droppableId="Toolbar" isDropDisabled={true}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
@@ -90,7 +91,7 @@ const RemixDestination = ({
             </div>
           )}
         </Droppable>
-      </div>
+      </ToolbarWrapper>
 
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>

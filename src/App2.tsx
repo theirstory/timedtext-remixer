@@ -15,9 +15,14 @@ import {
   SelectChangeEvent,
   FormGroup,
   FormControlLabel,
+  Toolbar,
+  Tooltip,
   Switch,
+  Stack,
 } from '@mui/material';
 import TitleIcon from '@mui/icons-material/Title';
+import FlipIcon from '@mui/icons-material/Flip';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ShortTextIcon from '@mui/icons-material/ShortText';
 import SubjectIcon from '@mui/icons-material/Subject';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,6 +42,65 @@ import C from './data/C.json';
 import { EMPTY_REMIX } from '../lib/utils.js';
 
 import './App.css';
+
+const TEMPLATES = `
+  <template id="video1">
+    <video src="\${src}">
+    </video>
+  </template>
+
+  <template id="fin">
+    <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, calc(1 - \${progress}));">
+      <p style="color: green;">\${progress}</p>
+    </div>
+  </template>
+
+  <template id="fin-reverse">
+    <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, \${progress});">
+      <p style="color: red;">\${progress}</p>
+    </div>
+  </template>
+
+  <template id="title-full">
+    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
+      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <style>
+        .title-full {
+          container-type: size;
+        }
+
+        @container (min-width: 1500px) {
+          h3 {
+            color: red !important;
+          }
+        }
+      </style>
+    </div>
+
+  </template>
+
+  <template id="title-full-reverse">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
+      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+    </div>
+  </template>
+
+  <template id="title-lower3rds">
+    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: center;">\${title}</h2>
+      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+    </div>
+  </template>
+
+  <template id="title-lower3rds-reverse">
+    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: center;">\${title}</h2>
+      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+    </div>
+  </template>
+`;
 
 function App() {
   const [tabValue, setTabValue] = React.useState(0);
@@ -283,6 +347,7 @@ function App() {
                 SourceWrapper={SourceWrapper}
                 BlockWrapper={BlockWrapperLeft}
                 SelectionWrapper={SelectionWrapper}
+                ToolbarWrapper={ToolbarWrapper}
                 tools={toolsLeft}
               />
             </Box>
@@ -303,6 +368,7 @@ function App() {
                 DestinationWrapper={DestinationWrapper}
                 SectionContentWrapper={SectionContentWrapper}
                 BlockWrapper={BlockWrapperRight}
+                // ToolbarWrapper={ToolbarWrapper}
                 tools={tools}
                 Empty={EmptyRemix}
               />
@@ -310,6 +376,11 @@ function App() {
           </Box>
         </RemixContext>
       </Box>
+      <div
+        dangerouslySetInnerHTML={{
+          __html: TEMPLATES,
+        }}
+      />
     </>
   );
 }
@@ -334,17 +405,38 @@ const FadeInTool = (props: { id?: string; name?: string; template?: string; dura
   const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
 
   return (
-    <div style={{ backgroundColor: 'white', padding: 5 }} className="widget">
-      <TitleIcon />
-      {name}
-      <IconButton onClick={handleRemove}>
-        <DeleteIcon />
-      </IconButton>
-      <Select value={duration as any} label="seconds" onChange={handleDurationChange} onBlur={handleSave}>
-        <MenuItem value={5}>5</MenuItem>
-        <MenuItem value={10}>10</MenuItem>
-        <MenuItem value={15}>15</MenuItem>
-      </Select>
+    <div
+      style={{
+        backgroundColor: '#c1d8fb',
+        borderRadius: '8px',
+        border: '1px solid #D9DCDE',
+        padding: '12px',
+        marginBottom: '12px',
+      }}
+      className="widget"
+    >
+      <Toolbar disableGutters variant="dense">
+        <FlipIcon />
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {name}
+        </Typography>
+        <Tooltip title="Delete">
+          <IconButton onClick={handleRemove} size="small">
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+        <Select
+          value={duration as any}
+          label="seconds"
+          onChange={handleDurationChange}
+          onBlur={handleSave}
+          size="small"
+        >
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={15}>15</MenuItem>
+        </Select>
+      </Toolbar>
     </div>
   );
 };
@@ -388,38 +480,62 @@ const TitleTool = (props: {
   const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
 
   return (
-    <div style={{ backgroundColor: 'white', padding: 5 }} className="widget">
-      <TitleIcon />
-      {name}
-      <IconButton onClick={handleRemove}>
-        <DeleteIcon />
-      </IconButton>
-      <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
-        <ToggleButton value="#title-lower3rds">
-          <ShortTextIcon />
-        </ToggleButton>
-        <ToggleButton value="#title-full">
-          <SubjectIcon />
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <Select value={duration as any} label="seconds" onChange={handleDurationChange} onBlur={handleSave}>
-        <MenuItem value={5}>5</MenuItem>
-        <MenuItem value={10}>10</MenuItem>
-        <MenuItem value={15}>15</MenuItem>
-      </Select>
+    <div
+      style={{
+        backgroundColor: '#fbffe6',
+        borderRadius: '8px',
+        border: '1px solid #D9DCDE',
+        padding: '12px',
+        marginBottom: '12px',
+      }}
+      className="widget"
+    >
+      <Toolbar disableGutters variant="dense">
+        <TitleIcon />
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {name}
+        </Typography>
+        <Tooltip title="Delete">
+          <IconButton onClick={handleRemove} size="small">
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+        <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
+          <ToggleButton value="#title-lower3rds" size="small">
+            <ShortTextIcon />
+          </ToggleButton>
+          <ToggleButton value="#title-full" size="small">
+            <SubjectIcon />
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <Select
+          value={duration as any}
+          label="seconds"
+          onChange={handleDurationChange}
+          onBlur={handleSave}
+          size="small"
+        >
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={15}>15</MenuItem>
+        </Select>
+      </Toolbar>
       <TextField
         label="Title"
         value={title}
         style={{ width: '100%' }}
         onChange={handleTitleChange}
         onBlur={handleSave}
+        size="small"
       />
+      &nbsp;
       <TextField
         label="Subtitle"
         value={subtitle}
         style={{ width: '100%' }}
         onChange={handleSubtitleChange}
         onBlur={handleSave}
+        size="small"
       />
     </div>
   );
@@ -522,6 +638,14 @@ const SelectionWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   </span>
 );
 
+const ToolbarWrapper = ({ children }: PropsWithChildren): JSX.Element => (
+  <Toolbar disableGutters variant="dense">
+    <Stack direction="row" spacing={1}>
+      {children}
+    </Stack>
+  </Toolbar>
+);
+
 // Paragraph wrapper
 interface BlockWrapperProps extends PropsWithChildren {
   metadata?: { [key: string]: any };
@@ -566,10 +690,17 @@ const SectionContentWrapper = ({ metadata, children }: SectionContentWrapperProp
   return (
     <div className="SectionContentWrapper">
       <div style={{ userSelect: 'none' }}>
-        <small>Title: {title}</small>
-        <IconButton onClick={handleRemove}>
-          <DeleteIcon />
-        </IconButton>
+        <Toolbar disableGutters variant="dense">
+          <AutoStoriesIcon />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
+          <Tooltip title="Delete">
+            <IconButton onClick={handleRemove}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
       </div>
       {children}
     </div>
