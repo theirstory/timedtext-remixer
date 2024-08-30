@@ -192,6 +192,11 @@ const reducer = (state: State, action: Action): State => {
         draftState.remix?.tracks.children[0].children.splice(stackIndex, 1);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+
+        if (draftState.remix?.tracks.children[0].children.length === 0) {
+          //
+        }
+
         return draftState;
       }
 

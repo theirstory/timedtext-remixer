@@ -265,5 +265,5 @@ const Effect = ({ effect }: { effect: any }) => {
     } as Record<string, string>;
   }, {}) as unknown as Record<string, string>;
 
-  return <div {...attrs}>{effect?.name}</div>;
+  return <div {...attrs}></div>;
 };

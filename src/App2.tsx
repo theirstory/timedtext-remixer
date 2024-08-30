@@ -19,6 +19,7 @@ import {
   Tooltip,
   Switch,
   Stack,
+  Divider,
 } from '@mui/material';
 import TitleIcon from '@mui/icons-material/Title';
 import FlipIcon from '@mui/icons-material/Flip';
@@ -68,6 +69,7 @@ const TEMPLATES = `
       <style>
         .title-full {
           container-type: size;
+          opacity: \${fadeIn};
         }
 
         @container (min-width: 1500px) {
@@ -81,23 +83,59 @@ const TEMPLATES = `
   </template>
 
   <template id="title-full-reverse">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
+    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <style>
+        .title-full {
+          container-type: size;
+          opacity: \${fadeIn};
+        }
+
+        @container (min-width: 1500px) {
+          h3 {
+            color: red !important;
+          }
+        }
+      </style>
     </div>
   </template>
 
   <template id="title-lower3rds">
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
-      <h2 style="color: white; text-align: center;">\${title}</h2>
-      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+    <div class="title-lower3rds" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: left; padding-left: 20px; margin-left: 0">\${title}</h2>
+      <h3 style="color: white; text-align: left; padding-left: 20px; margin-left: 0">\${subtitle}</h3>
+      <style>
+        .title-lower3rds {
+          container-type: size;
+          opacity: \${fadeIn};
+        }
+
+        @container (min-width: 1500px) {
+          h3 {
+            color: red !important;
+          }
+        }
+      </style>
     </div>
   </template>
 
   <template id="title-lower3rds-reverse">
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
-      <h2 style="color: white; text-align: center;">\${title}</h2>
-      <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+    <div class="title-lower3rds" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 33%; background-color: rgba(0, 0, 0, .7);">
+      <h2 style="color: white; text-align: left; padding-left: 20px; margin-left: 0">\${title}</h2>
+      <h3 style="color: white; text-align: left; padding-left: 20px; margin-left: 0">\${subtitle}</h3>
+      <style>
+        .title-lower3rds {
+          container-type: size;
+          opacity: \${fadeIn};
+        }
+
+        @container (min-width: 1500px) {
+          h3 {
+            color: red !important;
+          }
+        }
+      </style>
     </div>
   </template>
 `;
@@ -390,7 +428,7 @@ const FadeInTool = (props: { id?: string; name?: string; template?: string; dura
   const { dispatch } = useContext(Context);
   const id = props.id ?? `FIN-${Date.now()}`;
   const { template } = props;
-  const name = props.name ?? 'Fade In';
+  const name = props.name ?? 'Fade';
 
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
 
@@ -417,14 +455,10 @@ const FadeInTool = (props: { id?: string; name?: string; template?: string; dura
     >
       <Toolbar disableGutters variant="dense">
         <FlipIcon />
+        &nbsp;&nbsp;
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
-        <Tooltip title="Delete">
-          <IconButton onClick={handleRemove} size="small">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
         <Select
           value={duration as any}
           label="seconds"
@@ -436,6 +470,14 @@ const FadeInTool = (props: { id?: string; name?: string; template?: string; dura
           <MenuItem value={10}>10</MenuItem>
           <MenuItem value={15}>15</MenuItem>
         </Select>
+        &nbsp;&nbsp;&nbsp;
+        <Divider orientation="vertical" flexItem />
+        &nbsp;&nbsp;
+        <Tooltip title="Delete">
+          <IconButton onClick={handleRemove} size="small">
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </div>
   );
@@ -492,14 +534,10 @@ const TitleTool = (props: {
     >
       <Toolbar disableGutters variant="dense">
         <TitleIcon />
+        &nbsp;&nbsp;
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
-        <Tooltip title="Delete">
-          <IconButton onClick={handleRemove} size="small">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
         <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
           <ToggleButton value="#title-lower3rds" size="small">
             <ShortTextIcon />
@@ -519,6 +557,14 @@ const TitleTool = (props: {
           <MenuItem value={10}>10</MenuItem>
           <MenuItem value={15}>15</MenuItem>
         </Select>
+        &nbsp;&nbsp;&nbsp;
+        <Divider orientation="vertical" flexItem />
+        &nbsp;&nbsp;
+        <Tooltip title="Delete">
+          <IconButton onClick={handleRemove} size="small">
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
       <TextField
         label="Title"
@@ -692,9 +738,12 @@ const SectionContentWrapper = ({ metadata, children }: SectionContentWrapperProp
       <div style={{ userSelect: 'none' }}>
         <Toolbar disableGutters variant="dense">
           <AutoStoriesIcon />
+          &nbsp;&nbsp;
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
+          <Divider orientation="vertical" flexItem />
+          &nbsp;&nbsp;
           <Tooltip title="Delete">
             <IconButton onClick={handleRemove}>
               <DeleteIcon />
