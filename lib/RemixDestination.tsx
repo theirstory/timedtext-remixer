@@ -1,4 +1,4 @@
-import { useContext, useMemo, ElementType, CSSProperties, cloneElement } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { PlainDiv, Section } from './components';
@@ -30,7 +30,7 @@ const RemixDestination = ({
   const { state } = useContext(Context);
   const { remix, poster, width, height } = state;
 
-  console.log({ remix });
+  // console.log({ remix });
 
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
@@ -151,9 +151,7 @@ const Tool = ({
   id: string;
 }): JSX.Element => {
   const props = stack?.metadata ?? {};
-  // return Component;
   return <Component id={id} {...props} />;
-  // return cloneElement(Component, { id, ...props });
 };
 
 export default RemixDestination;

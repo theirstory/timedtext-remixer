@@ -3,7 +3,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
-import type { Stack, Clip, TimedText, Gap } from './interfaces';
+import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
 
@@ -26,12 +26,16 @@ export const Paragraph = ({
   interval,
   dragHandleProps,
   isDragging,
+  droppableId,
+  source,
   SelectionWrapper = PlainSpan as unknown as ElementType,
 }: {
   clip: Clip;
   interval?: [number, number] | null | undefined;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   isDragging?: boolean;
+  droppableId?: string;
+  source?: Timeline;
   SelectionWrapper?: ElementType;
 }) => {
   // console.log({ clip });
@@ -80,7 +84,11 @@ export const Paragraph = ({
           {dragHandleProps && isDragging
             ? null
             : before.map((s, i) => <Span key={s?.metadata?.id ?? `bs-${i}`} data={s} />)}
-          <SelectionWrapper>
+          <SelectionWrapper
+            first={selected[0].marked_range.start_time === interval?.[0] && !isDragging}
+            droppableId={droppableId}
+            source={source}
+          >
             <span className="selection" {...dragHandleProps}>
               {selected.map((s, i) => (
                 <Span key={s?.metadata?.id ?? `ss-${i}`} data={s} />
@@ -103,6 +111,8 @@ export const Section = ({
   offset = 0,
   interval,
   sourceId,
+  droppableId,
+  source,
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
@@ -112,6 +122,8 @@ export const Section = ({
   offset?: number;
   interval?: [number, number] | null | undefined;
   sourceId?: string;
+  droppableId?: string;
+  source?: Timeline;
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
@@ -202,6 +214,8 @@ export const Section = ({
                             dragHandleProps={provided.dragHandleProps}
                             isDragging={snapshot.isDragging}
                             SelectionWrapper={SelectionWrapper}
+                            droppableId={droppableId}
+                            source={source}
                           />
                         </BlockWrapper>
                       ))}

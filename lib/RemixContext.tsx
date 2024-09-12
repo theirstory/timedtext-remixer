@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PropsWithChildren, createContext, useReducer } from 'react';
+import { PropsWithChildren, createContext, useReducer, useRef, LegacyRef, useEffect } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { produce, current } from 'immer';
+import { produce } from 'immer';
 // import { useImmerReducer } from 'use-immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
 
 import type { State, Action, Timeline, Stack, Clip } from './interfaces';
 import { timelineStacks } from './utils';
+// import { TimedTextPlayerComponent } from './Player';
+// import { ReactWebComponent } from '@lit/react';
+import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js';
 
 export const Context = createContext({
   sources: [] as Timeline[],
@@ -16,6 +19,8 @@ export const Context = createContext({
     remix: null,
   } as State,
   dispatch: (action: any) => action,
+  // remixPlayerRef: null as LegacyRef<ReactWebComponent<TimedTextPlayer, { onactivate: string; onchange: string }>>,
+  remixPlayerRef: null as LegacyRef<TimedTextPlayer>,
 });
 
 interface RemixContextProps extends PropsWithChildren {
@@ -40,14 +45,28 @@ const RemixContext = ({
     // sources,
     remix,
     poster,
-    width,
+    width, // FIXME
     height,
   };
 
+  const remixPlayerRef = useRef<TimedTextPlayer>(null);
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  useEffect(() => {
+    if (!remix) return;
+    dispatch({ type: 'update', payload: remix });
+  }, [remix]);
+
+  useEffect(() => {
+    const event = new CustomEvent('remixChange', {
+      detail: state.remix,
+      bubbles: true,
+    });
+    remixPlayerRef.current!.dispatchEvent(event);
+  }, [state.remix, remixPlayerRef]);
+
   const onDragEnd = (result: DropResult) => {
-    console.log({ result });
+    // console.log({ result });
     // dropped outside the list
     // FIXME global
     // if (
@@ -80,17 +99,21 @@ const RemixContext = ({
   };
 
   return (
-    <Context.Provider value={{ sources, state, dispatch }}>
+    <Context.Provider value={{ sources, state, dispatch, remixPlayerRef }}>
       <DragDropContext onDragEnd={onDragEnd}>{children}</DragDropContext>
     </Context.Provider>
   );
 };
 
 const reducer = (state: State, action: Action): State => {
-  console.log({ action, state });
+  // console.log({ action, state });
   const nextState = produce(state, (draftState) => {
     draftState.timestamp = Date.now();
     switch (action.type) {
+      case 'update': {
+        draftState.remix = action.payload;
+        return draftState;
+      }
       case 'metadata': {
         const { id, metadata } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
@@ -173,6 +196,22 @@ const reducer = (state: State, action: Action): State => {
         return draftState;
       }
 
+      case 'add-at': {
+        const [sectionId, source, [start, end]] = action.payload;
+        const stack = subClip(source, start, end);
+
+        let index = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === sectionId) ?? -1;
+        if (index === -1) {
+          index = 0;
+        } else {
+          index += 1;
+        }
+        if (stack) draftState.remix?.tracks.children[0].children.splice(index ?? 0, 0, stack);
+
+        applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        return draftState;
+      }
+
       case 'move': {
         const { source, destination } = action.payload;
 
@@ -205,7 +244,7 @@ const reducer = (state: State, action: Action): State => {
     }
   }) as State;
 
-  console.log({ nextState: nextState });
+  // console.log({ nextState: nextState });
   return nextState;
 };
 
@@ -254,7 +293,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
     clips[0]!.source_range!.start_time = firstTTstart;
     clips[0]!.metadata!.data!.t = `${firstTTstart},${firstTTstart + firstClipDuration}`;
 
-    console.log({ firstClipStart, firstClipDuration, firstTTstart, sourceRange: current(clips[0]?.source_range) });
+    // console.log({ firstClipStart, firstClipDuration, firstTTstart, sourceRange: current(clips[0]?.source_range) });
 
     clips.slice(1, -1).forEach((c) => {
       (c as Clip).timed_texts = (c as Clip)?.timed_texts?.map((tt) => {
@@ -284,12 +323,12 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
     clips[clips.length - 1]!.source_range!.duration = lastClipDuration - (lastClipStart - lastTTend);
     clips[clips.length - 1]!.metadata!.data!.t = `${lastClipStart},${lastTTend}`;
 
-    console.log({
-      lastClipStart,
-      lastClipDuration,
-      lastTTend,
-      sourceRange: current(clips[clips.length - 1]?.source_range),
-    });
+    // console.log({
+    //   lastClipStart,
+    //   lastClipDuration,
+    //   lastTTend,
+    //   sourceRange: current(clips[clips.length - 1]?.source_range),
+    // });
 
     if (draft.source_range) {
       draft.source_range.start_time = start - offset;
@@ -424,7 +463,7 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
     });
   });
 
-  console.log({ applyEffects: current(stacks) });
+  // console.log({ applyEffects: current(stacks) });
 
   return stacks;
 };

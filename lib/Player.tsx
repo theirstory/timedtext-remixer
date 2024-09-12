@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 
 import {
   MediaController,
@@ -13,6 +13,7 @@ import {
   MediaFullscreenButton,
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
+import { Context } from './RemixContext';
 import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
 // import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
@@ -41,7 +42,9 @@ export const Player = ({
   // height?: number | undefined;
   pauseMutationObserver: boolean;
 }) => {
-  return (
+  const { remixPlayerRef } = useContext(Context);
+
+  return remixPlayerRef ? (
     <>
       <MediaController id="myController" style={{ width: '100%', height: '100%' }}>
         <MediaControlBar style={{ width: '100%' }}>
@@ -56,6 +59,7 @@ export const Player = ({
         </MediaControlBar>
 
         <TimedTextPlayerComponent
+          ref={remixPlayerRef}
           slot="media"
           pause-mutation-observer={pauseMutationObserver}
           // width={width}
@@ -66,5 +70,5 @@ export const Player = ({
         ></TimedTextPlayerComponent>
       </MediaController>
     </>
-  );
+  ) : null;
 };

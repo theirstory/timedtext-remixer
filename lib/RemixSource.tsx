@@ -125,6 +125,11 @@ const RemixSource = ({
     }
   }, []);
 
+  const droppableId = useMemo(
+    () => `Source-${index}-${interval ? interval?.[0] : 0}-${interval ? interval?.[1] : 0}`,
+    [index, interval],
+  );
+
   return (
     <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
       <PlayerWrapper>
@@ -132,10 +137,9 @@ const RemixSource = ({
       </PlayerWrapper>
 
       <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper>
-
       <SourceWrapper>
         <Droppable
-          droppableId={`Source-${index}-${interval ? interval[0] : 0}-${interval ? interval[1] : 0}`}
+          droppableId={droppableId}
           // type="BLOCK"
           isDropDisabled={true}
         >
@@ -154,6 +158,8 @@ const RemixSource = ({
                     offset={stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)}
                     interval={interval}
                     sourceId={source?.metadata?.sid}
+                    droppableId={droppableId}
+                    source={source}
                     {...{
                       BlockWrapper,
                       SelectedBlocksWrapper,

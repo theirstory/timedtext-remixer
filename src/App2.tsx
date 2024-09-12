@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useReducer, useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback, useReducer } from 'react';
 import {
   Box,
+  Button,
   Tab,
   Tabs,
   TextField,
@@ -20,7 +21,14 @@ import {
   Switch,
   Stack,
   Divider,
+  Drawer,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import LaunchIcon from '@mui/icons-material/Launch';
+import InputIcon from '@mui/icons-material/Input';
+import SaveIcon from '@mui/icons-material/Save';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import TitleIcon from '@mui/icons-material/Title';
 import FlipIcon from '@mui/icons-material/Flip';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
@@ -40,6 +48,9 @@ import type { Timeline } from '../lib/interfaces';
 import A from './data/A.json';
 import B from './data/B.json';
 import C from './data/C.json';
+import T1 from './data/and_then_there_were_none.json';
+import T2 from './data/angel_on_my_shoulder.json';
+import T3 from './data/the_great_rupert.json';
 import { EMPTY_REMIX } from '../lib/utils.js';
 
 import './App.css';
@@ -52,13 +63,11 @@ const TEMPLATES = `
 
   <template id="fin">
     <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, calc(1 - \${progress}));">
-      <p style="color: green;">\${progress}</p>
     </div>
   </template>
 
   <template id="fin-reverse">
     <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color:  rgba(0, 0, 0, \${progress});">
-      <p style="color: red;">\${progress}</p>
     </div>
   </template>
 
@@ -69,7 +78,7 @@ const TEMPLATES = `
       <style>
         .title-full {
           container-type: size;
-          opacity: \${fadeIn};
+          _opacity: \${fadeIn};
         }
 
         @container (min-width: 1500px) {
@@ -79,7 +88,6 @@ const TEMPLATES = `
         }
       </style>
     </div>
-
   </template>
 
   <template id="title-full-reverse">
@@ -89,7 +97,7 @@ const TEMPLATES = `
       <style>
         .title-full {
           container-type: size;
-          opacity: \${fadeIn};
+          _opacity: \${fadeIn};
         }
 
         @container (min-width: 1500px) {
@@ -108,7 +116,7 @@ const TEMPLATES = `
       <style>
         .title-lower3rds {
           container-type: size;
-          opacity: \${fadeIn};
+          _opacity: \${fadeIn};
         }
 
         @container (min-width: 1500px) {
@@ -127,7 +135,7 @@ const TEMPLATES = `
       <style>
         .title-lower3rds {
           container-type: size;
-          opacity: \${fadeIn};
+          _opacity: \${fadeIn};
         }
 
         @container (min-width: 1500px) {
@@ -141,6 +149,7 @@ const TEMPLATES = `
 `;
 
 function App() {
+  const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
   const [tabValue, setTabValue] = React.useState(0);
   const [autoscroll, setAutoscroll] = React.useState(false);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -150,14 +159,38 @@ function App() {
     setAutoscroll(event.target.checked);
   };
 
-  const sources = useMemo(() => [ts2timeline(A), ts2timeline(B), ts2timeline(C)] as Timeline[], []);
-  const remix = EMPTY_REMIX;
+  const allSources = useMemo(
+    () =>
+      [ts2timeline(A), ts2timeline(B), ts2timeline(C), ts2timeline(T1), ts2timeline(T2), ts2timeline(T3)] as Timeline[],
+    [],
+  );
+
+  const [sources, dispatchSources] = useReducer(
+    (state: any, action: any) => {
+      switch (action.type) {
+        case 'add':
+          return [...state, action.payload];
+        case 'remove':
+          return state.filter((s: any) => s.metadata.id !== action.payload.id);
+        default:
+          return state;
+      }
+    },
+    [ts2timeline(T1), ts2timeline(T2)],
+  );
+
+  // const initRemix = EMPTY_REMIX;
 
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const toggleDrawer = (drawerOpen: boolean) => () => {
+    setDrawerOpen(drawerOpen);
+  };
+
   const remixRef = React.useRef<any>();
   const autoscrollRef = React.useRef<any>();
-  const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
+  // const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
   useEffect(() => {
     autoscrollRef.current = autoscroll;
@@ -169,7 +202,8 @@ function App() {
     const remixRefCurrent = remixRef.current;
     const listener = remixRefCurrent.addEventListener('playhead', (e: any) => {
       const { pseudo, transcript, section, clip, timedText } = e.detail;
-      console.log('playhead', e.detail);
+      // console.log('playhead', e.detail);
+      const css2: { [key: string]: string } = {};
 
       const { sid } = section?.metadata?.data ?? { sid: 'default' };
       const sectionEl = document.querySelector(section.metadata.selector);
@@ -194,8 +228,8 @@ function App() {
           (player as any).currentPseudoTime = parseFloat(time);
         });
 
-        const node = sectionEl.querySelector(clip.metadata.selector);
-        console.log('node', clip.metadata.selector);
+        const node = sectionEl?.querySelector(clip.metadata.selector);
+        // console.log('node', clip.metadata.selector);
         if (node && (autoscrollRef.current || !pseudo)) {
           // console.log('scrolling', {
           //   node,
@@ -233,12 +267,26 @@ function App() {
           }
         `;
 
-        dispatchCss({ [transcript]: cssText });
+        // dispatchCss({ [transcript]: cssText });
+        css2[transcript] = cssText;
+        const style = document.getElementById('injected');
+        style!.innerHTML = Object.values(css2).join('\n\n');
       }
     });
 
     return () => remixRefCurrent.removeEventListener('playhead', listener);
   }, [sources]);
+
+  useEffect(() => {
+    if (!remixRef.current) return;
+
+    const remixRefCurrent = remixRef.current;
+    const listener = remixRefCurrent.addEventListener('remixChange', (e: any) => {
+      console.log('remixChange', e.detail);
+      setRemix(e.detail);
+    });
+    return () => remixRefCurrent.removeEventListener('remixChange', listener);
+  }, [remixRef]);
 
   // Left Toolbar tools
   const toolsLeft = useMemo(
@@ -291,11 +339,38 @@ function App() {
     [],
   );
 
+  const onTabClose = (e: Event, source: Timeline) => {
+    e.stopPropagation();
+    dispatchSources({ type: 'remove', payload: { id: source?.metadata?.id } });
+  };
+
+  const openTab = (source: Timeline) => {
+    setDrawerOpen(false);
+    const index = sources.findIndex((s: Timeline) => s?.metadata?.id === source?.metadata?.id);
+    if (index >= 0) {
+      setTabValue(index);
+    } else {
+      dispatchSources({ type: 'add', payload: source });
+      setTabValue(sources.length);
+    }
+  };
+
+  const saveRemix = useCallback(() => {
+    console.log('remix', remix);
+    localStorage.setItem('remix', JSON.stringify(remix));
+  }, [remix]);
+
+  const loadRemix = useCallback(() => {
+    const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
+    console.log('remix', remix2);
+    if (remix2) setRemix(remix2);
+  }, []);
+
   return (
     <>
       <style>
         {`
-          ${Object.values(css).join('\n\n')}
+          /* $ { Object.values(css).join('\n\n') } */
 
 
           /* temp style of the empty remix entry */
@@ -323,6 +398,13 @@ function App() {
 
         `}
       </style>
+      <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
+        {allSources.map((source, i) => (
+          <p key={i} onClick={(e) => openTab(source)}>
+            {source?.metadata?.title}
+          </p>
+        ))}
+      </Drawer>
       <Box id="container" ref={remixRef}>
         <RemixContext
           sources={sources}
@@ -333,18 +415,60 @@ function App() {
           tools={tools}
         >
           <Box id="tabs-container">
-            <FormGroup style={{ float: 'right' }}>
-              <FormControlLabel
-                control={<Switch checked={autoscroll} onChange={handleAutoscrollChange} size="small" />}
-                label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
-              />
-            </FormGroup>
+            <Toolbar disableGutters variant="dense">
+              <Button
+                variant="outlined"
+                startIcon={<PostAddIcon />}
+                onClick={toggleDrawer(true)}
+                style={{ textTransform: 'none', textWrap: 'nowrap' }}
+              >
+                Open transcript
+              </Button>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                &nbsp;
+              </Typography>
+              <FormGroup style={{ float: 'right' }}>
+                <FormControlLabel
+                  control={<Switch checked={autoscroll} onChange={handleAutoscrollChange} size="small" />}
+                  label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
+                />
+              </FormGroup>
+              <Button
+                variant="outlined"
+                startIcon={<InputIcon />}
+                onClick={loadRemix}
+                style={{ textTransform: 'none', textWrap: 'nowrap' }}
+              >
+                Load remix
+              </Button>
+              &nbsp;
+              <Button
+                variant="outlined"
+                startIcon={<SaveIcon />}
+                onClick={saveRemix}
+                style={{ textTransform: 'none', textWrap: 'nowrap' }}
+              >
+                Save remix
+              </Button>
+              &nbsp;
+              <Button
+                disabled
+                variant="outlined"
+                startIcon={<LaunchIcon />}
+                // onClick={loadRemix}
+                style={{ textTransform: 'none', textWrap: 'nowrap' }}
+              >
+                Export remix
+              </Button>
+            </Toolbar>
             <Tabs
               TabIndicatorProps={{ style: { display: 'none' } }}
               value={tabValue}
               onChange={handleTabChange}
               aria-label="tabbed content"
               sx={{ minHeight: '0px' }}
+              variant="scrollable"
+              scrollButtons="auto"
             >
               {sources.map((source, i) => (
                 <Tab
@@ -367,7 +491,14 @@ function App() {
                     borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
                   }}
                   key={i}
-                  label={source?.metadata?.story?.title}
+                  label={
+                    <Toolbar disableGutters variant="dense">
+                      {source?.metadata?.story?.title}
+                      <IconButton onClick={(e) => onTabClose(e, source)}>
+                        <CloseIcon />
+                      </IconButton>
+                    </Toolbar>
+                  }
                 />
               ))}
             </Tabs>
@@ -678,11 +809,48 @@ const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   </Box>
 );
 
-const SelectionWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <span className="SelectionWrapper" style={{ backgroundColor: '#d3ebe8' }}>
-    {children}
-  </span>
-);
+interface SelectionWrapperProps extends PropsWithChildren {
+  metadata?: { [key: string]: any };
+  first?: boolean;
+  droppableId?: string;
+  source: Timeline;
+}
+
+const SelectionWrapper = ({ first, droppableId, source, children }: SelectionWrapperProps): JSX.Element => {
+  const { dispatch, remixPlayerRef } = useContext(Context);
+
+  const handleAdd = useCallback(() => {
+    if (!droppableId || !(remixPlayerRef as any).current) return;
+
+    const [, , start, end] = droppableId.split('-');
+
+    const sectionId = (remixPlayerRef as any).current?.getCurrentSection()?.metadata?.id;
+    if (sectionId) {
+      dispatch({ type: 'add-at', payload: [sectionId, source, [parseFloat(start), parseFloat(end)]] });
+    } else {
+      const result = { destination: { index: 0 } };
+      dispatch({ type: 'add', payload: [result, source, [parseFloat(start), parseFloat(end)]] });
+    }
+  }, [dispatch, droppableId, source, remixPlayerRef]);
+
+  return (
+    <span className="SelectionWrapper" style={{ backgroundColor: '#d3ebe8', position: 'relative' }}>
+      {first ? (
+        <div style={{ backgroundColor: 'white', position: 'absolute', left: 0, top: -35 }}>
+          <Button
+            variant="outlined"
+            startIcon={<PlaylistAddIcon />}
+            onClick={handleAdd}
+            style={{ textTransform: 'none', textWrap: 'nowrap' }}
+          >
+            Add to remix
+          </Button>
+        </div>
+      ) : null}
+      {children}
+    </span>
+  );
+};
 
 const ToolbarWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   <Toolbar disableGutters variant="dense">
