@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, PropsWithChildren, useContext, useState, useCallback, useReducer } from 'react';
+import { renderToString } from 'react-dom/server';
 import {
   Box,
   Button,
@@ -43,6 +44,7 @@ import RemixContext, { Context } from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
+import { StaticRemix } from '../lib/StaticRemix.js';
 import type { Timeline } from '../lib/interfaces';
 
 import A from './data/A.json';
@@ -184,8 +186,12 @@ function App() {
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
   const toggleDrawer = (drawerOpen: boolean) => () => {
     setDrawerOpen(drawerOpen);
+  };
+  const toggleExportDrawer = (exportDrawerOpen: boolean) => () => {
+    setExportDrawerOpen(exportDrawerOpen);
   };
 
   const remixRef = React.useRef<any>();
@@ -366,6 +372,11 @@ function App() {
     if (remix2) setRemix(remix2);
   }, []);
 
+  // const exportRemix = useCallback(() => {
+  //   // const html = renderToString(<StaticRemix remix={remix} />);
+  //   // console.log(html);
+  // }, []);
+
   return (
     <>
       <style>
@@ -404,6 +415,9 @@ function App() {
             {source?.metadata?.title}
           </p>
         ))}
+      </Drawer>
+      <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
+        {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
       <Box id="container" ref={remixRef}>
         <RemixContext
@@ -452,10 +466,9 @@ function App() {
               </Button>
               &nbsp;
               <Button
-                disabled
                 variant="outlined"
                 startIcon={<LaunchIcon />}
-                // onClick={loadRemix}
+                onClick={toggleExportDrawer(true)}
                 style={{ textTransform: 'none', textWrap: 'nowrap' }}
               >
                 Export remix
@@ -930,5 +943,20 @@ const SectionContentWrapper = ({ metadata, children }: SectionContentWrapperProp
 //     {children}
 //   </div>
 // );
+
+const ExportRemix = ({ remix }: { remix: Timeline }) => {
+  const html = useMemo(
+    () =>
+      renderToString(<StaticRemix remix={remix} templates={TEMPLATES} />)
+        .replace('<timedtext-player ', '<timedtext-player slot="media" ')
+        .replaceAll(' suppresshydrationwarning=""', ''),
+    [remix],
+  );
+  return (
+    <div style={{ padding: 10 }}>
+      <TextField label="HTML" multiline value={html} />
+    </div>
+  );
+};
 
 export default App;

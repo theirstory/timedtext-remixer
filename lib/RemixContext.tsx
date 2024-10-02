@@ -415,11 +415,13 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
         name: metadata.title,
         metadata: {
           id: metadata.id,
+          reverse: true,
           data: {
             t: `${stackEnd - (duration ?? 1)},${stackEnd}`,
             // effect: metadata.template,
             ...metadata,
             effect: metadata.template + '-reverse',
+            reverse: true,
           },
           ...metadata,
         },
