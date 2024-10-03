@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, memo, useMemo } from 'react';
 
 import {
   MediaController,
@@ -27,47 +27,60 @@ export const TimedTextPlayerComponent = createComponent({
   },
 });
 
+const preventDefault = (e: React.MouseEvent) => e.preventDefault();
+const WH100 = { width: '100%', height: '100%' };
+const W100 = { width: '100%' };
+
+// Memoize Media* to prevent unnecessary re-renders
+const MemoizedMediaMuteButton = memo(MediaMuteButton);
+const MemoizedMediaTimeDisplay = memo(MediaTimeDisplay);
+const MemoizedMediaPlayButton = memo(MediaPlayButton);
+const MemoizedMediaControlBar = memo(MediaControlBar);
+
+// Memoize TimedTextPlayerComponent to prevent unnecessary re-renders
+const MemoizedTimedTextPlayerComponent = memo(TimedTextPlayerComponent);
+
 // TODO player props
 // incl skip MediaController
 export const Player = ({
   transcript,
   poster,
-  // width = 620,
-  // height = 360,
   pauseMutationObserver = false,
 }: {
   transcript: string;
   poster: string | undefined;
-  // width?: number | undefined;
-  // height?: number | undefined;
   pauseMutationObserver: boolean;
 }) => {
   const { remixPlayerRef } = useContext(Context);
 
+  // Stabilize prop references
+  const memoizedTranscript = useMemo(() => transcript, [transcript]);
+  const memoizedPoster = useMemo(() => poster, [poster]);
+  const memoizedPauseMutationObserver = useMemo(() => pauseMutationObserver, [pauseMutationObserver]);
+
   return remixPlayerRef ? (
     <>
-      <MediaController id="myController" style={{ width: '100%', height: '100%' }}>
-        <MediaControlBar style={{ width: '100%' }}>
-          <MediaPlayButton></MediaPlayButton>
-          <MediaMuteButton></MediaMuteButton>
+      <MediaController id="myController" style={WH100}>
+        <MemoizedMediaControlBar style={W100}>
+          <MemoizedMediaPlayButton></MemoizedMediaPlayButton>
+          <MemoizedMediaMuteButton></MemoizedMediaMuteButton>
           <MediaVolumeRange></MediaVolumeRange>
-          <MediaTimeDisplay></MediaTimeDisplay>
+          <MemoizedMediaTimeDisplay></MemoizedMediaTimeDisplay>
           <MediaTimeRange></MediaTimeRange>
           <MediaDurationDisplay></MediaDurationDisplay>
           <MediaCaptionsButton></MediaCaptionsButton>
           <MediaFullscreenButton></MediaFullscreenButton>
-        </MediaControlBar>
+        </MemoizedMediaControlBar>
 
-        <TimedTextPlayerComponent
+        <MemoizedTimedTextPlayerComponent
           ref={remixPlayerRef}
+          onContextMenu={preventDefault}
           slot="media"
-          pause-mutation-observer={pauseMutationObserver}
-          // width={width}
-          // height={height}
-          poster={poster}
-          transcript={transcript}
+          pause-mutation-observer={memoizedPauseMutationObserver}
+          poster={memoizedPoster}
+          transcript={memoizedTranscript}
           player="#video1" // FIXME
-        ></TimedTextPlayerComponent>
+        ></MemoizedTimedTextPlayerComponent>
       </MediaController>
     </>
   ) : null;

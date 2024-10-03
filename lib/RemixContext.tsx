@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PropsWithChildren, createContext, useReducer, useRef, LegacyRef, useEffect } from 'react';
+import { PropsWithChildren, createContext, useReducer, useRef, LegacyRef, useEffect, useCallback } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { produce } from 'immer';
 // import { useImmerReducer } from 'use-immer';
@@ -65,38 +65,41 @@ const RemixContext = ({
     remixPlayerRef.current!.dispatchEvent(event);
   }, [state.remix, remixPlayerRef]);
 
-  const onDragEnd = (result: DropResult) => {
-    // console.log({ result });
-    // dropped outside the list
-    // FIXME global
-    // if (
-    //   (!result.destination || result.draggableId !== globalThis?.foo) &&
-    //   result.source.droppableId !== 'Remix-EMPTY'
-    // ) {
-    //   return;
-    // }
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      // console.log({ result });
+      // dropped outside the list
+      // FIXME global
+      // if (
+      //   (!result.destination || result.draggableId !== globalThis?.foo) &&
+      //   result.source.droppableId !== 'Remix-EMPTY'
+      // ) {
+      //   return;
+      // }
 
-    if (
-      result.source.droppableId === result.destination?.droppableId &&
-      result.source.droppableId.startsWith('Remix-')
-    ) {
-      dispatch({ type: 'move', payload: result });
-      return;
-    }
+      if (
+        result.source.droppableId === result.destination?.droppableId &&
+        result.source.droppableId.startsWith('Remix-')
+      ) {
+        dispatch({ type: 'move', payload: result });
+        return;
+      }
 
-    if (result.source.droppableId.startsWith('Source-')) {
-      const [, index, start, end] = result.source.droppableId.split('-');
-      const source = sources[parseInt(index)];
+      if (result.source.droppableId.startsWith('Source-')) {
+        const [, index, start, end] = result.source.droppableId.split('-');
+        const source = sources[parseInt(index)];
 
-      dispatch({ type: 'add', payload: [result, source, [parseFloat(start), parseFloat(end)]] });
-      return;
-    }
+        dispatch({ type: 'add', payload: [result, source, [parseFloat(start), parseFloat(end)]] });
+        return;
+      }
 
-    if (result.source.droppableId.startsWith('Toolbar')) {
-      dispatch({ type: 'add-widget', payload: { result, metadata: { component: result.draggableId }, tools } });
-      return;
-    }
-  };
+      if (result.source.droppableId.startsWith('Toolbar')) {
+        dispatch({ type: 'add-widget', payload: { result, metadata: { component: result.draggableId }, tools } });
+        return;
+      }
+    },
+    [dispatch, sources, tools],
+  );
 
   return (
     <Context.Provider value={{ sources, state, dispatch, remixPlayerRef }}>

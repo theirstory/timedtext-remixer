@@ -40,14 +40,16 @@ const RemixSource = ({
   const { state } = useContext(Context);
   const { poster, width, height } = state;
 
-  const stacks: Stack[] = useMemo(() => {
-    // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
-    //   return [source.tracks] as Stack[];
-    // } else {
-    //   return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
-    // }
-    return timelineStacks(source);
-  }, [source]);
+  const stacks: Stack[] = useMemo(() => timelineStacks(source), [source]);
+
+  const offsets = useMemo(() => {
+    let cumulativeOffset = 0;
+    return stacks.map((stack) => {
+      const offset = cumulativeOffset;
+      cumulativeOffset += stack.source_range?.duration ?? 0;
+      return offset;
+    });
+  }, [stacks]);
 
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
     background: isDraggingOver ? 'lightyellow' : 'transparent',
@@ -130,6 +132,12 @@ const RemixSource = ({
     [index, interval],
   );
 
+  // const offsets = useMemo(
+  //   () =>
+  //     stacks.map((_stack: Stack, i) => stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)),
+  //   [stacks],
+  // );
+
   return (
     <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
       <PlayerWrapper>
@@ -151,11 +159,11 @@ const RemixSource = ({
               onClick={handleSourceClick}
             >
               <article id={'A' + source?.metadata?.id} data-sid={source?.metadata?.sid}>
-                {stacks.map((stack: Stack, i, stacks) => (
+                {stacks.map((stack: Stack, i) => (
                   <Section
                     key={stack?.metadata?.id ?? `S${i}`}
                     stack={stack}
-                    offset={stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)}
+                    offset={offsets[i]}
                     interval={interval}
                     sourceId={source?.metadata?.sid}
                     droppableId={droppableId}

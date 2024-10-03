@@ -59,7 +59,7 @@ import './App.css';
 
 const TEMPLATES = `
   <template id="video1">
-    <video src="\${src}">
+    <video src="\${src}" disablePictureInPicture controlsList="nodownload">
     </video>
   </template>
 
@@ -411,7 +411,7 @@ function App() {
       </style>
       <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
         {allSources.map((source, i) => (
-          <p key={i} onClick={(e) => openTab(source)}>
+          <p key={i} onClick={() => openTab(source)}>
             {source?.metadata?.title}
           </p>
         ))}
@@ -733,8 +733,15 @@ const TitleTool = (props: {
 
 // Wrappers
 
+const EMPTY_REMIX_SX = {
+  height: '302px',
+  borderRadius: '8px',
+  backgroundColor: '#f6e52c',
+  textAlign: 'center',
+};
+
 const EmptyRemix = (): JSX.Element => (
-  <Box id="EmptyRemix" height="302px" borderRadius="8px" sx={{ backgroundColor: '#f6e52c', textAlign: 'center' }}>
+  <Box id="EmptyRemix" sx={EMPTY_REMIX_SX}>
     <Typography>TheirStory</Typography>
     <p>Drop here</p>
   </Box>
@@ -768,10 +775,9 @@ const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
 );
 
 // Left transcript
-const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => (
-  <Box
-    id="sourceWrapper"
-    sx={{
+const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
+  const sx = useMemo(
+    () => ({
       backgroundColor: '#FFFFFF',
       paddingY: '16px',
       marginTop: '16px',
@@ -785,11 +791,16 @@ const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => (
         fontWeight: 400,
         lineHeight: '20px',
       },
-    }}
-  >
-    {children}
-  </Box>
-);
+    }),
+    [],
+  );
+
+  return (
+    <Box id="sourceWrapper" sx={sx}>
+      {children}
+    </Box>
+  );
+};
 
 // Right transcript
 const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element => (
@@ -880,6 +891,8 @@ interface BlockWrapperProps extends PropsWithChildren {
   offset?: number;
 }
 
+const USER_SELECT_NONE = { userSelect: 'none' };
+
 const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: BlockWrapperProps): JSX.Element => {
   const {
     data: { t },
@@ -891,7 +904,7 @@ const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: BlockWr
   }, [t, start, offset]);
   return (
     <div className="BlockWrapper">
-      <div style={{ userSelect: 'none' }}>
+      <div style={USER_SELECT_NONE}>
         <small>
           <code>{timecode}</code> {speaker}
         </small>
