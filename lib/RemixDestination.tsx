@@ -129,6 +129,21 @@ const RemixDestination = ({
                   </Draggable>
                 ))}
                 {stacks.length === 1 && <Empty />}
+                <Draggable draggableId="END" index={stacks.length}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      style={{
+                        ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
+                        ...{ height: 200, backgroundColor: 'blanchedalmond' },
+                      }}
+                    >
+                      <div {...provided.dragHandleProps}></div>
+                      THE END
+                    </div>
+                  )}
+                </Draggable>
               </article>
 
               {provided.placeholder}
