@@ -573,7 +573,6 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
               <Typography variant="inherit">delete</Typography>
             </MenuItem>
           </Menu>
-
         </Toolbar>
       </div>
       {children}

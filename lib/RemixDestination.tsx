@@ -1,4 +1,4 @@
-import { useContext, useMemo, ElementType, CSSProperties } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 import { PlainDiv, Section } from './components';
@@ -28,7 +28,7 @@ const RemixDestination = ({
   Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
-  const { remix, poster, width, height } = state;
+  const { remix, poster } = state;
 
   // console.log({ remix });
 
@@ -53,18 +53,22 @@ const RemixDestination = ({
     ...draggableStyle,
   });
 
+  const [width, setWidth] = useState<string | number>('auto');
+  const widthRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (widthRef.current) {
+      setWidth(widthRef.current.offsetWidth);
+    }
+  }, [widthRef]);
+
   return (
     <>
-      {/* <button onClick={() => dispatch({ type: 'test', payload: 'test?' })}>test action</button> */}
       <PlayerWrapper>
-        <Player
-          // key={timestamp}
-          transcript={`#B${remix?.metadata?.id}`}
-          pauseMutationObserver={false}
-          {...{ poster, width, height }}
-        />
+        <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} {...{ poster }} />
       </PlayerWrapper>
 
+      <div ref={widthRef} style={{ width: '100%', height: 0 }}></div>
       <ToolbarWrapper>
         <Droppable droppableId="Toolbar" isDropDisabled={true}>
           {(provided, snapshot) => (
@@ -78,11 +82,18 @@ const RemixDestination = ({
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
-                        style={provided.draggableProps.style as CSSProperties}
+                        // style={provided.draggableProps.style as CSSProperties}
+                        style={{
+                          ...(provided.draggableProps.style as CSSProperties),
+                          ...{
+                            display: snapshot.isDragging ? 'block' : 'inline-block',
+                            width: snapshot.isDragging ? width : 'auto',
+                          },
+                        }}
                       >
                         {snapshot.isDragging ? <tool.timelineComponent /> : tool.toolBarComponent}
                       </div>
-                      {snapshot.isDragging && tool.toolBarComponent}
+                      {snapshot.isDragging ? tool.toolBarComponent : null}
                     </>
                   )}
                 </Draggable>
