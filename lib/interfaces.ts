@@ -15,6 +15,8 @@ export type Action =
 | { type: "add-widget"; payload: any }
 | { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
+| { type: "move-up"; payload: any }
+| { type: "move-down"; payload: any }
 | { type: "remove"; payload: any }
 | { type: "add"; payload: [DropResult, Timeline, [number, number]] }
 | { type: "add-at"; payload: [string, Timeline, [number, number]] }

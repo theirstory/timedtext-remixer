@@ -8,7 +8,9 @@ import {
   Typography,
   IconButton,
   Select,
+  Menu,
   MenuItem,
+  ListItemIcon,
   ToggleButtonGroup,
   ToggleButton,
   SelectChangeEvent,
@@ -24,6 +26,9 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ShortTextIcon from '@mui/icons-material/ShortText';
 import SubjectIcon from '@mui/icons-material/Subject';
 import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import Timecode from 'smpte-timecode';
 
@@ -485,10 +490,31 @@ interface SectionContentWrapperProps extends PropsWithChildren {
   metadata?: { [key: string]: any };
 }
 
+const ITEM_HEIGHT = 48;
+
 export const SectionContentWrapper = ({ metadata, children }: SectionContentWrapperProps): JSX.Element => {
   const { dispatch } = useContext(Context);
   const { id, title } = metadata ?? { title: 'No title?' };
-  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleRemove = useCallback(() => {
+    dispatch({ type: 'remove', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
 
   return (
     <div className="SectionContentWrapper">
@@ -501,11 +527,53 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
           </Typography>
           <Divider orientation="vertical" flexItem />
           &nbsp;&nbsp;
-          <Tooltip title="Delete">
-            <IconButton onClick={handleRemove}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          <IconButton
+            aria-label="more"
+            id="long-button"
+            aria-controls={open ? 'long-menu' : undefined}
+            aria-expanded={open ? 'true' : undefined}
+            aria-haspopup="true"
+            onClick={handleClick}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            id="long-menu"
+            MenuListProps={{
+              'aria-labelledby': 'long-button',
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                style: {
+                  maxHeight: ITEM_HEIGHT * 4.5,
+                  width: '20ch',
+                },
+              },
+            }}
+          >
+            <MenuItem onClick={handleMoveUp}>
+              <ListItemIcon>
+                <ArrowUpwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move up</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleMoveDown}>
+              <ListItemIcon>
+                <ArrowDownwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move down</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleRemove}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">delete</Typography>
+            </MenuItem>
+          </Menu>
+
         </Toolbar>
       </div>
       {children}

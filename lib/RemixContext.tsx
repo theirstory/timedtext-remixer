@@ -226,6 +226,34 @@ const reducer = (state: State, action: Action): State => {
         return draftState;
       }
 
+      case 'move-down': {
+        const { id } = action.payload;
+        const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
+        if (stackIndex === -1) return draftState;
+
+        const stack = draftState.remix?.tracks.children[0].children[stackIndex];
+        if (!stack) return draftState;
+
+        draftState.remix?.tracks.children[0].children.splice(stackIndex, 1);
+        draftState.remix?.tracks.children[0].children.splice(stackIndex + 1, 0, stack);
+
+        return draftState;
+      }
+
+      case 'move-up': {
+        const { id } = action.payload;
+        const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
+        if (stackIndex === -1) return draftState;
+
+        const stack = draftState.remix?.tracks.children[0].children[stackIndex];
+        if (!stack) return draftState;
+
+        draftState.remix?.tracks.children[0].children.splice(stackIndex, 1);
+        draftState.remix?.tracks.children[0].children.splice(stackIndex - 1, 0, stack);
+
+        return draftState;
+      }
+
       case 'remove': {
         const { id } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
