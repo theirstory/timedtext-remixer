@@ -81,7 +81,7 @@ function App() {
           return state;
       }
     },
-    [ts2timeline(T4), ts2timeline(T5)],
+    [ts2timeline(T4), ts2timeline(T5), ts2timeline(T6), ts2timeline(T7), ts2timeline(T8)],
   );
 
   // const initRemix = EMPTY_REMIX;
