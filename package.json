@@ -45,7 +45,7 @@
     "@million/lint": "^1.0.0",
     "@mui/icons-material": "^5.15.14",
     "@mui/material": "^5.15.14",
-    "@theirstoryinc/timedtext-player": "0.0.4",
+    "@theirstoryinc/timedtext-player": "0.0.5",
     "@types/smpte-timecode": "1.2.5",
     "immer": "^10.1.1",
     "interval-operations": "^2.0.0",
