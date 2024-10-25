@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { useMemo, PropsWithChildren, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { renderToString } from 'react-dom/server';
 import {
   Box,
@@ -137,6 +137,8 @@ export const FadeInTool = (props: {
   duration?: number;
 }): JSX.Element => {
   const { dispatch } = useContext(Context);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   const id = props.id ?? `FIN-${Date.now()}`;
   const { template } = props;
   const name = props.name ?? 'Fade';
@@ -151,7 +153,26 @@ export const FadeInTool = (props: {
     () => dispatch({ type: 'metadata', payload: { id, metadata: { id, template, duration } } }),
     [id, template, duration, dispatch],
   );
-  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleRemove = useCallback(() => {
+    dispatch({ type: 'remove', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
 
   return (
     <div
@@ -184,11 +205,54 @@ export const FadeInTool = (props: {
         &nbsp;&nbsp;&nbsp;
         <Divider orientation="vertical" flexItem />
         &nbsp;&nbsp;
-        <Tooltip title="Delete">
-          <IconButton onClick={handleRemove} size="small">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          className="widget"
+          aria-label="more"
+          id="long-button"
+          aria-controls={open ? 'long-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup="true"
+          onClick={handleClick}
+        >
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          className="widget"
+          id="long-menu"
+          MenuListProps={{
+            'aria-labelledby': 'long-button',
+          }}
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          slotProps={{
+            paper: {
+              style: {
+                maxHeight: ITEM_HEIGHT * 4.5,
+                width: '20ch',
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleMoveUp}>
+            <ListItemIcon>
+              <ArrowUpwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move up</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleMoveDown}>
+            <ListItemIcon>
+              <ArrowDownwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move down</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleRemove}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">delete</Typography>
+          </MenuItem>
+        </Menu>
       </Toolbar>
     </div>
   );
@@ -203,6 +267,8 @@ export const TitleTool = (props: {
   duration?: number;
 }): JSX.Element => {
   const { dispatch } = useContext(Context);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   const id = props.id ?? `Title-${Date.now()}`;
   const name = props.name ?? 'Title';
   const [title, setTitle] = useState<string>(props.title ?? '');
@@ -230,8 +296,26 @@ export const TitleTool = (props: {
     () => dispatch({ type: 'metadata', payload: { id, metadata: { id, title, subtitle, template, duration } } }),
     [id, title, subtitle, template, duration, dispatch],
   );
-  const handleRemove = useCallback(() => dispatch({ type: 'remove', payload: { id } }), [id, dispatch]);
 
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleRemove = useCallback(() => {
+    dispatch({ type: 'remove', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
   return (
     <div
       style={{
@@ -271,11 +355,54 @@ export const TitleTool = (props: {
         &nbsp;&nbsp;&nbsp;
         <Divider orientation="vertical" flexItem />
         &nbsp;&nbsp;
-        <Tooltip title="Delete">
-          <IconButton onClick={handleRemove} size="small">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+        <IconButton
+          className="widget"
+          aria-label="more"
+          id="long-button"
+          aria-controls={open ? 'long-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup="true"
+          onClick={handleClick}
+        >
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          className="widget"
+          id="long-menu"
+          MenuListProps={{
+            'aria-labelledby': 'long-button',
+          }}
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          slotProps={{
+            paper: {
+              style: {
+                maxHeight: ITEM_HEIGHT * 4.5,
+                width: '20ch',
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleMoveUp}>
+            <ListItemIcon>
+              <ArrowUpwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move up</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleMoveDown}>
+            <ListItemIcon>
+              <ArrowDownwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move down</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleRemove}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">delete</Typography>
+          </MenuItem>
+        </Menu>
       </Toolbar>
       <TextField
         label="Title"
@@ -498,6 +625,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
@@ -528,6 +656,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
           <Divider orientation="vertical" flexItem />
           &nbsp;&nbsp;
           <IconButton
+            className="widget"
             aria-label="more"
             id="long-button"
             aria-controls={open ? 'long-menu' : undefined}
@@ -538,6 +667,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
             <MoreVertIcon />
           </IconButton>
           <Menu
+            className="widget"
             id="long-menu"
             MenuListProps={{
               'aria-labelledby': 'long-button',

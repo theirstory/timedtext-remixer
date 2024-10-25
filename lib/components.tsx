@@ -1,4 +1,4 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useRef } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
@@ -82,9 +82,7 @@ export const Paragraph = memo(
       <p {...attrs}>
         {intersects ? (
           <>
-            {dragHandleProps && isDragging
-              ? null
-              : before.map((s, i) => <Span key={s?.metadata?.id ?? `bs-${i}`} data={s} />)}
+            {dragHandleProps && isDragging ? null : before.map((s, i) => <Span key={`bs-${i}`} data={s} />)}
             <SelectionWrapper
               first={selected[0].marked_range.start_time === interval?.[0] && !isDragging}
               droppableId={droppableId}
@@ -92,16 +90,14 @@ export const Paragraph = memo(
             >
               <span className="selection" {...dragHandleProps}>
                 {selected.map((s, i) => (
-                  <Span key={s?.metadata?.id ?? `ss-${i}`} data={s} />
+                  <Span key={`ss-${i}`} data={s} />
                 ))}
               </span>
             </SelectionWrapper>
-            {dragHandleProps && isDragging
-              ? null
-              : after.map((s, i) => <Span key={s?.metadata?.id ?? `as2-${i}`} data={s} />)}
+            {dragHandleProps && isDragging ? null : after.map((s, i) => <Span key={`as2-${i}`} data={s} />)}
           </>
         ) : (
-          children.map((s, i) => <Span key={s?.metadata?.id ?? `us-${i}`} data={s} />)
+          children.map((s, i) => <Span key={`us-${i}`} data={s} />)
         )}
       </p>
     );
