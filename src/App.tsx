@@ -323,7 +323,7 @@ function App() {
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
-      <Box id="container" ref={remixRef}>
+      <Box id="container" ref={remixRef} sx={{ padding: '8px', height: 'calc(100% - 16px)' }}>
         <RemixContext
           sources={sources}
           remix={remix}
@@ -332,7 +332,7 @@ function App() {
           height={360}
           tools={tools}
         >
-          <Box id="columns-container" display={'grid'} gap={'8px'} gridTemplateColumns={'1fr 1fr'}>
+          <Box id="columns-container" display={'grid'} gap={'8px'} height={'100%'} gridTemplateColumns={'1fr 1fr'}>
             <Box
               id="left-column-container"
               borderRadius="0px 8px 8px 8px"
@@ -434,20 +434,20 @@ function App() {
                   ))}
                 </Tabs>
               </Box>
-              <Box>
-                <RemixSources
-                  active={active}
-                  PlayerWrapper={LeftPlayerWrapper}
-                  SourceWrapper={SourceWrapper}
-                  BlockWrapper={BlockWrapperLeft}
-                  SelectionWrapper={SelectionWrapper}
-                  ToolbarWrapper={ToolbarWrapper}
-                  tools={toolsLeft}
-                />
-              </Box>
+              {/* <Box height="100%"> */}
+              <RemixSources
+                active={active}
+                PlayerWrapper={LeftPlayerWrapper}
+                SourceWrapper={SourceWrapper}
+                BlockWrapper={BlockWrapperLeft}
+                SelectionWrapper={SelectionWrapper}
+                ToolbarWrapper={ToolbarWrapper}
+                tools={toolsLeft}
+              />
+              {/* </Box> */}
             </Box>
 
-            <Box
+            {/* <Box
               id="right-column-container"
               borderRadius="8px"
               sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
@@ -471,7 +471,7 @@ function App() {
                 tools={tools}
                 Empty={EmptyRemix}
               />
-            </Box>
+            </Box> */}
           </Box>
         </RemixContext>
       </Box>

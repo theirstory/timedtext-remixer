@@ -11,8 +11,8 @@
 
 body {
   margin: 0;
-  /* height: 100%; */
-  padding: 8px;
+  height: 100vh;
+  /* padding: 8px; */
   background-color: #F7F9FC
 }
 

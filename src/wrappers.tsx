@@ -474,7 +474,8 @@ export const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element 
     id="leftPlayerWrapper"
     marginTop="8px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
+    // sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
+    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', display: 'flex', justifyContent: 'center' }}
   >
     {children}
   </Box>
@@ -497,9 +498,19 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
     () => ({
       backgroundColor: '#FFFFFF',
       paddingY: '16px',
-      marginTop: '16px',
-      maxHeight: 'calc(100vh - 595px)',
+      // marginTop: '16px',
+      maxHeight: 'calc(100vh - 520px)',
       overflowY: 'auto',
+      '&::-webkit-scrollbar': {
+        width: '4px',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#606971',
+        borderRadius: '10px',
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#D9DCDE',
+      },
       borderRadius: '8px',
       '& p': {
         fontFamily: 'Public Sans, sans-serif',
@@ -608,7 +619,7 @@ interface BlockWrapperProps extends PropsWithChildren {
   offset?: number;
 }
 
-const USER_SELECT_NONE: React.CSSProperties = { userSelect: 'none' };
+const USER_SELECT_NONE: React.CSSProperties = { userSelect: 'none', display: 'flex', gap: '8px' };
 
 export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: BlockWrapperProps): JSX.Element => {
   const {
@@ -622,9 +633,14 @@ export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: 
   return (
     <div className="BlockWrapper">
       <div style={USER_SELECT_NONE}>
-        <small>
-          <code>{timecode}</code> {speaker}
-        </small>
+        {/* <small> */}
+        <Typography color={'#6E767E !important'} fontSize={'14px !important'} fontWeight={'600 !important'}>
+          {timecode}
+        </Typography>
+        <Typography color={'#323232 !important'} fontSize={'14px !important'} fontWeight={'700 !important'}>
+          {speaker}
+        </Typography>
+        {/* </small> */}
       </div>
       {children}
     </div>

@@ -28,7 +28,7 @@ export const TimedTextPlayerComponent = createComponent({
 });
 
 const preventDefault = (e: React.MouseEvent) => e.preventDefault();
-const WH100 = { width: '100%', height: '100%' };
+const W80H100 = { width: '80%', height: '100%' };
 const W100 = { width: '100%' };
 
 // Memoize Media* to prevent unnecessary re-renders
@@ -60,7 +60,7 @@ export const Player = ({
 
   return remixPlayerRef ? (
     <>
-      <MediaController id="myController" style={WH100}>
+      <MediaController id="myController" style={W80H100}>
         <MemoizedMediaControlBar style={W100}>
           <MemoizedMediaPlayButton></MemoizedMediaPlayButton>
           <MemoizedMediaMuteButton></MemoizedMediaMuteButton>

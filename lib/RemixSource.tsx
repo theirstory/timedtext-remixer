@@ -138,13 +138,17 @@ const RemixSource = ({
   //   [stacks],
   // );
 
+  console.log(tools);
+
   return (
     <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
-      <PlayerWrapper>
+      {/* <PlayerWrapper> */}
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
-      </PlayerWrapper>
+      </div>
+      {/* </PlayerWrapper> */}
 
-      <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper>
+      {/* <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper> */}
       <SourceWrapper>
         <Droppable
           droppableId={droppableId}
