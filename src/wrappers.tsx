@@ -450,7 +450,7 @@ export const EmptyRemix = (): JSX.Element => (
 export const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   <Box
     id="leftPlayerWrapper"
-    marginTop="16px"
+    marginTop="8px"
     borderRadius="8px"
     sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
   >

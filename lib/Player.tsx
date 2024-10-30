@@ -76,6 +76,7 @@ export const Player = ({
           ref={remixPlayerRef}
           onContextMenu={preventDefault}
           slot="media"
+          style={{ borderRadius: '8px' }}
           pause-mutation-observer={memoizedPauseMutationObserver}
           poster={memoizedPoster}
           transcript={memoizedTranscript}

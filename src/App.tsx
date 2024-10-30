@@ -332,9 +332,16 @@ function App() {
           height={360}
           tools={tools}
         >
-          <Box id="tabs-container">
-            <Toolbar disableGutters variant="dense">
-              <Button
+          <Box id="columns-container" display={'grid'} gap={'8px'} gridTemplateColumns={'1fr 1fr'}>
+            <Box
+              id="left-column-container"
+              borderRadius="0px 8px 8px 8px"
+              sx={{ backgroundColor: '#FFFFFF' }}
+              padding="16px"
+            >
+              <Box id="tabs-container">
+                {/* <Toolbar disableGutters variant="dense">
+            <Button
                 variant="outlined"
                 startIcon={<PostAddIcon />}
                 onClick={toggleDrawer(true)}
@@ -342,7 +349,7 @@ function App() {
               >
                 Open transcript
               </Button>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 &nbsp;
               </Typography>
               <FormGroup style={{ float: 'right' }}>
@@ -351,7 +358,7 @@ function App() {
                   label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
                 />
               </FormGroup>
-              <Button
+            <Button
                 variant="outlined"
                 startIcon={<InputIcon />}
                 onClick={loadRemix}
@@ -359,7 +366,7 @@ function App() {
               >
                 Load remix
               </Button>
-              &nbsp;
+            &nbsp;
               <Button
                 variant="outlined"
                 startIcon={<SaveIcon />}
@@ -377,65 +384,67 @@ function App() {
               >
                 Export remix
               </Button>
-            </Toolbar>
-            <Tabs
-              TabIndicatorProps={{ style: { display: 'none' } }}
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="tabbed content"
-              sx={{ minHeight: '0px' }}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              {sources.map((source, i) => (
-                <Tab
-                  sx={{
-                    borderRadius: '8px 8px 0px 0px',
-                    borderTop: '1px solid var(--Dark-20, #D9DCDE)',
-                    borderRight: '1px solid var(--Dark-20, #D9DCDE)',
-                    // borderLeft: '1px solid var(--Dark-20, #D9DCDE)',
-                    backgroundColor: 'var(--Light-100, #FFF)',
-                    textTransform: 'none',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    minHeight: '0px',
-                    padding: '6px 8px 6px 8px',
-                    lineHeight: '20px',
-                    '&.Mui-selected': {
-                      color: '#239B8B',
-                      borderBottom: 'none',
-                    },
-                    borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
-                  }}
-                  key={i}
-                  label={
-                    <Toolbar disableGutters variant="dense">
-                      {source?.metadata?.story?.title}
-                      <IconButton onClick={(e) => onTabClose(e, source)}>
-                        <CloseIcon />
-                      </IconButton>
-                    </Toolbar>
-                  }
+                   </Toolbar> */}
+                <Tabs
+                  TabIndicatorProps={{ style: { display: 'none' } }}
+                  value={tabValue}
+                  onChange={handleTabChange}
+                  aria-label="tabbed content"
+                  sx={{ minHeight: '0px' }}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                >
+                  {sources.map((source, i) => (
+                    <Tab
+                      sx={{
+                        borderRadius: '8px 8px 0px 0px',
+                        borderTop: '1px solid var(--Dark-20, #D9DCDE)',
+                        borderRight: '1px solid var(--Dark-20, #D9DCDE)',
+                        borderLeft: i === 0 ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
+                        backgroundColor: tabValue !== i ? '#F7F9FC' : '#FFF',
+                        textTransform: 'none',
+                        // fontSize: '14px',
+                        // fontWeight: 700,
+                        minHeight: '0px',
+                        padding: '6px 8px 6px 8px',
+                        // lineHeight: '20px',
+                        '&.Mui-selected': {
+                          color: '#239B8B',
+                          borderBottom: 'none',
+                        },
+                        borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
+                      }}
+                      key={i}
+                      label={
+                        <Toolbar disableGutters variant="dense" sx={{ minHeight: '0px' }}>
+                          <Typography
+                            sx={{ width: '90px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            fontSize="14px"
+                            fontWeight={700}
+                            lineHeight="20px"
+                          >
+                            {source?.metadata?.story?.title}
+                          </Typography>
+                          <IconButton sx={{ padding: 0 }} onClick={(e) => onTabClose(e, source)}>
+                            <CloseIcon style={{ width: '20px', height: '20px' }} />
+                          </IconButton>
+                        </Toolbar>
+                      }
+                    />
+                  ))}
+                </Tabs>
+              </Box>
+              <Box>
+                <RemixSources
+                  active={active}
+                  PlayerWrapper={LeftPlayerWrapper}
+                  SourceWrapper={SourceWrapper}
+                  BlockWrapper={BlockWrapperLeft}
+                  SelectionWrapper={SelectionWrapper}
+                  ToolbarWrapper={ToolbarWrapper}
+                  tools={toolsLeft}
                 />
-              ))}
-            </Tabs>
-          </Box>
-          <Box id="columns-container" display="flex" columnGap="20px">
-            <Box
-              id="left-column-container"
-              borderRadius="0px 8px 8px 8px"
-              sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
-              paddingX="24px"
-            >
-              <RemixSources
-                active={active}
-                PlayerWrapper={LeftPlayerWrapper}
-                SourceWrapper={SourceWrapper}
-                BlockWrapper={BlockWrapperLeft}
-                SelectionWrapper={SelectionWrapper}
-                ToolbarWrapper={ToolbarWrapper}
-                tools={toolsLeft}
-              />
+              </Box>
             </Box>
 
             <Box
