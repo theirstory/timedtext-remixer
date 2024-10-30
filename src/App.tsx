@@ -454,7 +454,11 @@ function App() {
               display="flex"
               flexDirection="column"
               paddingX="24px"
+              paddingTop="24px"
             >
+              <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
+                Remix
+              </Typography>
               <RemixDestination
                 PlayerWrapper={
                   // isDestinationEmpty ? EmptyPlayer :

@@ -108,7 +108,7 @@ const RemixDestination = ({
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
-              <article id={`B${remix?.metadata?.id}`} style={{ minHeight: '100%' }}>
+              <article id={`B${remix?.metadata?.id}`} style={{ height: '100%' }}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Draggable key={stack?.metadata?.id ?? `db-${i}`} draggableId={stack?.metadata?.id} index={i}>
                     {(provided, snapshot) => (
@@ -140,12 +140,13 @@ const RemixDestination = ({
                   </Draggable>
                 ))}
                 {stacks.length === 1 && <Empty />}
-                <Draggable draggableId="END" index={stacks.length}>
+                {/* <Draggable draggableId="END" index={stacks.length}>
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       style={{
+                        display: 'none',
                         ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
                         ...{ height: 200, backgroundColor: 'blanchedalmond' },
                       }}
@@ -154,7 +155,7 @@ const RemixDestination = ({
                       THE END
                     </div>
                   )}
-                </Draggable>
+                </Draggable> */}
               </article>
 
               {provided.placeholder}
