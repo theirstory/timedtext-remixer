@@ -1,24 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import {
-  Box,
-  Button,
-  Tab,
-  Tabs,
-  Chip,
-  Typography,
-  IconButton,
-  FormGroup,
-  FormControlLabel,
-  Toolbar,
-  Switch,
-  Drawer,
-} from '@mui/material';
+import { Box, Tab, Tabs, Chip, Typography, IconButton, Toolbar, Drawer, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import LaunchIcon from '@mui/icons-material/Launch';
-import InputIcon from '@mui/icons-material/Input';
-import SaveIcon from '@mui/icons-material/Save';
-import PostAddIcon from '@mui/icons-material/PostAdd';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
@@ -53,6 +37,7 @@ import {
   SectionContentWrapper,
   ExportRemix,
 } from './wrappers.tsx';
+import { SourceDrawer } from './components/SourceDrawer.tsx';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -313,13 +298,12 @@ function App() {
 
         `}
       </style>
-      <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
-        {allSources.map((source, i) => (
-          <p key={i} onClick={() => openTab(source)}>
-            {source?.metadata?.title}
-          </p>
-        ))}
-      </Drawer>
+      <SourceDrawer
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+        sources={allSources}
+        onClickSource={(source) => openTab(source)}
+      />
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
@@ -339,7 +323,7 @@ function App() {
               sx={{ backgroundColor: '#FFFFFF' }}
               padding="16px"
             >
-              <Box id="tabs-container">
+              <Box id="tabs-container" display="flex">
                 {/* <Toolbar disableGutters variant="dense">
             <Button
                 variant="outlined"
@@ -433,6 +417,11 @@ function App() {
                     />
                   ))}
                 </Tabs>
+                <Tooltip title="Add media">
+                  <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
+                    <PlaylistAddIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
               {/* <Box height="100%"> */}
               <RemixSources
@@ -447,7 +436,7 @@ function App() {
               {/* </Box> */}
             </Box>
 
-            {/* <Box
+            <Box
               id="right-column-container"
               borderRadius="8px"
               sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
@@ -471,7 +460,7 @@ function App() {
                 tools={tools}
                 Empty={EmptyRemix}
               />
-            </Box> */}
+            </Box>
           </Box>
         </RemixContext>
       </Box>
