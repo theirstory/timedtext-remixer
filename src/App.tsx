@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import { Box, Tab, Tabs, Chip, Typography, IconButton, Toolbar, Drawer, Tooltip } from '@mui/material';
+import { Box, Tab, Tabs, Chip, Typography, IconButton, Toolbar, Drawer, Tooltip, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import AddchartIcon from '@mui/icons-material/Addchart';
@@ -40,6 +40,7 @@ import {
   ExportRemix,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
+import { FadeIcon } from './assets/FadeIcon.tsx';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -209,24 +210,29 @@ function App() {
         type: 'fin',
         draggable: true,
         toolBarComponent: (
-          <div
-            style={{
-              borderRadius: '8px',
-              background: 'rgba(35, 155, 139, 0.15)',
-              padding: '6px',
+          <Box
+            sx={{
               display: 'flex',
               alignItems: 'center',
-              marginRight: '12px',
-              color: '#239B8B',
+              columnGap: '4px',
+              width: '100px',
               fontSize: '12px',
               fontWeight: 600,
               lineHeight: '16px',
+              color: '#239B8B',
+              backgroundColor: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              borderRadius: '8px',
+              marginRight: '12px',
+              ':&hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.35)',
+              },
             }}
           >
-            <AddchartIcon style={{ marginRight: '4px' }} /> Transition
-          </div>
+            <AddchartIcon style={{ marginRight: '4px' }} />
+            Transition
+          </Box>
         ),
-        // timelineComponent: <FadeInTool />,
         timelineComponent: FadeInTool,
         defaults: {
           title: 'Fade',
@@ -239,22 +245,26 @@ function App() {
         type: 'title',
         draggable: true,
         toolBarComponent: (
-          <div
-            style={{
-              borderRadius: '8px',
-              background: 'rgba(35, 155, 139, 0.15)',
-              padding: '6px',
+          <Box
+            sx={{
               display: 'flex',
               alignItems: 'center',
-              marginRight: '12px',
-              color: '#239B8B',
+              columnGap: '4px',
               fontSize: '12px',
               fontWeight: 600,
               lineHeight: '16px',
+              color: '#239B8B',
+              backgroundColor: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              borderRadius: '8px',
+              ':&hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.35)',
+              },
             }}
           >
-            <PostAddOutlinedIcon style={{ marginRight: '4px' }} /> Title
-          </div>
+            <PostAddOutlinedIcon />
+            Title
+          </Box>
         ),
         // timelineComponent: <TitleTool />,
         timelineComponent: TitleTool,

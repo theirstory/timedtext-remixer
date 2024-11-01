@@ -28,7 +28,7 @@ export const TimedTextPlayerComponent = createComponent({
 });
 
 const preventDefault = (e: React.MouseEvent) => e.preventDefault();
-const W80H100 = { width: '80%', height: '100%' };
+const W80H100 = { width: 'auto', height: '300px' };
 const W100 = { width: '100%' };
 
 // Memoize Media* to prevent unnecessary re-renders

@@ -141,7 +141,7 @@ export const FadeInTool = (props: {
   const open = Boolean(anchorEl);
   const id = props.id ?? `FIN-${Date.now()}`;
   const { template } = props;
-  const name = props.name ?? 'Fade';
+  const name = props.name ?? 'Fade transition';
 
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
 
@@ -175,20 +175,23 @@ export const FadeInTool = (props: {
   }, [id, dispatch]);
 
   return (
-    <div
-      style={{
-        backgroundColor: '#c1d8fb',
+    <Box
+      sx={{
+        backgroundColor: '#FFF',
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
         padding: '12px',
         marginBottom: '12px',
+        ':&hover': {
+          backgroundColor: 'blue !important',
+        },
       }}
       className="widget"
     >
       <Toolbar disableGutters variant="dense">
         <FlipIcon />
         &nbsp;&nbsp;
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
         <Select
@@ -254,7 +257,7 @@ export const FadeInTool = (props: {
           </MenuItem>
         </Menu>
       </Toolbar>
-    </div>
+    </Box>
   );
 };
 
@@ -430,6 +433,8 @@ export const TitleTool = (props: {
 const EMPTY_REMIX_SX = {
   height: '100%',
   borderRadius: '8px',
+  display: 'flex',
+  flexDirection: 'column',
   textAlign: '-webkit-center',
   paddingY: '51px',
 };
@@ -483,6 +488,7 @@ export const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element 
       justifyContent: 'center',
       marginBottom: '16px',
     }}
+    // sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
   >
     {children}
   </Box>
@@ -493,7 +499,7 @@ export const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element
     id="rightPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#464C53', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
+    sx={{ backgroundColor: '#464C53', textAlign: 'center', width: 'auto' }}
   >
     {children}
   </Box>
@@ -506,19 +512,11 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
       backgroundColor: '#FFFFFF',
       // paddingY: '16px',
       // marginTop: '16px',
-      maxHeight: 'calc(100vh - 520px)',
+      maxHeight: 'calc(100vh - 420px)',
       overflowY: 'auto',
-      '&::-webkit-scrollbar': {
-        width: '4px',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#606971',
-        borderRadius: '10px',
-      },
-      '&::-webkit-scrollbar-track': {
-        background: '#D9DCDE',
-      },
       borderRadius: '8px',
+      // paddingY: '16px',
+      // marginTop: '16px',
       '& p': {
         fontFamily: 'Public Sans, sans-serif',
         // color: '#000000',
@@ -626,7 +624,7 @@ interface BlockWrapperProps extends PropsWithChildren {
   offset?: number;
 }
 
-const USER_SELECT_NONE: React.CSSProperties = { userSelect: 'none', display: 'flex', gap: '8px' };
+const USER_SELECT_NONE: React.CSSProperties = { userSelect: 'none' };
 
 export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: BlockWrapperProps): JSX.Element => {
   const {
@@ -640,14 +638,9 @@ export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: 
   return (
     <div className="BlockWrapper" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={USER_SELECT_NONE}>
-        {/* <small> */}
-        <Typography color={'#6E767E !important'} fontSize={'14px !important'} fontWeight={'600 !important'}>
-          {timecode}
-        </Typography>
-        <Typography color={'#323232 !important'} fontSize={'14px !important'} fontWeight={'700 !important'}>
-          {speaker}
-        </Typography>
-        {/* </small> */}
+        <small>
+          <code>{timecode}</code> {speaker}
+        </small>
       </div>
       {children}
     </div>
@@ -695,7 +688,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
         <Toolbar disableGutters variant="dense">
           <AutoStoriesIcon />
           &nbsp;&nbsp;
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
           <Divider orientation="vertical" flexItem />

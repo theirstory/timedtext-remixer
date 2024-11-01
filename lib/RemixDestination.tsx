@@ -44,6 +44,7 @@ const RemixDestination = ({
     background: isDraggingOver ? '#F1F2F3' : 'transparent',
     borderRadius: '8px',
     height: '100%',
+    width: '100%',
   });
 
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
