@@ -5,7 +5,9 @@ import { intersection } from 'interval-operations';
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 
-export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
+export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{children}</div>
+);
 
 export const PlainSpan = ({ children }: PropsWithChildren): JSX.Element => <span>{children}</span>;
 
@@ -79,7 +81,7 @@ export const Paragraph = memo(
     // }
 
     return (
-      <p {...attrs}>
+      <p {...attrs} style={{ margin: 0 }}>
         {intersects ? (
           <>
             {dragHandleProps && isDragging ? null : before.map((s, i) => <Span key={`bs-${i}`} data={s} />)}

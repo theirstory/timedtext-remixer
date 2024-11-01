@@ -3,6 +3,8 @@ import React, { useMemo, useEffect, useState, useCallback, useReducer } from 're
 import { Box, Tab, Tabs, Chip, Typography, IconButton, Toolbar, Drawer, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import AddchartIcon from '@mui/icons-material/Addchart';
+import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
@@ -203,29 +205,63 @@ function App() {
   const tools = useMemo(
     () => [
       {
+        name: 'fin',
+        type: 'fin',
+        draggable: true,
+        toolBarComponent: (
+          <div
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: '12px',
+              color: '#239B8B',
+              fontSize: '12px',
+              fontWeight: 600,
+              lineHeight: '16px',
+            }}
+          >
+            <AddchartIcon style={{ marginRight: '4px' }} /> Transition
+          </div>
+        ),
+        // timelineComponent: <FadeInTool />,
+        timelineComponent: FadeInTool,
+        defaults: {
+          title: 'Fade',
+          template: '#fin',
+          duration: 5,
+        },
+      },
+      {
         name: 'title',
         type: 'title',
         draggable: true,
-        toolBarComponent: <Chip label="Title" variant="outlined" />,
+        toolBarComponent: (
+          <div
+            style={{
+              borderRadius: '8px',
+              background: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: '12px',
+              color: '#239B8B',
+              fontSize: '12px',
+              fontWeight: 600,
+              lineHeight: '16px',
+            }}
+          >
+            <PostAddOutlinedIcon style={{ marginRight: '4px' }} /> Title
+          </div>
+        ),
         // timelineComponent: <TitleTool />,
         timelineComponent: TitleTool,
         defaults: {
           title: 'Title',
           subtitle: 'Subtitle',
           template: '#title-full',
-          duration: 5,
-        },
-      },
-      {
-        name: 'fin',
-        type: 'fin',
-        draggable: true,
-        toolBarComponent: <Chip label="Fade" variant="outlined" />,
-        // timelineComponent: <FadeInTool />,
-        timelineComponent: FadeInTool,
-        defaults: {
-          title: 'Fade',
-          template: '#fin',
           duration: 5,
         },
       },

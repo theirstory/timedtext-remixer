@@ -6,6 +6,7 @@ import { Context } from './RemixContext';
 import { Player } from './Player';
 
 import type { Stack } from './interfaces';
+// import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
@@ -29,8 +30,6 @@ const RemixDestination = ({
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
-
-  // console.log({ remix });
 
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
@@ -88,6 +87,7 @@ const RemixDestination = ({
                           ...{
                             display: snapshot.isDragging ? 'block' : 'inline-block',
                             width: snapshot.isDragging ? width : 'auto',
+                            paddingTop: '16px',
                           },
                         }}
                       >

@@ -475,7 +475,14 @@ export const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element 
     marginTop="8px"
     borderRadius="8px"
     // sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', display: 'flex', justifyContent: 'center' }}
+    sx={{
+      backgroundColor: '#464C53',
+      textAlign: 'center',
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: '16px',
+    }}
   >
     {children}
   </Box>
@@ -486,7 +493,7 @@ export const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element
     id="rightPlayerWrapper"
     marginTop="16px"
     borderRadius="8px"
-    sx={{ backgroundColor: '#8E979F', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
+    sx={{ backgroundColor: '#464C53', textAlign: 'center', width: '100%', aspectRatio: '16/9' }}
   >
     {children}
   </Box>
@@ -497,7 +504,7 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
   const sx = useMemo(
     () => ({
       backgroundColor: '#FFFFFF',
-      paddingY: '16px',
+      // paddingY: '16px',
       // marginTop: '16px',
       maxHeight: 'calc(100vh - 520px)',
       overflowY: 'auto',
@@ -536,7 +543,7 @@ export const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element
     id="destinationWrapper"
     sx={{
       backgroundColor: '#FFFFFF',
-      paddingY: '16px',
+      paddingTop: '16px',
       minHeight: 'calc(100vh - 622px)',
       height: '100%',
       overflowY: 'auto',
@@ -631,7 +638,7 @@ export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: 
     return new Timecode((pStart - start + offset) * 30, 30).toString().split(':').slice(0, 3).join(':');
   }, [t, start, offset]);
   return (
-    <div className="BlockWrapper">
+    <div className="BlockWrapper" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={USER_SELECT_NONE}>
         {/* <small> */}
         <Typography color={'#6E767E !important'} fontSize={'14px !important'} fontWeight={'600 !important'}>
