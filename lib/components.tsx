@@ -4,6 +4,7 @@ import { intersection } from 'interval-operations';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
+import { Tool } from './RemixDestination';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
 
@@ -116,6 +117,7 @@ export const Section = memo(
     SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
     SelectionWrapper = PlainSpan as unknown as ElementType,
     SectionContentWrapper = PlainDiv as unknown as ElementType,
+    tools = [],
   }: {
     stack: Stack;
     offset?: number;
@@ -127,6 +129,8 @@ export const Section = memo(
     SelectedBlocksWrapper?: ElementType;
     SelectionWrapper?: ElementType;
     SectionContentWrapper?: ElementType;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools?: any[] | undefined;
   }) => {
     const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
       userSelect: 'none',
@@ -180,6 +184,15 @@ export const Section = memo(
 
     return (
       <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
+        {stack.OTIO_SCHEMA}
+        {stack.OTIO_SCHEMA === 'Gap.1' ? <p>GAP</p> : <p>Clip</p>}
+        {stack.metadata?.widget && tools?.find((t) => t.type === stack.metadata?.widget)?.timelineComponent && (
+          <Tool
+            Component={tools.find((t) => t.type === stack.metadata?.widget).timelineComponent}
+            stack={stack}
+            id={stack?.metadata?.id}
+          />
+        )}
         <SectionContentWrapper metadata={stack?.metadata}>
           <Effects stack={stack} />
           {intersects ? (

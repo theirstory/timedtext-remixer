@@ -29,13 +29,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import TvOffIcon from '@mui/icons-material/TvOff';
 
 import Timecode from 'smpte-timecode';
 
 import { Context } from '../lib/RemixContext.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
 import type { Timeline } from '../lib/interfaces';
-
+import { EMPTY_VIDEO } from '../lib/video.js';
 export const TEMPLATES = `
   <template id="video1">
     <video src="\${src}" disablePictureInPicture controlsList="nodownload">
@@ -421,6 +422,129 @@ export const TitleTool = (props: {
         onBlur={handleSave}
         size="small"
       />
+    </div>
+  );
+};
+
+export const GAPTool = (props: { id?: string; name?: string; template?: string; duration?: number }): JSX.Element => {
+  const { dispatch } = useContext(Context);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const id = props.id ?? `FIN-${Date.now()}`;
+  const { template } = props;
+  const name = props.name ?? 'GAP';
+
+  const [duration, setDuration] = useState<number>(props.duration ?? 5);
+
+  const handleDurationChange = useCallback(
+    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
+    [],
+  );
+  const handleSave = useCallback(
+    () => dispatch({ type: 'metadata', payload: { id, metadata: { id, template, duration } } }),
+    [id, template, duration, dispatch],
+  );
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleRemove = useCallback(() => {
+    dispatch({ type: 'remove', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+
+  return (
+    <div
+      style={{
+        backgroundColor: '#a3ebbf',
+        borderRadius: '8px',
+        border: '1px solid #D9DCDE',
+        padding: '12px',
+        marginBottom: '12px',
+      }}
+      className="widget"
+    >
+      <Toolbar disableGutters variant="dense">
+        <TvOffIcon />
+        &nbsp;&nbsp;
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {name}
+        </Typography>
+        <Select
+          value={duration as any}
+          label="seconds"
+          onChange={handleDurationChange}
+          onBlur={handleSave}
+          size="small"
+        >
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={15}>15</MenuItem>
+        </Select>
+        &nbsp;&nbsp;&nbsp;
+        <Divider orientation="vertical" flexItem />
+        &nbsp;&nbsp;
+        <IconButton
+          className="widget"
+          aria-label="more"
+          id="long-button"
+          aria-controls={open ? 'long-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          aria-haspopup="true"
+          onClick={handleClick}
+        >
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          className="widget"
+          id="long-menu"
+          MenuListProps={{
+            'aria-labelledby': 'long-button',
+          }}
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          slotProps={{
+            paper: {
+              style: {
+                maxHeight: ITEM_HEIGHT * 4.5,
+                width: '20ch',
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleMoveUp}>
+            <ListItemIcon>
+              <ArrowUpwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move up</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleMoveDown}>
+            <ListItemIcon>
+              <ArrowDownwardIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">move down</Typography>
+          </MenuItem>
+          <MenuItem onClick={handleRemove}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="inherit">delete</Typography>
+          </MenuItem>
+        </Menu>
+      </Toolbar>
     </div>
   );
 };

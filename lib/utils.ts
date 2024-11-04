@@ -3,7 +3,7 @@ import { v5 as uuidv5 } from 'uuid';
 import stringify from 'json-stringify-deterministic';
 import CryptoJS from 'crypto-js';
 import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
-import { EMPTY_VIDEO } from "./video";
+import { EMPTY_VIDEO, blackHLS } from "./video";
 
 export const ipfsStyleHash = (data: any): string => {
   const jsonString = stringify(data);
@@ -275,11 +275,13 @@ export const timelineStacks = (source: Timeline): Stack[] => {
   }
 };
 
+const GAP_VIDEO = EMPTY_VIDEO; // blackHLS(10);
+
 export const EMPTY_REMIX = {
   "OTIO_SCHEMA": "Timeline.1",
   "metadata": {
       "id": "EMPTY",
-      "videoURL": EMPTY_VIDEO
+      "videoURL": GAP_VIDEO
   },
   "tracks": {
       "OTIO_SCHEMA": "Stack.1",
@@ -294,8 +296,33 @@ export const EMPTY_REMIX = {
                   "remove": true,
                   "id": "T-EMPTY"
               },
-              "children": []
+              "children": [
+                {
+                  "OTIO_SCHEMA": "Stack.1",
+                  "metadata": {
+                    "id": "gap-1",
+                    "data": {
+                      "t": [0, 10],
+                      "media-src": GAP_VIDEO
+                    },
+                    "title": "GAP",
+                    "widget": "gap"
+                  },
+                  "media_reference": {
+                    "OTIO_SCHEMA": "MediaReference.1",
+                    "target": GAP_VIDEO
+                  },
+                  "source_range": {
+                    "OTIO_SCHEMA": "TimeRange.1",
+                    "start_time": 0,
+                    "duration": 10
+                  },
+                  "children": [],
+                  "effects": []
+                }
+              ]
           }
       ]
   }
 };
+// TODO add back the track and a gap on the track

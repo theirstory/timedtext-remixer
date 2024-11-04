@@ -133,6 +133,7 @@ const RemixDestination = ({
                             BlockWrapper={BlockWrapper}
                             SectionContentWrapper={SectionContentWrapper}
                             sourceId={stack?.metadata?.sid}
+                            tools={tools}
                           />
                         )}
                       </div>
@@ -167,7 +168,7 @@ const RemixDestination = ({
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Tool = ({
+export const Tool = ({
   Component,
   stack,
   id,

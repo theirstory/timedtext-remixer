@@ -14,8 +14,8 @@ import {
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
 import { Context } from './RemixContext';
-// import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
-import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
+import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
+// import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const TimedTextPlayerComponent = createComponent({
   tagName: 'timedtext-player',
