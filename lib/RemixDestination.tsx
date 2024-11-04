@@ -94,7 +94,17 @@ const RemixDestination = ({
                       >
                         {snapshot.isDragging ? <tool.timelineComponent /> : tool.toolBarComponent}
                       </div>
-                      {snapshot.isDragging ? tool.toolBarComponent : null}
+                      {snapshot.isDragging ? (
+                        <div
+                          style={{
+                            display: 'inline-block',
+                            width: 'auto',
+                            paddingTop: '16px',
+                          }}
+                        >
+                          {tool.toolBarComponent}
+                        </div>
+                      ) : null}
                     </>
                   )}
                 </Draggable>
