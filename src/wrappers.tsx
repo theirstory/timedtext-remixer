@@ -46,6 +46,7 @@ import lowerThirdInactive from './Assets/lower-third-inactive.svg';
 import fullScreenInactive from './Assets/full-screen-inactive.svg';
 import fullScreenActive from './Assets/full-screen-active.svg';
 import blurLinear from './Assets/blur-linear.svg';
+import group from './Assets/group.svg';
 
 export const TEMPLATES = `
   <template id="video1">
@@ -426,7 +427,7 @@ export const TitleTool = (props: {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{
-        // backgroundColor: '#FFF',
+        // backgroundColor: '#FFF',|
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
         // padding: '12px',
@@ -910,6 +911,8 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
   const { dispatch } = useContext(Context);
   const { id, title } = metadata ?? { title: 'No title?' };
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -917,6 +920,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
   };
   const handleClose = () => {
     setAnchorEl(null);
+    SectionContentWrapper;
   };
   const handleRemove = useCallback(() => {
     dispatch({ type: 'remove', payload: { id } });
@@ -932,17 +936,82 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
   }, [id, dispatch]);
 
   return (
-    <div className="SectionContentWrapper">
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        // backgroundColor: '#FFF',|
+        borderRadius: '8px',
+        border: '1px solid #D9DCDE',
+        // padding: '12px',
+        marginBottom: '12px',
+        padding: '12px',
+        // ':&hover': {
+        //   backgroundColor: 'blue !important',
+        // },
+        backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+      }}
+      // className="widget"
+      className="SectionContentWrapper"
+    >
       <div style={{ userSelect: 'none' }}>
-        <Toolbar disableGutters variant="dense">
-          <AutoStoriesIcon />
-          &nbsp;&nbsp;
-          <Typography component="div" sx={{ flexGrow: 1 }}>
+        <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '8px' }}>
+          <DragHandleIcon style={{ marginRight: '8px' }} />
+          <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          <Divider orientation="vertical" flexItem />
-          &nbsp;&nbsp;
-          <IconButton
+          {/* <Divider orientation="vertical" flexItem /> */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              opacity: isHovered ? 1 : 0,
+              // backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+              // backgroundColor: '#F7F9FC',
+            }}
+          >
+            <IconButton
+              className="widget"
+              aria-label="delete"
+              onClick={handleRemove}
+              sx={{
+                backgroundColor: '#F7F9FC',
+                '&:hover': {
+                  backgroundColor: '#e7e9ea',
+                },
+                '&:active': {
+                  backgroundColor: '#e7e9ea',
+                },
+                // minWidth: '0px',
+                padding: '2px',
+                marginBottom: '0px',
+                borderRadius: '4px',
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+            <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+            <IconButton
+              className="widget"
+              aria-label="delete"
+              // onClick={handleRemove}
+              sx={{
+                backgroundColor: '#F7F9FC',
+                '&:hover': {
+                  backgroundColor: '#e7e9ea',
+                },
+                '&:active': {
+                  backgroundColor: '#e7e9ea',
+                },
+                // minWidth: '0px',
+                marginBottom: '0px',
+                borderRadius: '4px',
+              }}
+            >
+              <img src={group} alt="logo" />
+            </IconButton>
+          </Box>
+          {/* <IconButton
             className="widget"
             aria-label="more"
             id="long-button"
@@ -952,8 +1021,8 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
             onClick={handleClick}
           >
             <MoreVertIcon />
-          </IconButton>
-          <Menu
+          </IconButton> */}
+          {/* <Menu
             className="widget"
             id="long-menu"
             MenuListProps={{
@@ -989,11 +1058,12 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
               </ListItemIcon>
               <Typography variant="inherit">delete</Typography>
             </MenuItem>
-          </Menu>
+          </Menu> */}
         </Toolbar>
       </div>
       {children}
-    </div>
+      {/* </div> */}
+    </Box>
   );
 };
 

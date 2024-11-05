@@ -181,7 +181,13 @@ export const Section = memo(
     if (interval) globalThis.foo = `selection-${interval?.[0]}-${interval?.[1]}`;
 
     return (
-      <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
+      <section
+        {...attrs}
+        id={stack?.metadata?.id}
+        data-offset={offset}
+        data-sid={sourceId}
+        style={{ padding: 0, border: 'none', marginBottom: 0 }}
+      >
         <SectionContentWrapper metadata={stack?.metadata}>
           <Effects stack={stack} />
           {intersects ? (
