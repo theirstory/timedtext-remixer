@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, PropsWithChildren, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { useMemo, PropsWithChildren, useContext, useState, useCallback } from 'react';
 import { renderToString } from 'react-dom/server';
 import {
   Box,
@@ -7,31 +7,22 @@ import {
   TextField,
   Typography,
   IconButton,
-  Select,
-  Menu,
   MenuItem,
-  ListItemIcon,
   ToggleButtonGroup,
   ToggleButton,
-  SelectChangeEvent,
   Toolbar,
-  Tooltip,
   Stack,
   Divider,
   Popover,
   MenuList,
+  Menu,
+  ListItemIcon,
 } from '@mui/material';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
-import TitleIcon from '@mui/icons-material/Title';
-import FlipIcon from '@mui/icons-material/Flip';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-import ShortTextIcon from '@mui/icons-material/ShortText';
-import SubjectIcon from '@mui/icons-material/Subject';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import BlurOnIcon from '@mui/icons-material/BlurOn';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -183,14 +174,6 @@ export const FadeInTool = (props: {
     dispatch({ type: 'remove', payload: { id } });
     handleClose();
   }, [id, dispatch]);
-  const handleMoveUp = useCallback(() => {
-    dispatch({ type: 'move-up', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
-  const handleMoveDown = useCallback(() => {
-    dispatch({ type: 'move-down', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
 
   return (
     <Box
@@ -206,7 +189,7 @@ export const FadeInTool = (props: {
     >
       <Toolbar disableGutters variant="dense" sx={{ paddingX: '12px' }}>
         <DragHandleIcon style={{ marginRight: '8px' }} />
-        <img src={blurLinear} style={{ marginRight: '8px' }} alt="logo" />
+        <img src={blurLinear} style={{ marginRight: '8px' }} />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
@@ -403,14 +386,6 @@ export const TitleTool = (props: {
     dispatch({ type: 'remove', payload: { id } });
     handleClose();
   }, [id, dispatch]);
-  const handleMoveUp = useCallback(() => {
-    dispatch({ type: 'move-up', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
-  const handleMoveDown = useCallback(() => {
-    dispatch({ type: 'move-down', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
 
   return (
     // <div
@@ -482,10 +457,10 @@ export const TitleTool = (props: {
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
           <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
             <ToggleButton value="#title-lower3rds" size="small">
-              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} alt="logo" />
+              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
             </ToggleButton>
             <ToggleButton value="#title-full" size="small">
-              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} alt="logo" />
+              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} />
             </ToggleButton>
           </ToggleButtonGroup>
           <Box marginLeft="2px !important">
@@ -886,10 +861,26 @@ export const BlockWrapperLeft = ({ start = 0, offset = 0, metadata, children }: 
     return new Timecode((pStart - start + offset) * 30, 30).toString().split(':').slice(0, 3).join(':');
   }, [t, start, offset]);
   return (
-    <div className="BlockWrapper" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="BlockWrapper" style={{ margin: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={USER_SELECT_NONE}>
-        <small>
-          <code>{timecode}</code> {speaker}
+        <small style={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <code
+            style={{ color: '#6E767E', fontStyle: 'normal', fontSize: '14px', fontWeight: 600, lineHeight: 'normal' }}
+          >
+            {timecode}
+          </code>{' '}
+          <p
+            style={{
+              margin: 0,
+              color: '#323232',
+              fontStyle: 'normal',
+              fontSize: '14px',
+              fontWeight: 700,
+              lineHeight: 'normal',
+            }}
+          >
+            {speaker}
+          </p>
         </small>
       </div>
       {children}
@@ -1008,10 +999,10 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
                 borderRadius: '4px',
               }}
             >
-              <img src={group} alt="logo" />
+              <img src={group} />
             </IconButton>
           </Box>
-          {/* <IconButton
+          <IconButton
             className="widget"
             aria-label="more"
             id="long-button"
@@ -1021,8 +1012,8 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
             onClick={handleClick}
           >
             <MoreVertIcon />
-          </IconButton> */}
-          {/* <Menu
+          </IconButton>
+          <Menu
             className="widget"
             id="long-menu"
             MenuListProps={{
@@ -1044,21 +1035,15 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
               <ListItemIcon>
                 <ArrowUpwardIcon fontSize="small" />
               </ListItemIcon>
-              <Typography variant="inherit">move up</Typography>
+              <Typography variant="inherit">Move up</Typography>
             </MenuItem>
             <MenuItem onClick={handleMoveDown}>
               <ListItemIcon>
                 <ArrowDownwardIcon fontSize="small" />
               </ListItemIcon>
-              <Typography variant="inherit">move down</Typography>
+              <Typography variant="inherit">Move down</Typography>
             </MenuItem>
-            <MenuItem onClick={handleRemove}>
-              <ListItemIcon>
-                <DeleteIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">delete</Typography>
-            </MenuItem>
-          </Menu> */}
+          </Menu>
         </Toolbar>
       </div>
       {children}

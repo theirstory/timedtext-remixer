@@ -3,7 +3,6 @@ import React, { useMemo, useEffect, useState, useCallback, useReducer } from 're
 import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
-import AddchartIcon from '@mui/icons-material/Addchart';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
@@ -13,6 +12,7 @@ import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
+import { AddTransition } from './Assets/AddTransition.tsx';
 
 import T4 from './data/66043ea15b6357760d02b9a4.json';
 import T5 from './data/61929022c65d8e0005450522.json';
@@ -142,7 +142,7 @@ function App() {
         const cssText = `
           ${transcript} {
             ${selector} {
-              color: #0944f3 !important;
+              color: #1C7C6F !important;
               text-decoration: underline;
             }
 
@@ -224,12 +224,15 @@ function App() {
               padding: '6px',
               borderRadius: '8px',
               marginRight: '12px',
-              ':&hover': {
-                backgroundColor: 'rgba(35, 155, 139, 0.35)',
+              '&:hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+              '&:active': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
               },
             }}
           >
-            <AddchartIcon style={{ marginRight: '4px' }} />
+            <AddTransition />
             Transition
           </Box>
         ),
@@ -258,12 +261,15 @@ function App() {
               backgroundColor: 'rgba(35, 155, 139, 0.15)',
               padding: '6px',
               borderRadius: '8px',
-              ':&hover': {
-                backgroundColor: 'rgba(35, 155, 139, 0.35)',
+              '&:hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+              '&:active': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
               },
             }}
           >
-            <PostAddOutlinedIcon />
+            <PostAddOutlinedIcon style={{ width: '20px', height: '20px' }} />
             Title
           </Box>
         ),
@@ -340,21 +346,29 @@ function App() {
 
           section p {
             cursor: pointer;
-            content-visibility: auto;
+            /* content-visibility: auto; */
           }
 
         `}
       </style>
-      <SourceDrawer
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        sources={allSources}
-        onClickSource={(source) => openTab(source)}
-      />
+      {drawerOpen && (
+        <SourceDrawer
+          open={drawerOpen}
+          onClose={toggleDrawer(false)}
+          sources={allSources}
+          onClickSource={(source) => openTab(source)}
+        />
+      )}
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
-      <Box id="container" ref={remixRef} sx={{ padding: '8px', height: 'calc(100% - 16px)' }}>
+      <Box
+        id="container"
+        ref={remixRef}
+        display="flex"
+        justifyContent="center"
+        sx={{ padding: '8px', height: 'calc(100% - 16px)' }}
+      >
         <RemixContext
           sources={sources}
           remix={remix}
@@ -363,7 +377,14 @@ function App() {
           height={360}
           tools={tools}
         >
-          <Box id="columns-container" display={'grid'} gap={'8px'} height={'100%'} gridTemplateColumns={'1fr 1fr'}>
+          <Box
+            id="columns-container"
+            display={'grid'}
+            gap={'8px'}
+            height={'100%'}
+            maxWidth={'1440px'}
+            gridTemplateColumns={'1fr 1fr'}
+          >
             <Box
               id="left-column-container"
               borderRadius="0px 8px 8px 8px"
