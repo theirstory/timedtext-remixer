@@ -92,7 +92,7 @@ const RemixDestination = ({
                           },
                         }}
                       >
-                        {snapshot.isDragging ? <tool.timelineComponent /> : tool.toolBarComponent}
+                        {tool.toolBarComponent}
                       </div>
                       {snapshot.isDragging ? (
                         <div

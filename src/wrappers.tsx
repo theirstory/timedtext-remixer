@@ -41,8 +41,11 @@ import Timecode from 'smpte-timecode';
 import { Context } from '../lib/RemixContext.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
 import type { Timeline } from '../lib/interfaces';
-import lowerThird from './Assets/lower-third.svg';
-import fullScreen from './Assets/full-screen.svg';
+import lowerThirdActive from './Assets/lower-third-active.svg';
+import lowerThirdInactive from './Assets/lower-third-inactive.svg';
+import fullScreenInactive from './Assets/full-screen-inactive.svg';
+import fullScreenActive from './Assets/full-screen-active.svg';
+import blurLinear from './Assets/blur-linear.svg';
 
 export const TEMPLATES = `
   <template id="video1">
@@ -193,23 +196,16 @@ export const FadeInTool = (props: {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{
-        // backgroundColor: '#FFF',
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
-        // padding: '12px',
         marginBottom: '12px',
-        // ':&hover': {
-        //   backgroundColor: 'blue !important',
-        // },
         backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
       }}
       className="widget"
     >
       <Toolbar disableGutters variant="dense" sx={{ paddingX: '12px' }}>
-        {/* <FlipIcon /> */}
         <DragHandleIcon style={{ marginRight: '8px' }} />
-        <BlurOnIcon style={{ marginRight: '8px' }} />
-        {/* &nbsp;&nbsp; */}
+        <img src={blurLinear} style={{ marginRight: '8px' }} alt="logo" />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
@@ -254,7 +250,7 @@ export const FadeInTool = (props: {
                 height: '35px',
                 textTransform: 'capitalize',
                 color: '#606971',
-                backgroundColor: '#fff',
+                backgroundColor: '#F7F9FC',
                 borderRadius: '8px',
                 flex: 1,
                 '&:hover': {
@@ -369,6 +365,7 @@ export const TitleTool = (props: {
   const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleTitleChange = useCallback(
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setTitle(value),
@@ -378,10 +375,10 @@ export const TitleTool = (props: {
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setSubtitle(value),
     [],
   );
-  const handleTemplateChange = useCallback(
-    (_event: React.MouseEvent<HTMLElement>, value: string) => setTemplate(value),
-    [],
-  );
+  const handleTemplateChange = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
+    console.log(value);
+    setTemplate(value);
+  }, []);
   // const handleDurationChange = useCallback(
   //   ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
   //   [],
@@ -413,145 +410,171 @@ export const TitleTool = (props: {
     dispatch({ type: 'move-down', payload: { id } });
     handleClose();
   }, [id, dispatch]);
+
   return (
-    <div
-      style={{
-        backgroundColor: '#fff',
+    // <div
+    //   style={{
+    //     backgroundColor: '#fff',
+    //     borderRadius: '8px',
+    //     border: '1px solid #D9DCDE',
+    //     padding: '12px',
+    //     marginBottom: '12px',
+    //   }}
+    //   className="widget"
+    // >
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        // backgroundColor: '#FFF',
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
-        padding: '12px',
+        // padding: '12px',
         marginBottom: '12px',
+        padding: '12px',
+        // ':&hover': {
+        //   backgroundColor: 'blue !important',
+        // },
+        backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
       }}
       className="widget"
     >
-      <Toolbar disableGutters variant="dense">
+      <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '16px' }}>
         {/* <TitleIcon /> */}
         <DragHandleIcon style={{ marginRight: '8px' }} />
         <TextFieldsIcon style={{ marginRight: '8px' }} />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
-        <IconButton
-          className="widget"
-          aria-label="delete"
-          id="long-button"
-          // aria-controls={open ? 'long-menu' : undefined}
-          // aria-expanded={open ? 'true' : undefined}
-          // aria-haspopup="true"
-          onClick={handleRemove}
+        <Box
           sx={{
-            backgroundColor: '#F7F9FC',
-            '&:hover': {
-              backgroundColor: '#e7e9ea',
-            },
-            '&:active': {
-              backgroundColor: '#e7e9ea',
-            },
-            // minWidth: '0px',
-            marginBottom: '0px',
-            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            opacity: isHovered ? 1 : 0,
+            // backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+            // backgroundColor: '#F7F9FC',
           }}
         >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-        <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
-        <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
-          <ToggleButton value="#title-lower3rds" size="small">
-            {/* <ShortTextIcon /> */}
-            <img src={lowerThird} alt="logo" />
-          </ToggleButton>
-          <ToggleButton value="#title-full" size="small">
-            {/* <SubjectIcon /> */}
-            <img src={fullScreen} alt="logo" />
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <Box marginLeft="2px !important">
-          <Button
-            variant="contained"
-            disableElevation
+          <IconButton
+            className="widget"
+            aria-label="delete"
+            id="long-button"
+            // aria-controls={open ? 'long-menu' : undefined}
+            // aria-expanded={open ? 'true' : undefined}
+            // aria-haspopup="true"
+            onClick={handleRemove}
             sx={{
-              height: '35px',
-              textTransform: 'capitalize',
-              color: '#606971',
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              flex: 1,
+              backgroundColor: '#F7F9FC',
               '&:hover': {
                 backgroundColor: '#e7e9ea',
               },
               '&:active': {
                 backgroundColor: '#e7e9ea',
               },
-              '&:focus': {
-                outline: 'none',
-              },
-            }}
-            size="small"
-            endIcon={<ArrowDropDownRoundedIcon style={{ fontSize: '23px' }} />}
-            onClick={(e) => {
-              setOpenFilterOptions(e.currentTarget);
+              // minWidth: '0px',
+              marginBottom: '0px',
+              borderRadius: '4px',
             }}
           >
-            <Typography
-              sx={{ fontSize: '12px', fontWeight: 600, color: '#606971', marginLeft: 0.5, textTransform: 'none' }}
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
+            <ToggleButton value="#title-lower3rds" size="small">
+              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} alt="logo" />
+            </ToggleButton>
+            <ToggleButton value="#title-full" size="small">
+              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} alt="logo" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <Box marginLeft="2px !important">
+            <Button
+              variant="contained"
+              disableElevation
+              sx={{
+                height: '35px',
+                textTransform: 'capitalize',
+                color: '#606971',
+                backgroundColor: '#F7F9FC',
+                borderRadius: '8px',
+                flex: 1,
+                '&:hover': {
+                  backgroundColor: '#e7e9ea',
+                },
+                '&:active': {
+                  backgroundColor: '#e7e9ea',
+                },
+                '&:focus': {
+                  outline: 'none',
+                },
+              }}
+              size="small"
+              endIcon={<ArrowDropDownRoundedIcon style={{ fontSize: '23px' }} />}
+              onClick={(e) => {
+                setOpenFilterOptions(e.currentTarget);
+              }}
             >
-              {duration} sec
-            </Typography>
-          </Button>
+              <Typography
+                sx={{ fontSize: '12px', fontWeight: 600, color: '#606971', marginLeft: 0.5, textTransform: 'none' }}
+              >
+                {duration} sec
+              </Typography>
+            </Button>
+          </Box>
+          <Popover
+            id="sort-options-popup"
+            open={Boolean(openFilterOptions)}
+            onClose={() => setOpenFilterOptions(null)}
+            anchorEl={openFilterOptions}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <MenuList sx={{ backgroundColor: '#F7F9FC' }}>
+              <MenuItem
+                sx={{
+                  width: '120px',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                }}
+                onClick={() => {
+                  handleDurationChange(5);
+                  setOpenFilterOptions(null);
+                }}
+              >
+                5 sec
+              </MenuItem>
+              <MenuItem
+                sx={{
+                  width: '120px',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                }}
+                onClick={() => {
+                  handleDurationChange(10);
+                  setOpenFilterOptions(null);
+                }}
+              >
+                10 sec
+              </MenuItem>
+              <MenuItem
+                sx={{
+                  width: '120px',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                }}
+                onClick={() => {
+                  handleDurationChange(15);
+                  setOpenFilterOptions(null);
+                }}
+              >
+                15 sec
+              </MenuItem>
+            </MenuList>
+          </Popover>
         </Box>
-        <Popover
-          id="sort-options-popup"
-          open={Boolean(openFilterOptions)}
-          onClose={() => setOpenFilterOptions(null)}
-          anchorEl={openFilterOptions}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <MenuList>
-            <MenuItem
-              sx={{
-                width: '120px',
-                fontSize: '14px',
-                fontWeight: 400,
-                lineHeight: '20px',
-              }}
-              onClick={() => {
-                handleDurationChange(5);
-                setOpenFilterOptions(null);
-              }}
-            >
-              5 sec
-            </MenuItem>
-            <MenuItem
-              sx={{
-                width: '120px',
-                fontSize: '14px',
-                fontWeight: 400,
-                lineHeight: '20px',
-              }}
-              onClick={() => {
-                handleDurationChange(10);
-                setOpenFilterOptions(null);
-              }}
-            >
-              10 sec
-            </MenuItem>
-            <MenuItem
-              sx={{
-                width: '120px',
-                fontSize: '14px',
-                fontWeight: 400,
-                lineHeight: '20px',
-              }}
-              onClick={() => {
-                handleDurationChange(15);
-                setOpenFilterOptions(null);
-              }}
-            >
-              15 sec
-            </MenuItem>
-          </MenuList>
-        </Popover>
         {/* <Select
           value={duration as any}
           label="seconds"
@@ -563,7 +586,6 @@ export const TitleTool = (props: {
           <MenuItem value={10}>10</MenuItem>
           <MenuItem value={15}>15</MenuItem>
         </Select> */}
-        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
         {/* <IconButton
           className="widget"
           aria-label="more"
@@ -616,21 +638,21 @@ export const TitleTool = (props: {
       <TextField
         label="Title"
         value={title}
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: '16px', backgroundColor: '#fff' }}
         onChange={handleTitleChange}
         onBlur={handleSave}
         size="small"
       />
-      &nbsp;
       <TextField
-        label="Subtitle"
+        label="Subtitle (optional)"
         value={subtitle}
-        style={{ width: '100%' }}
+        style={{ width: '100%', backgroundColor: '#fff' }}
         onChange={handleSubtitleChange}
         onBlur={handleSave}
         size="small"
       />
-    </div>
+      {/* // </div> */}
+    </Box>
   );
 };
 

@@ -249,6 +249,7 @@ function App() {
             sx={{
               display: 'flex',
               alignItems: 'center',
+              width: '67px',
               columnGap: '4px',
               fontSize: '12px',
               fontWeight: 600,
