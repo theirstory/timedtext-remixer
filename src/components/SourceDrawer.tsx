@@ -69,6 +69,13 @@ export const SourceDrawer = ({
               }),
             );
           }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#239B8B',
+              },
+            },
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">

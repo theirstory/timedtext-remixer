@@ -42,7 +42,6 @@ export const Paragraph = memo(
     source?: Timeline;
     SelectionWrapper?: ElementType;
   }) => {
-    console.log({ isDragging });
     const start = clip.source_range.start_time;
     const end = clip.source_range.duration + start;
 
@@ -200,7 +199,6 @@ export const Section = memo(
 
               <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
                 {(provided, snapshot) => {
-                  console.log('EL SNAPSHOT', { snapshot, provided });
                   return (
                     <>
                       <div

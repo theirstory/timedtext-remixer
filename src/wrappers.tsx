@@ -701,7 +701,7 @@ export const LeftPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element 
 export const RightPlayerWrapper = ({ children }: PropsWithChildren): JSX.Element => (
   <Box
     id="rightPlayerWrapper"
-    marginTop="16px"
+    marginTop="4px"
     borderRadius="8px"
     sx={{ backgroundColor: '#464C53', textAlign: 'center', width: 'auto' }}
   >
@@ -755,9 +755,9 @@ export const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element
     id="destinationWrapper"
     sx={{
       backgroundColor: '#FFFFFF',
-      paddingTop: '16px',
       minHeight: 'calc(100vh - 622px)',
-      maxHeight: 'calc(100vh - 470px)',
+      maxHeight: 'calc(100vh - 455px)',
+      paddingRight: '4px',
       height: '100%',
       overflowY: 'auto',
       '&::-webkit-scrollbar': {
@@ -842,6 +842,9 @@ export const SelectionWrapper = ({ first, droppableId, source, children }: Selec
               },
               padding: '10px',
               borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              columnGap: '8px',
             }}
           >
             <PlaylistAddIcon style={{ color: '#606971' }} />

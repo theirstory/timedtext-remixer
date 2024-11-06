@@ -40,7 +40,6 @@ import {
   ExportRemix,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
-import { FadeIcon } from './assets/FadeIcon.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
 
 function App() {
@@ -50,6 +49,7 @@ function App() {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
   const handleAutoscrollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAutoscroll(event.target.checked);
   };
@@ -180,7 +180,6 @@ function App() {
 
     const remixRefCurrent = remixRef.current;
     const listener = remixRefCurrent.addEventListener('remixChange', (e: any) => {
-      console.log('remixChange', e.detail);
       setRemix(e.detail);
     });
     return () => remixRefCurrent.removeEventListener('remixChange', listener);

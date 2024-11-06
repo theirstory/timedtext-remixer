@@ -1,6 +1,6 @@
 import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
@@ -48,7 +48,7 @@ const RemixDestination = ({
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
     background: isDraggingOver ? '#F1F2F3' : 'transparent',
     borderRadius: '8px',
-    height: '100%',
+    // height: '100%',
     width: '100%',
   });
 
@@ -110,7 +110,8 @@ const RemixDestination = ({
                             ...{
                               display: snapshot.isDragging ? 'block' : 'inline-block',
                               width: snapshot.isDragging ? width : 'auto',
-                              paddingTop: '16px',
+                              paddingTop: '8px',
+                              paddingBottom: '8px',
                             },
                           }}
                         >
@@ -137,7 +138,9 @@ const RemixDestination = ({
           </Droppable>
         </ToolbarWrapper>
         <IconButton handleClick={handleClick}>
-          <SettingsIcon />
+          <Tooltip title="Settings">
+            <SettingsIcon />
+          </Tooltip>
         </IconButton>
         <SettingsPopUp
           anchorEl={anchorEl}

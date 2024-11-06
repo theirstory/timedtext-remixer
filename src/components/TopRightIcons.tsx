@@ -1,7 +1,7 @@
 import OpenInBrowserOutlinedIcon from '@mui/icons-material/OpenInBrowserOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { IconButton } from './IconButton';
 
 const TopRightIcons = ({
@@ -16,13 +16,19 @@ const TopRightIcons = ({
   return (
     <Box sx={{ display: 'flex', gap: '6px', color: '#606971' }}>
       <IconButton aria-label="load-remix" handleClick={handleLoad}>
-        <OpenInBrowserOutlinedIcon />
+        <Tooltip title="Load">
+          <OpenInBrowserOutlinedIcon />
+        </Tooltip>
       </IconButton>
       <IconButton aria-label="save remix" handleClick={handleSave}>
-        <SaveIcon />
+        <Tooltip title="Save">
+          <SaveIcon />
+        </Tooltip>
       </IconButton>
       <IconButton aria-label="export remix" handleClick={handleExport}>
-        <DownloadIcon />
+        <Tooltip title="Download">
+          <DownloadIcon />
+        </Tooltip>
       </IconButton>
     </Box>
   );
