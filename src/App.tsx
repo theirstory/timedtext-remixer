@@ -59,6 +59,8 @@ function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
   const [tabValue, setTabValue] = React.useState(0);
   const [autoscroll, setAutoscroll] = React.useState(false);
+  const [scrolling, setScrolling] = useState(false);
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -100,11 +102,16 @@ function App() {
 
   const remixRef = React.useRef<any>();
   const autoscrollRef = React.useRef<any>();
+  const scrollRef = React.useRef<any>();
   // const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
   useEffect(() => {
     autoscrollRef.current = autoscroll;
   }, [autoscroll]);
+
+  useEffect(() => {
+    scrollRef.current = scrolling;
+  }, [scrolling]);
 
   useEffect(() => {
     if (!remixRef.current) return;
@@ -125,7 +132,7 @@ function App() {
         const players = Array.from(document.querySelectorAll(`div[data-sid="${sid}"] timedtext-player`));
         players.forEach((player) => {
           if (pseudo && autoscrollRef.current) {
-            const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
+            const sourceIndex = sources.findIndex((s: { metadata: { sid: any } }) => s?.metadata?.sid === sid);
             setTabValue(sourceIndex);
           } else {
             // const node = document.querySelector(selector);
@@ -140,7 +147,7 @@ function App() {
 
         const node = sectionEl?.querySelector(clip.metadata.selector);
         // console.log('node', clip.metadata.selector);
-        if (node && (autoscrollRef.current || !pseudo)) {
+        if (node && (autoscrollRef.current || !pseudo) && scrollRef.current) {
           // console.log('scrolling', {
           //   node,
           //   selector: clip.metadata.selector,
@@ -323,7 +330,7 @@ function App() {
 
           section p {
             cursor: pointer;
-            content-visibility: auto;
+            /* content-visibility: auto; */
           }
 
         `}
@@ -361,6 +368,10 @@ function App() {
                 &nbsp;
               </Typography>
               <FormGroup style={{ float: 'right' }}>
+                <FormControlLabel
+                  control={<Switch checked={scrolling} onChange={(e) => setScrolling(e.target.checked)} size="small" />}
+                  label={`Auto-scroll ${scrolling ? 'ON' : 'OFF'}`}
+                />
                 <FormControlLabel
                   control={<Switch checked={autoscroll} onChange={handleAutoscrollChange} size="small" />}
                   label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}

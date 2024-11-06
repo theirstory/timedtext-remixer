@@ -173,12 +173,12 @@ export const Tool = ({
   stack,
   id,
 }: {
-  Component: React.ComponentType<{ value?: unknown; id: string }>;
+  Component: React.ComponentType<{ value?: unknown; id: string; stack?: Stack }>;
   stack: Stack;
   id: string;
 }): JSX.Element => {
   const props = stack?.metadata ?? {};
-  return <Component id={id} {...props} />;
+  return <Component id={id} {...props} stack={stack} />;
 };
 
 export default RemixDestination;

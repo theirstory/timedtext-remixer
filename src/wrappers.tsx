@@ -426,23 +426,22 @@ export const TitleTool = (props: {
   );
 };
 
-export const GAPTool = (props: { id?: string; name?: string; template?: string; duration?: number }): JSX.Element => {
+export const GAPTool = (props: { id?: string; name?: string; template?: string; stack?: Stack }): JSX.Element => {
   const { dispatch } = useContext(Context);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const id = props.id ?? `FIN-${Date.now()}`;
-  const { template } = props;
-  const name = props.name ?? 'GAP';
+  const id = props.id;
+  const stack = props.stack;
+  const name = 'GAP';
 
-  const [duration, setDuration] = useState<number>(props.duration ?? 5);
+  const [duration, setDuration] = useState<number>(stack?.source_range?.duration ?? 5);
 
   const handleDurationChange = useCallback(
-    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
-    [],
-  );
-  const handleSave = useCallback(
-    () => dispatch({ type: 'metadata', payload: { id, metadata: { id, template, duration } } }),
-    [id, template, duration, dispatch],
+    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => {
+      setDuration(value as unknown as number);
+      dispatch({ type: 'change-duration', payload: { id, duration: value as unknown as number } });
+    },
+    [id, dispatch],
   );
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -486,7 +485,7 @@ export const GAPTool = (props: { id?: string; name?: string; template?: string; 
           value={duration as any}
           label="seconds"
           onChange={handleDurationChange}
-          onBlur={handleSave}
+          // onBlur={handleSave}
           size="small"
         >
           <MenuItem value={5}>5</MenuItem>

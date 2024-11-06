@@ -13,6 +13,7 @@ export type State = { // TODO: verify with OTIO spec, this is a Timeline
 export type Action =
 | { type: "test"; payload: any }
 | { type: "add-widget"; payload: any }
+| { type: "add-gap"; payload: any }
 | { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
 | { type: "move-up"; payload: any }
@@ -20,6 +21,7 @@ export type Action =
 | { type: "remove"; payload: any }
 | { type: "add"; payload: [DropResult, Timeline, [number, number]] }
 | { type: "add-at"; payload: [string, Timeline, [number, number]] }
+| { type: "change-duration"; payload: any }
 | { type: "update"; payload: any };
 
 export interface Stack {

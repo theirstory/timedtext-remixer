@@ -182,10 +182,9 @@ export const Section = memo(
     // FIXME
     if (interval) globalThis.foo = `selection-${interval?.[0]}-${interval?.[1]}`;
 
+    // TODO use a different set of tool array for in-section widgets
     return (
       <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
-        {stack.OTIO_SCHEMA}
-        {stack.OTIO_SCHEMA === 'Gap.1' ? <p>GAP</p> : <p>Clip</p>}
         {stack.metadata?.widget && tools?.find((t) => t.type === stack.metadata?.widget)?.timelineComponent && (
           <Tool
             Component={tools.find((t) => t.type === stack.metadata?.widget).timelineComponent}
