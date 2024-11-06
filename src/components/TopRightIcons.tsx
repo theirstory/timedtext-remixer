@@ -14,20 +14,20 @@ const TopRightIcons = ({
   handleExport: () => void;
 }) => {
   return (
-    <Box sx={{ display: 'flex', gap: '6px', color: '#606971' }}>
+    <Box sx={{ display: 'flex', gap: '6px' }}>
       <IconButton aria-label="load-remix" handleClick={handleLoad}>
         <Tooltip title="Load">
-          <OpenInBrowserOutlinedIcon />
+          <OpenInBrowserOutlinedIcon style={{ color: '#606971' }} />
         </Tooltip>
       </IconButton>
       <IconButton aria-label="save remix" handleClick={handleSave}>
         <Tooltip title="Save">
-          <SaveIcon />
+          <SaveIcon style={{ color: '#606971' }} />
         </Tooltip>
       </IconButton>
       <IconButton aria-label="export remix" handleClick={handleExport}>
         <Tooltip title="Download">
-          <DownloadIcon />
+          <DownloadIcon style={{ color: '#606971' }} />
         </Tooltip>
       </IconButton>
     </Box>

@@ -139,7 +139,7 @@ const RemixDestination = ({
         </ToolbarWrapper>
         <IconButton handleClick={handleClick}>
           <Tooltip title="Settings">
-            <SettingsIcon />
+            <SettingsIcon style={{ color: '#606971' }} />
           </Tooltip>
         </IconButton>
         <SettingsPopUp

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Button } from '@mui/material';
+import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Snackbar, AlertColor } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
@@ -46,6 +46,10 @@ function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
   const [tabValue, setTabValue] = React.useState(0);
   const [autoscroll, setAutoscroll] = React.useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -305,18 +309,31 @@ function App() {
   const saveRemix = useCallback(() => {
     console.log('remix', remix);
     localStorage.setItem('remix', JSON.stringify(remix));
+    setToastMessage('Remix saved successfully');
+    setToastSeverity('success');
+    setToastOpen(true);
   }, [remix]);
 
   const loadRemix = useCallback(() => {
     const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
     console.log('remix', remix2);
     if (remix2) setRemix(remix2);
+    setToastMessage('Remix loaded successfully');
+    setToastSeverity('success');
+    setToastOpen(true);
   }, []);
 
   const exportRemix = useCallback(() => {
     // const html = renderToString(<StaticRemix remix={remix} />);
     // console.log(html);
+    setToastMessage('Remix exported successfully');
+    setToastSeverity('success');
+    setToastOpen(true);
   }, []);
+
+  const handleCloseToast = () => {
+    setToastOpen(false);
+  };
 
   return (
     <>
@@ -392,51 +409,6 @@ function App() {
               padding="16px"
             >
               <Box id="tabs-container" display="flex">
-                {/* <Toolbar disableGutters variant="dense">
-            <Button
-                variant="outlined"
-                startIcon={<PostAddIcon />}
-                onClick={toggleDrawer(true)}
-                style={{ textTransform: 'none', textWrap: 'nowrap' }}
-              >
-                Open transcript
-              </Button>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                &nbsp;
-              </Typography>
-              <FormGroup style={{ float: 'right' }}>
-                <FormControlLabel
-                  control={<Switch checked={autoscroll} onChange={handleAutoscrollChange} size="small" />}
-                  label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
-                />
-              </FormGroup>
-            <Button
-                variant="outlined"
-                startIcon={<InputIcon />}
-                onClick={loadRemix}
-                style={{ textTransform: 'none', textWrap: 'nowrap' }}
-              >
-                Load remix
-              </Button>
-            &nbsp;
-              <Button
-                variant="outlined"
-                startIcon={<SaveIcon />}
-                onClick={saveRemix}
-                style={{ textTransform: 'none', textWrap: 'nowrap' }}
-              >
-                Save remix
-              </Button>
-              &nbsp;
-              <Button
-                variant="outlined"
-                startIcon={<LaunchIcon />}
-                onClick={toggleExportDrawer(true)}
-                style={{ textTransform: 'none', textWrap: 'nowrap' }}
-              >
-                Export remix
-              </Button>
-                   </Toolbar> */}
                 <Tabs
                   TabIndicatorProps={{ style: { display: 'none' } }}
                   value={tabValue}
@@ -468,19 +440,21 @@ function App() {
                       }}
                       key={i}
                       label={
-                        <Toolbar disableGutters variant="dense" sx={{ minHeight: '0px' }}>
-                          <Typography
-                            sx={{ width: '90px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                            fontSize="14px"
-                            fontWeight={700}
-                            lineHeight="20px"
-                          >
-                            {source?.metadata?.story?.title}
-                          </Typography>
-                          <IconButton sx={{ padding: 0 }} onClick={(e) => onTabClose(e, source)}>
-                            <CloseIcon style={{ width: '20px', height: '20px' }} />
-                          </IconButton>
-                        </Toolbar>
+                        <Tooltip title={source?.metadata?.story?.title}>
+                          <Toolbar disableGutters variant="dense" sx={{ minHeight: '0px' }}>
+                            <Typography
+                              sx={{ width: '90px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                              fontSize="14px"
+                              fontWeight={700}
+                              lineHeight="20px"
+                            >
+                              {source?.metadata?.story?.title}
+                            </Typography>
+                            <IconButton sx={{ padding: 0 }} onClick={(e) => onTabClose(e, source)}>
+                              <CloseIcon style={{ width: '20px', height: '20px' }} />
+                            </IconButton>
+                          </Toolbar>
+                        </Tooltip>
                       }
                     />
                   ))}
@@ -535,6 +509,7 @@ function App() {
           </Box>
         </RemixContext>
       </Box>
+      <Snackbar open={toastOpen} autoHideDuration={6000} onClose={handleCloseToast} message={toastMessage} />
       <div
         dangerouslySetInnerHTML={{
           __html: TEMPLATES,

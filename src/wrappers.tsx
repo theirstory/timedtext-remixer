@@ -17,6 +17,7 @@ import {
   MenuList,
   Menu,
   ListItemIcon,
+  Tooltip,
 } from '@mui/material';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -454,7 +455,6 @@ export const TitleTool = (props: {
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
-          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
           <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
             <ToggleButton value="#title-lower3rds" size="small">
               <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
@@ -984,14 +984,11 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
           <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          {/* <Divider orientation="vertical" flexItem /> */}
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               opacity: isHovered ? 1 : 0,
-              // backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
-              // backgroundColor: '#F7F9FC',
             }}
           >
             <IconButton
@@ -1006,33 +1003,14 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
                 '&:active': {
                   backgroundColor: '#e7e9ea',
                 },
-                // minWidth: '0px',
                 padding: '2px',
                 marginBottom: '0px',
                 borderRadius: '4px',
               }}
             >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-            <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
-            <IconButton
-              className="widget"
-              aria-label="delete"
-              // onClick={handleRemove}
-              sx={{
-                backgroundColor: '#F7F9FC',
-                '&:hover': {
-                  backgroundColor: '#e7e9ea',
-                },
-                '&:active': {
-                  backgroundColor: '#e7e9ea',
-                },
-                // minWidth: '0px',
-                marginBottom: '0px',
-                borderRadius: '4px',
-              }}
-            >
-              <img src={group} />
+              <Tooltip title="Delete">
+                <DeleteIcon fontSize="small" />
+              </Tooltip>
             </IconButton>
           </Box>
           <IconButton
