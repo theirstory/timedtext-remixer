@@ -1,11 +1,15 @@
 import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
+import { Box } from '@mui/material';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
 import { Player } from './Player';
 
 import type { Stack } from './interfaces';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { IconButton } from '../src/components/IconButton';
+import { SettingsPopUp } from '../src/components/SettingsPopUp';
 // import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
@@ -30,6 +34,7 @@ const RemixDestination = ({
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
@@ -62,6 +67,22 @@ const RemixDestination = ({
     }
   }, [widthRef]);
 
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleToggleAutoScroll = () => {
+    // TODO
+  };
+
+  const handleToggleContextView = () => {
+    //TODO
+  };
+
   return (
     <>
       <PlayerWrapper>
@@ -69,51 +90,62 @@ const RemixDestination = ({
       </PlayerWrapper>
 
       <div ref={widthRef} style={{ width: '100%', height: 0 }}></div>
-      <ToolbarWrapper>
-        <Droppable droppableId="Toolbar" isDropDisabled={true}>
-          {(provided, snapshot) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
-              {tools.map((tool, i) => (
-                <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
-                  {(provided, snapshot) => (
-                    <>
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
-                        // style={provided.draggableProps.style as CSSProperties}
-                        style={{
-                          ...(provided.draggableProps.style as CSSProperties),
-                          ...{
-                            display: snapshot.isDragging ? 'block' : 'inline-block',
-                            width: snapshot.isDragging ? width : 'auto',
-                            paddingTop: '16px',
-                          },
-                        }}
-                      >
-                        {tool.toolBarComponent}
-                      </div>
-                      {snapshot.isDragging ? (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <ToolbarWrapper>
+          <Droppable droppableId="Toolbar" isDropDisabled={true}>
+            {(provided, snapshot) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
+                {tools.map((tool, i) => (
+                  <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
+                    {(provided, snapshot) => (
+                      <>
                         <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
+                          // style={provided.draggableProps.style as CSSProperties}
                           style={{
-                            display: 'inline-block',
-                            width: 'auto',
-                            paddingTop: '16px',
+                            ...(provided.draggableProps.style as CSSProperties),
+                            ...{
+                              display: snapshot.isDragging ? 'block' : 'inline-block',
+                              width: snapshot.isDragging ? width : 'auto',
+                              paddingTop: '16px',
+                            },
                           }}
                         >
                           {tool.toolBarComponent}
                         </div>
-                      ) : null}
-                    </>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </ToolbarWrapper>
+                        {snapshot.isDragging ? (
+                          <div
+                            style={{
+                              display: 'inline-block',
+                              width: 'auto',
+                              paddingTop: '16px',
+                            }}
+                          >
+                            {tool.toolBarComponent}
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </ToolbarWrapper>
+        <IconButton handleClick={handleClick}>
+          <SettingsIcon />
+        </IconButton>
+        <SettingsPopUp
+          anchorEl={anchorEl}
+          handleClose={handleClose}
+          onToggleAutoScroll={handleToggleAutoScroll}
+          onToggleContextView={handleToggleContextView}
+        />
+      </Box>
 
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>

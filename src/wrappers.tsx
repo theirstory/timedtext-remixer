@@ -818,15 +818,45 @@ export const SelectionWrapper = ({ first, droppableId, source, children }: Selec
   return (
     <span className="SelectionWrapper" style={{ backgroundColor: '#d3ebe8', position: 'relative' }}>
       {first ? (
-        <div style={{ backgroundColor: 'white', position: 'absolute', left: 0, top: -35 }}>
-          <Button
-            variant="outlined"
-            startIcon={<PlaylistAddIcon />}
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            left: 0,
+            top: -35,
+            borderRadius: '4px',
+            boxShadow:
+              '0px 5px 5px -3px rgba(0, 0, 0, 0.20), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12)',
+          }}
+        >
+          <IconButton
+            className="widget"
+            aria-label="add to remix"
             onClick={handleAdd}
-            style={{ textTransform: 'none', textWrap: 'nowrap' }}
+            sx={{
+              '&:hover': {
+                backgroundColor: '#F7F9FC',
+              },
+              '&:active': {
+                backgroundColor: '#F7F9FC',
+              },
+              padding: '10px',
+              borderRadius: '4px',
+            }}
           >
-            Add to remix
-          </Button>
+            <PlaylistAddIcon style={{ color: '#606971' }} />
+            <Typography
+              style={{
+                color: '#606971',
+                fontSize: '12px',
+                fontWeight: 600,
+                lineHeight: '16px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Add to remix
+            </Typography>
+          </IconButton>
         </div>
       ) : null}
       {children}

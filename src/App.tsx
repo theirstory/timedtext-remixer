@@ -41,6 +41,7 @@ import {
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import { FadeIcon } from './assets/FadeIcon.tsx';
+import TopRightIcons from './components/TopRightIcons.tsx';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -313,10 +314,10 @@ function App() {
     if (remix2) setRemix(remix2);
   }, []);
 
-  // const exportRemix = useCallback(() => {
-  //   // const html = renderToString(<StaticRemix remix={remix} />);
-  //   // console.log(html);
-  // }, []);
+  const exportRemix = useCallback(() => {
+    // const html = renderToString(<StaticRemix remix={remix} />);
+    // console.log(html);
+  }, []);
 
   return (
     <>
@@ -513,9 +514,12 @@ function App() {
               paddingX="24px"
               paddingTop="24px"
             >
-              <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
-                Remix
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
+                  Remix
+                </Typography>
+                <TopRightIcons handleLoad={loadRemix} handleSave={saveRemix} handleExport={exportRemix} />
+              </Box>
               <RemixDestination
                 PlayerWrapper={
                   // isDestinationEmpty ? EmptyPlayer :
