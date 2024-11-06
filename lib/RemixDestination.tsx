@@ -6,6 +6,7 @@ import { Context } from './RemixContext';
 import { Player } from './Player';
 
 import type { Stack } from './interfaces';
+// import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
   PlayerWrapper?: ElementType;
@@ -30,8 +31,6 @@ const RemixDestination = ({
   const { state } = useContext(Context);
   const { remix, poster } = state;
 
-  // console.log({ remix });
-
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
     if ((remix?.tracks?.children?.[0]?.children ?? []).every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
@@ -45,6 +44,7 @@ const RemixDestination = ({
     background: isDraggingOver ? '#F1F2F3' : 'transparent',
     borderRadius: '8px',
     height: '100%',
+    width: '100%',
   });
 
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
@@ -88,12 +88,23 @@ const RemixDestination = ({
                           ...{
                             display: snapshot.isDragging ? 'block' : 'inline-block',
                             width: snapshot.isDragging ? width : 'auto',
+                            paddingTop: '16px',
                           },
                         }}
                       >
-                        {snapshot.isDragging ? <tool.timelineComponent /> : tool.toolBarComponent}
+                        {tool.toolBarComponent}
                       </div>
-                      {snapshot.isDragging ? tool.toolBarComponent : null}
+                      {snapshot.isDragging ? (
+                        <div
+                          style={{
+                            display: 'inline-block',
+                            width: 'auto',
+                            paddingTop: '16px',
+                          }}
+                        >
+                          {tool.toolBarComponent}
+                        </div>
+                      ) : null}
                     </>
                   )}
                 </Draggable>
@@ -108,7 +119,7 @@ const RemixDestination = ({
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
           {(provided, snapshot) => (
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
-              <article id={`B${remix?.metadata?.id}`} style={{ minHeight: '100%' }}>
+              <article id={`B${remix?.metadata?.id}`}>
                 {stacks.map((stack: Stack, i, stacks) => (
                   <Draggable key={stack?.metadata?.id ?? `db-${i}`} draggableId={stack?.metadata?.id} index={i}>
                     {(provided, snapshot) => (
@@ -141,12 +152,13 @@ const RemixDestination = ({
                   </Draggable>
                 ))}
                 {stacks.length === 1 && <Empty />}
-                <Draggable draggableId="END" index={stacks.length}>
+                {/* <Draggable draggableId="END" index={stacks.length}>
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       style={{
+                        display: 'none',
                         ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
                         ...{ height: 200, backgroundColor: 'blanchedalmond' },
                       }}
@@ -155,7 +167,7 @@ const RemixDestination = ({
                       THE END
                     </div>
                   )}
-                </Draggable>
+                </Draggable> */}
               </article>
 
               {provided.placeholder}

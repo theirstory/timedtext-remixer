@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DropResult } from "@hello-pangea/dnd";
+import { DropResult } from '@hello-pangea/dnd';
 
-export type State = { // TODO: verify with OTIO spec, this is a Timeline
+export type State = {
+  // TODO: verify with OTIO spec, this is a Timeline
   // sources?: Timeline[] | undefined | null;
   timestamp?: number;
   remix?: Timeline | undefined | null;
@@ -42,7 +43,10 @@ export interface Timeline {
 }
 
 export interface Metadata {
-  [key: string]: any;
+  id: string;
+  story: any;
+  title: string;
+  videoURL: string;
 }
 
 // interface RationalTime {
@@ -71,7 +75,8 @@ export interface Clip {
   timed_texts?: TimedText[] | null;
 }
 
-export interface Gap { // TODO: verify with OTIO spec
+export interface Gap {
+  // TODO: verify with OTIO spec
   OTIO_SCHEMA: string;
   markers?: any[];
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure

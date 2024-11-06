@@ -1,24 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import {
-  Box,
-  Button,
-  Tab,
-  Tabs,
-  Chip,
-  Typography,
-  IconButton,
-  FormGroup,
-  FormControlLabel,
-  Toolbar,
-  Switch,
-  Drawer,
-} from '@mui/material';
+import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import LaunchIcon from '@mui/icons-material/Launch';
-import InputIcon from '@mui/icons-material/Input';
-import SaveIcon from '@mui/icons-material/Save';
-import PostAddIcon from '@mui/icons-material/PostAdd';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 
 import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
@@ -27,6 +12,7 @@ import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
+import { AddTransition } from './Assets/AddTransition.tsx';
 
 import T4 from './data/66043ea15b6357760d02b9a4.json';
 import T5 from './data/61929022c65d8e0005450522.json';
@@ -54,6 +40,8 @@ import {
   SectionContentWrapper,
   ExportRemix,
 } from './wrappers.tsx';
+import { SourceDrawer } from './components/SourceDrawer.tsx';
+import { FadeIcon } from './assets/FadeIcon.tsx';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -162,7 +150,7 @@ function App() {
         const cssText = `
           ${transcript} {
             ${selector} {
-              color: #0944f3 !important;
+              color: #1C7C6F !important;
               text-decoration: underline;
             }
 
@@ -226,25 +214,36 @@ function App() {
   const tools = useMemo(
     () => [
       {
-        name: 'title',
-        type: 'title',
-        draggable: true,
-        toolBarComponent: <Chip label="Title" variant="outlined" />,
-        // timelineComponent: <TitleTool />,
-        timelineComponent: TitleTool,
-        defaults: {
-          title: 'Title',
-          subtitle: 'Subtitle',
-          template: '#title-full',
-          duration: 5,
-        },
-      },
-      {
         name: 'fin',
         type: 'fin',
         draggable: true,
-        toolBarComponent: <Chip label="Fade" variant="outlined" />,
-        // timelineComponent: <FadeInTool />,
+        toolBarComponent: (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              columnGap: '4px',
+              width: '100px',
+              fontSize: '12px',
+              fontWeight: 600,
+              lineHeight: '16px',
+              color: '#239B8B',
+              backgroundColor: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              borderRadius: '8px',
+              marginRight: '12px',
+              '&:hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+              '&:active': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+            }}
+          >
+            <AddTransition />
+            Transition
+          </Box>
+        ),
         timelineComponent: FadeInTool,
         defaults: {
           title: 'Fade',
@@ -253,17 +252,42 @@ function App() {
         },
       },
       {
-        name: 'gap',
-        type: 'gap',
+        name: 'title',
+        type: 'title',
         draggable: true,
-        toolBarComponent: <Chip label="GAP" variant="outlined" />,
-        // timelineComponent: <FadeInTool />,
-        timelineComponent: GAPTool,
+        toolBarComponent: (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              width: '67px',
+              columnGap: '4px',
+              fontSize: '12px',
+              fontWeight: 600,
+              lineHeight: '16px',
+              color: '#239B8B',
+              backgroundColor: 'rgba(35, 155, 139, 0.15)',
+              padding: '6px',
+              borderRadius: '8px',
+              '&:hover': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+              '&:active': {
+                backgroundColor: 'rgba(35, 155, 139, 0.30)',
+              },
+            }}
+          >
+            <PostAddOutlinedIcon style={{ width: '20px', height: '20px' }} />
+            Title
+          </Box>
+        ),
+        // timelineComponent: <TitleTool />,
+        timelineComponent: TitleTool,
         defaults: {
-          title: 'GAP',
-          template: '#fin',
+          title: 'Title',
+          subtitle: 'Subtitle',
+          template: '#title-full',
           duration: 5,
-          type: 'gap',
         },
       },
     ],
@@ -335,17 +359,24 @@ function App() {
 
         `}
       </style>
-      <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
-        {allSources.map((source, i) => (
-          <p key={i} onClick={() => openTab(source)}>
-            {source?.metadata?.title}
-          </p>
-        ))}
-      </Drawer>
+      {drawerOpen && (
+        <SourceDrawer
+          open={drawerOpen}
+          onClose={toggleDrawer(false)}
+          sources={allSources}
+          onClickSource={(source) => openTab(source)}
+        />
+      )}
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
-      <Box id="container" ref={remixRef}>
+      <Box
+        id="container"
+        ref={remixRef}
+        display="flex"
+        justifyContent="center"
+        sx={{ padding: '8px', height: 'calc(100% - 16px)' }}
+      >
         <RemixContext
           sources={sources}
           remix={remix}
@@ -354,9 +385,23 @@ function App() {
           height={360}
           tools={tools}
         >
-          <Box id="tabs-container">
-            <Toolbar disableGutters variant="dense">
-              <Button
+          <Box
+            id="columns-container"
+            display={'grid'}
+            gap={'8px'}
+            height={'100%'}
+            maxWidth={'1440px'}
+            gridTemplateColumns={'1fr 1fr'}
+          >
+            <Box
+              id="left-column-container"
+              borderRadius="0px 8px 8px 8px"
+              sx={{ backgroundColor: '#FFFFFF' }}
+              padding="16px"
+            >
+              <Box id="tabs-container" display="flex">
+                {/* <Toolbar disableGutters variant="dense">
+            <Button
                 variant="outlined"
                 startIcon={<PostAddIcon />}
                 onClick={toggleDrawer(true)}
@@ -364,7 +409,7 @@ function App() {
               >
                 Open transcript
               </Button>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 &nbsp;
               </Typography>
               <FormGroup style={{ float: 'right' }}>
@@ -377,7 +422,7 @@ function App() {
                   label={`Live context view ${autoscroll ? 'ON' : 'OFF'}`}
                 />
               </FormGroup>
-              <Button
+            <Button
                 variant="outlined"
                 startIcon={<InputIcon />}
                 onClick={loadRemix}
@@ -385,7 +430,7 @@ function App() {
               >
                 Load remix
               </Button>
-              &nbsp;
+            &nbsp;
               <Button
                 variant="outlined"
                 startIcon={<SaveIcon />}
@@ -403,56 +448,62 @@ function App() {
               >
                 Export remix
               </Button>
-            </Toolbar>
-            <Tabs
-              TabIndicatorProps={{ style: { display: 'none' } }}
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="tabbed content"
-              sx={{ minHeight: '0px' }}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              {sources.map((source, i) => (
-                <Tab
-                  sx={{
-                    borderRadius: '8px 8px 0px 0px',
-                    borderTop: '1px solid var(--Dark-20, #D9DCDE)',
-                    borderRight: '1px solid var(--Dark-20, #D9DCDE)',
-                    // borderLeft: '1px solid var(--Dark-20, #D9DCDE)',
-                    backgroundColor: 'var(--Light-100, #FFF)',
-                    textTransform: 'none',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    minHeight: '0px',
-                    padding: '6px 8px 6px 8px',
-                    lineHeight: '20px',
-                    '&.Mui-selected': {
-                      color: '#239B8B',
-                      borderBottom: 'none',
-                    },
-                    borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
-                  }}
-                  key={i}
-                  label={
-                    <Toolbar disableGutters variant="dense">
-                      {source?.metadata?.story?.title}
-                      <IconButton onClick={(e) => onTabClose(e, source)}>
-                        <CloseIcon />
-                      </IconButton>
-                    </Toolbar>
-                  }
-                />
-              ))}
-            </Tabs>
-          </Box>
-          <Box id="columns-container" display="flex" columnGap="20px">
-            <Box
-              id="left-column-container"
-              borderRadius="0px 8px 8px 8px"
-              sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
-              paddingX="24px"
-            >
+                   </Toolbar> */}
+                <Tabs
+                  TabIndicatorProps={{ style: { display: 'none' } }}
+                  value={tabValue}
+                  onChange={handleTabChange}
+                  aria-label="tabbed content"
+                  sx={{ minHeight: '0px' }}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                >
+                  {sources.map((source, i) => (
+                    <Tab
+                      sx={{
+                        borderRadius: '8px 8px 0px 0px',
+                        borderTop: '1px solid var(--Dark-20, #D9DCDE)',
+                        borderRight: '1px solid var(--Dark-20, #D9DCDE)',
+                        borderLeft: i === 0 ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
+                        backgroundColor: tabValue !== i ? '#F7F9FC' : '#FFF',
+                        textTransform: 'none',
+                        // fontSize: '14px',
+                        // fontWeight: 700,
+                        minHeight: '0px',
+                        padding: '6px 8px 6px 8px',
+                        // lineHeight: '20px',
+                        '&.Mui-selected': {
+                          color: '#239B8B',
+                          borderBottom: 'none',
+                        },
+                        borderBottom: tabValue !== i ? '1px solid var(--Dark-20, #D9DCDE)' : 'none',
+                      }}
+                      key={i}
+                      label={
+                        <Toolbar disableGutters variant="dense" sx={{ minHeight: '0px' }}>
+                          <Typography
+                            sx={{ width: '90px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            fontSize="14px"
+                            fontWeight={700}
+                            lineHeight="20px"
+                          >
+                            {source?.metadata?.story?.title}
+                          </Typography>
+                          <IconButton sx={{ padding: 0 }} onClick={(e) => onTabClose(e, source)}>
+                            <CloseIcon style={{ width: '20px', height: '20px' }} />
+                          </IconButton>
+                        </Toolbar>
+                      }
+                    />
+                  ))}
+                </Tabs>
+                <Tooltip title="Add media">
+                  <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
+                    <PlaylistAddIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              {/* <Box height="100%"> */}
               <RemixSources
                 active={active}
                 PlayerWrapper={LeftPlayerWrapper}
@@ -462,6 +513,7 @@ function App() {
                 ToolbarWrapper={ToolbarWrapper}
                 tools={toolsLeft}
               />
+              {/* </Box> */}
             </Box>
 
             <Box
@@ -471,7 +523,11 @@ function App() {
               display="flex"
               flexDirection="column"
               paddingX="24px"
+              paddingTop="24px"
             >
+              <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
+                Remix
+              </Typography>
               <RemixDestination
                 PlayerWrapper={
                   // isDestinationEmpty ? EmptyPlayer :
