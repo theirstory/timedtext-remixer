@@ -156,8 +156,26 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'add-gap': {
-        const { result, metadata } = action.payload;
-        console.log({ result, metadata });
+        const { result, metadata, tool } = action.payload;
+        // const stack = {
+        //   OTIO_SCHEMA: 'Stack.1',
+        //   metadata: {
+        //     id: metadata.id ?? `E-${nanoid()}`,
+        //     type: 'effect',
+        //     ...tool.defaults,
+        //     ...metadata,
+        //   },
+        //   source_range: {
+        //     OTIO_SCHEMA: 'TimeRange.1',
+        //     start_time: 0,
+        //     duration: metadata.duration ?? 1,
+        //   },
+        //   children: [],
+        // };
+
+        // if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
+
+        // applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
         return draftState;
       }
 
