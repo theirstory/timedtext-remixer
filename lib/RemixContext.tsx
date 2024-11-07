@@ -10,7 +10,7 @@ import type { State, Action, Timeline, Stack, Clip } from './interfaces';
 import { timelineStacks } from './utils';
 // import { TimedTextPlayerComponent } from './Player';
 // import { ReactWebComponent } from '@lit/react';
-import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js';
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const Context = createContext({
   sources: [] as Timeline[],
@@ -109,7 +109,7 @@ const RemixContext = ({
 };
 
 const reducer = (state: State, action: Action): State => {
-  // console.log({ action, state });
+  console.log({ action, state });
   const nextState = produce(state, (draftState) => {
     draftState.timestamp = Date.now();
     switch (action.type) {
@@ -138,10 +138,6 @@ const reducer = (state: State, action: Action): State => {
           metadata: {
             id: metadata.id ?? `E-${nanoid()}`,
             type: 'effect',
-            // data: {
-            //   t: '0,0',
-            //   'media-src': EMPTY_VIDEO,
-            // },
             ...tool.defaults,
             ...metadata,
           },
@@ -150,42 +146,36 @@ const reducer = (state: State, action: Action): State => {
             start_time: 0,
             duration: metadata.duration ?? 1,
           },
-          // media_reference: {
-          //   OTIO_SCHEMA: 'MediaReference.1',
-          //   target: EMPTY_VIDEO,
-          // },
-          children: [
-            // {
-            //   OTIO_SCHEMA: 'Track.1',
-            //   kind: 'video',
-            //   children: [
-            //     {
-            //       OTIO_SCHEMA: 'Clip.1',
-            //       metadata: {
-            //         id: 'C-EMPTY2',
-            //         speaker: 'SPEAKER_0',
-            //         data: {
-            //           t: '0,0',
-            //         },
-            //       },
-            //       media_reference: {
-            //         OTIO_SCHEMA: 'MediaReference.1',
-            //         target: EMPTY_VIDEO,
-            //       },
-            //       source_range: {
-            //         OTIO_SCHEMA: 'TimeRange.1',
-            //         start_time: 0,
-            //         duration: 0,
-            //       },
-            //     },
-            //   ],
-            // },
-          ],
+          children: [],
         };
 
         if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        return draftState;
+      }
+
+      case 'add-gap': {
+        const { result, metadata, tool } = action.payload;
+        // const stack = {
+        //   OTIO_SCHEMA: 'Stack.1',
+        //   metadata: {
+        //     id: metadata.id ?? `E-${nanoid()}`,
+        //     type: 'effect',
+        //     ...tool.defaults,
+        //     ...metadata,
+        //   },
+        //   source_range: {
+        //     OTIO_SCHEMA: 'TimeRange.1',
+        //     start_time: 0,
+        //     duration: metadata.duration ?? 1,
+        //   },
+        //   children: [],
+        // };
+
+        // if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
+
+        // applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
         return draftState;
       }
 
@@ -270,8 +260,22 @@ const reducer = (state: State, action: Action): State => {
         return draftState;
       }
 
+      case 'change-duration': {
+        const { id, duration } = action.payload;
+        const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
+        if (stackIndex === -1) return draftState;
+
+        const stack = draftState.remix?.tracks.children[0].children[stackIndex];
+        if (!stack) return draftState;
+
+        stack.source_range!.duration = duration;
+        stack.metadata!.data!.t = [0, duration];
+        return draftState;
+      }
+
       default:
-        throw new Error(`Unhandled action type: ${(action as Action).type}`);
+        console.error('Unhandled action', action);
+      // throw new Error(`Unhandled action type: ${(action as Action).type}`);
     }
   }) as State;
 

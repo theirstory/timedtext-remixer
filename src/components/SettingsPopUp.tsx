@@ -3,6 +3,8 @@ import { CustomSwitch } from './CustomSwitch';
 
 interface SettingsPopUpProps {
   anchorEl: HTMLElement | null;
+  autoScroll: boolean;
+  contextView: boolean;
   handleClose: React.MouseEventHandler<HTMLElement>;
   onToggleAutoScroll: React.MouseEventHandler<HTMLElement>;
   onToggleContextView: React.MouseEventHandler<HTMLElement>;
@@ -10,6 +12,8 @@ interface SettingsPopUpProps {
 
 export const SettingsPopUp = ({
   anchorEl,
+  autoScroll,
+  contextView,
   handleClose,
   onToggleAutoScroll,
   onToggleContextView,
@@ -44,7 +48,7 @@ export const SettingsPopUp = ({
       }}
     >
       <Box display="flex" columnGap="8px" alignItems="center" justifyContent="center">
-        <CustomSwitch checked={true} />
+        <CustomSwitch checked={autoScroll} />
         <Typography fontSize="14px" fontWeight={600} lineHeight="16px">
           Auto-scroll
         </Typography>
@@ -67,7 +71,7 @@ export const SettingsPopUp = ({
       }}
     >
       <Box display="flex" columnGap="8px" alignItems="center" justifyContent="center">
-        <CustomSwitch checked={false} />
+        <CustomSwitch checked={contextView} />
         <Typography fontSize="14px" fontWeight={600} lineHeight="16px">
           Live context view
         </Typography>

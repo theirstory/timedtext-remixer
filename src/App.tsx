@@ -1,6 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Snackbar, AlertColor } from '@mui/material';
+import {
+  Box,
+  Tab,
+  Tabs,
+  Typography,
+  IconButton,
+  Toolbar,
+  Drawer,
+  Tooltip,
+  Snackbar,
+  AlertColor,
+  Chip,
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
@@ -13,6 +25,9 @@ import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
+
+import SettingsIcon from '@mui/icons-material/Settings';
+import { SettingsPopUp } from './components/SettingsPopUp';
 
 import T4 from './data/66043ea15b6357760d02b9a4.json';
 import T5 from './data/61929022c65d8e0005450522.json';
@@ -27,6 +42,7 @@ import {
   TEMPLATES,
   FadeInTool,
   TitleTool,
+  // GAPTool,
   EmptyRemix,
   LeftPlayerWrapper,
   RightPlayerWrapper,
@@ -48,6 +64,7 @@ function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
   const [tabValue, setTabValue] = React.useState(0);
   const [autoscroll, setAutoscroll] = React.useState(false);
+  const [scrolling, setScrolling] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
@@ -94,11 +111,16 @@ function App() {
 
   const remixRef = React.useRef<any>();
   const autoscrollRef = React.useRef<any>();
+  const scrollRef = React.useRef<any>();
   // const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
   useEffect(() => {
     autoscrollRef.current = autoscroll;
   }, [autoscroll]);
+
+  useEffect(() => {
+    scrollRef.current = scrolling;
+  }, [scrolling]);
 
   useEffect(() => {
     if (!remixRef.current) return;
@@ -119,7 +141,7 @@ function App() {
         const players = Array.from(document.querySelectorAll(`div[data-sid="${sid}"] timedtext-player`));
         players.forEach((player) => {
           if (pseudo && autoscrollRef.current) {
-            const sourceIndex = sources.findIndex((s) => s?.metadata?.sid === sid);
+            const sourceIndex = sources.findIndex((s: { metadata: { sid: any } }) => s?.metadata?.sid === sid);
             setTabValue(sourceIndex);
           } else {
             // const node = document.querySelector(selector);
@@ -134,7 +156,7 @@ function App() {
 
         const node = sectionEl?.querySelector(clip.metadata.selector);
         // console.log('node', clip.metadata.selector);
-        if (node && (autoscrollRef.current || !pseudo)) {
+        if (node && (autoscrollRef.current || !pseudo) && scrollRef.current) {
           // console.log('scrolling', {
           //   node,
           //   selector: clip.metadata.selector,
@@ -289,6 +311,20 @@ function App() {
           duration: 5,
         },
       },
+      // {
+      //   name: 'gap',
+      //   type: 'gap',
+      //   draggable: true,
+      //   toolBarComponent: <Chip label="GAP" variant="outlined" />,
+      //   // timelineComponent: <FadeInTool />,
+      //   timelineComponent: GAPTool,
+      //   defaults: {
+      //     title: 'GAP',
+      //     template: '#fin',
+      //     duration: 5,
+      //     type: 'gap',
+      //   },
+      // },
     ],
     [],
   );
@@ -336,6 +372,24 @@ function App() {
 
   const handleCloseToast = () => {
     setToastOpen(false);
+  };
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleClick', event.currentTarget);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleToggleAutoScroll = () => {
+    setScrolling(!scrolling);
+  };
+
+  const handleToggleContextView = () => {
+    setAutoscroll(!autoscroll);
   };
 
   return (
@@ -505,6 +559,23 @@ function App() {
                 SectionContentWrapper={SectionContentWrapper}
                 BlockWrapper={BlockWrapperRight}
                 // ToolbarWrapper={ToolbarWrapper}
+                Settings={
+                  <div>
+                    <IconButton onClick={handleClick}>
+                      <Tooltip title="Settings">
+                        <SettingsIcon style={{ color: '#606971' }} />
+                      </Tooltip>
+                    </IconButton>
+                    <SettingsPopUp
+                      anchorEl={anchorEl}
+                      autoScroll={scrolling}
+                      contextView={autoscroll}
+                      handleClose={handleClose}
+                      onToggleAutoScroll={handleToggleAutoScroll}
+                      onToggleContextView={handleToggleContextView}
+                    />
+                  </div>
+                }
                 tools={tools}
                 Empty={EmptyRemix}
               />
