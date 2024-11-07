@@ -147,7 +147,6 @@ export const FadeInTool = (props: {
   const { template } = props;
   const name = props.name ?? 'Fade transition';
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
   // const [currentSelection, setCurrentSelection] = useState(5);
 
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
@@ -176,15 +175,29 @@ export const FadeInTool = (props: {
     handleClose();
   }, [id, dispatch]);
 
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+
   return (
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       sx={{
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
         marginBottom: '12px',
-        backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+        backgroundColor: '#FFF',
+        transition: 'opacity 0.3s ease',
+        '&:hover': {
+          backgroundColor: '#F7F9FC',
+          '.hovered-block': {
+            opacity: 1,
+          },
+        },
       }}
       className="widget"
     >
@@ -198,10 +211,10 @@ export const FadeInTool = (props: {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            opacity: isHovered ? 1 : 0,
-            // backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
-            // backgroundColor: '#F7F9FC',
+            transition: 'opacity 0.3s ease',
+            opacity: 0,
           }}
+          className="hovered-block"
         >
           <IconButton
             className="widget"
@@ -224,7 +237,9 @@ export const FadeInTool = (props: {
               borderRadius: '4px',
             }}
           >
-            <DeleteIcon fontSize="small" />
+            <Tooltip title="Delete">
+              <DeleteIcon fontSize="small" />
+            </Tooltip>
           </IconButton>
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
           <Box marginLeft="2px !important">
@@ -314,19 +329,49 @@ export const FadeInTool = (props: {
               </MenuItem>
             </MenuList>
           </Popover>
+          <IconButton
+            className="widget"
+            aria-label="more"
+            id="long-button"
+            aria-controls={open ? 'long-menu' : undefined}
+            aria-expanded={open ? 'true' : undefined}
+            aria-haspopup="true"
+            onClick={handleClick}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            className="widget"
+            id="long-menu"
+            MenuListProps={{
+              'aria-labelledby': 'long-button',
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                style: {
+                  maxHeight: ITEM_HEIGHT * 4.5,
+                  width: '20ch',
+                },
+              },
+            }}
+          >
+            <MenuItem onClick={handleMoveUp}>
+              <ListItemIcon>
+                <ArrowUpwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move up</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleMoveDown}>
+              <ListItemIcon>
+                <ArrowDownwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move down</Typography>
+            </MenuItem>
+          </Menu>
         </Box>
-        {/* <Select
-          value={duration as any}
-          label="seconds"
-          onChange={handleDurationChange}
-          onBlur={handleSave}
-          size="small"
-          sx={{ border : 'none' }}
-        >
-          <MenuItem value={5}>5</MenuItem>
-          <MenuItem value={10}>10</MenuItem>
-          <MenuItem value={15}>15</MenuItem>
-        </Select> */}
       </Toolbar>
     </Box>
   );
@@ -350,7 +395,6 @@ export const TitleTool = (props: {
   const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   const handleTitleChange = useCallback(
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setTitle(value),
@@ -388,36 +432,34 @@ export const TitleTool = (props: {
     handleClose();
   }, [id, dispatch]);
 
+  const handleMoveUp = useCallback(() => {
+    dispatch({ type: 'move-up', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+  const handleMoveDown = useCallback(() => {
+    dispatch({ type: 'move-down', payload: { id } });
+    handleClose();
+  }, [id, dispatch]);
+
   return (
-    // <div
-    //   style={{
-    //     backgroundColor: '#fff',
-    //     borderRadius: '8px',
-    //     border: '1px solid #D9DCDE',
-    //     padding: '12px',
-    //     marginBottom: '12px',
-    //   }}
-    //   className="widget"
-    // >
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       sx={{
-        // backgroundColor: '#FFF',|
+        backgroundColor: '#FFF',
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
-        // padding: '12px',
+        transition: 'opacity 0.3s ease',
         marginBottom: '12px',
         padding: '12px',
-        // ':&hover': {
-        //   backgroundColor: 'blue !important',
-        // },
-        backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+        '&:hover': {
+          backgroundColor: '#F7F9FC',
+          '.hovered-block': {
+            opacity: 1,
+          },
+        },
       }}
       className="widget"
     >
       <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '16px' }}>
-        {/* <TitleIcon /> */}
         <DragHandleIcon style={{ marginRight: '8px' }} />
         <TextFieldsIcon style={{ marginRight: '8px' }} />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
@@ -427,10 +469,10 @@ export const TitleTool = (props: {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            opacity: isHovered ? 1 : 0,
-            // backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
-            // backgroundColor: '#F7F9FC',
+            transition: 'opacity 0.3s ease',
+            opacity: 0,
           }}
+          className="hovered-block"
         >
           <IconButton
             className="widget"
@@ -453,8 +495,11 @@ export const TitleTool = (props: {
               borderRadius: '4px',
             }}
           >
-            <DeleteIcon fontSize="small" />
+            <Tooltip title="Delete">
+              <DeleteIcon fontSize="small" />
+            </Tooltip>
           </IconButton>
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
           <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
             <ToggleButton value="#title-lower3rds" size="small">
               <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
@@ -550,66 +595,49 @@ export const TitleTool = (props: {
               </MenuItem>
             </MenuList>
           </Popover>
-        </Box>
-        {/* <Select
-          value={duration as any}
-          label="seconds"
-          onChange={handleDurationChange}
-          onBlur={handleSave}
-          size="small"
-        >
-          <MenuItem value={5}>5</MenuItem>
-          <MenuItem value={10}>10</MenuItem>
-          <MenuItem value={15}>15</MenuItem>
-        </Select> */}
-        {/* <IconButton
-          className="widget"
-          aria-label="more"
-          id="long-button"
-          aria-controls={open ? 'long-menu' : undefined}
-          aria-expanded={open ? 'true' : undefined}
-          aria-haspopup="true"
-          onClick={handleClick}
-        >
-          <MoreVertIcon />
-        </IconButton> */}
-        {/* <Menu
-          className="widget"
-          id="long-menu"
-          MenuListProps={{
-            'aria-labelledby': 'long-button',
-          }}
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          slotProps={{
-            paper: {
-              style: {
-                maxHeight: ITEM_HEIGHT * 4.5,
-                width: '20ch',
+          <IconButton
+            className="widget"
+            aria-label="more"
+            id="long-button"
+            aria-controls={open ? 'long-menu' : undefined}
+            aria-expanded={open ? 'true' : undefined}
+            aria-haspopup="true"
+            onClick={handleClick}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            className="widget"
+            id="long-menu"
+            MenuListProps={{
+              'aria-labelledby': 'long-button',
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            slotProps={{
+              paper: {
+                style: {
+                  maxHeight: ITEM_HEIGHT * 4.5,
+                  width: '20ch',
+                },
               },
-            },
-          }}
-        >
-          <MenuItem onClick={handleMoveUp}>
-            <ListItemIcon>
-              <ArrowUpwardIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">move up</Typography>
-          </MenuItem>
-          <MenuItem onClick={handleMoveDown}>
-            <ListItemIcon>
-              <ArrowDownwardIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">move down</Typography>
-          </MenuItem>
-          <MenuItem onClick={handleRemove}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">delete</Typography>
-          </MenuItem>
-        </Menu> */}
+            }}
+          >
+            <MenuItem onClick={handleMoveUp}>
+              <ListItemIcon>
+                <ArrowUpwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move up</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleMoveDown}>
+              <ListItemIcon>
+                <ArrowDownwardIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">move down</Typography>
+            </MenuItem>
+          </Menu>
+        </Box>
       </Toolbar>
       <TextField
         label="Title"
@@ -935,7 +963,6 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
   const { dispatch } = useContext(Context);
   const { id, title } = metadata ?? { title: 'No title?' };
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -961,21 +988,20 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
 
   return (
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       sx={{
-        // backgroundColor: '#FFF',|
+        backgroundColor: '#FFF',
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
-        // padding: '12px',
+        transition: 'opacity 0.3s ease',
         marginBottom: '12px',
         padding: '12px',
-        // ':&hover': {
-        //   backgroundColor: 'blue !important',
-        // },
-        backgroundColor: isHovered ? '#F7F9FC' : '#FFF',
+        '&:hover': {
+          backgroundColor: '#F7F9FC',
+          '.hoverable-icon': {
+            opacity: 1,
+          },
+        },
       }}
-      // className="widget"
       className="SectionContentWrapper"
     >
       <div style={{ userSelect: 'none' }}>
@@ -988,8 +1014,10 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
             sx={{
               display: 'flex',
               alignItems: 'center',
-              opacity: isHovered ? 1 : 0,
+              opacity: 0,
+              transition: 'opacity 0.3s ease',
             }}
+            className="hoverable-icon"
           >
             <IconButton
               className="widget"
@@ -1003,7 +1031,6 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
                 '&:active': {
                   backgroundColor: '#e7e9ea',
                 },
-                padding: '2px',
                 marginBottom: '0px',
                 borderRadius: '4px',
               }}
@@ -1012,53 +1039,54 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
                 <DeleteIcon fontSize="small" />
               </Tooltip>
             </IconButton>
-          </Box>
-          <IconButton
-            className="widget"
-            aria-label="more"
-            id="long-button"
-            aria-controls={open ? 'long-menu' : undefined}
-            aria-expanded={open ? 'true' : undefined}
-            aria-haspopup="true"
-            onClick={handleClick}
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            className="widget"
-            id="long-menu"
-            MenuListProps={{
-              'aria-labelledby': 'long-button',
-            }}
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            slotProps={{
-              paper: {
-                style: {
-                  maxHeight: ITEM_HEIGHT * 4.5,
-                  width: '20ch',
+            <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+
+            <IconButton
+              className="widget"
+              aria-label="more"
+              id="long-button"
+              aria-controls={open ? 'long-menu' : undefined}
+              aria-expanded={open ? 'true' : undefined}
+              aria-haspopup="true"
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              className="widget"
+              id="long-menu"
+              MenuListProps={{
+                'aria-labelledby': 'long-button',
+              }}
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              slotProps={{
+                paper: {
+                  style: {
+                    maxHeight: ITEM_HEIGHT * 4.5,
+                    width: '20ch',
+                  },
                 },
-              },
-            }}
-          >
-            <MenuItem onClick={handleMoveUp}>
-              <ListItemIcon>
-                <ArrowUpwardIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">Move up</Typography>
-            </MenuItem>
-            <MenuItem onClick={handleMoveDown}>
-              <ListItemIcon>
-                <ArrowDownwardIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">Move down</Typography>
-            </MenuItem>
-          </Menu>
+              }}
+            >
+              <MenuItem onClick={handleMoveUp}>
+                <ListItemIcon>
+                  <ArrowUpwardIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography variant="inherit">Move up</Typography>
+              </MenuItem>
+              <MenuItem onClick={handleMoveDown}>
+                <ListItemIcon>
+                  <ArrowDownwardIcon fontSize="small" />
+                </ListItemIcon>
+                <Typography variant="inherit">Move down</Typography>
+              </MenuItem>
+            </Menu>
+          </Box>
         </Toolbar>
       </div>
       {children}
-      {/* </div> */}
     </Box>
   );
 };
