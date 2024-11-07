@@ -54,6 +54,8 @@ import {
   BlockWrapperRight,
   SectionContentWrapper,
   ExportRemix,
+  FadeInDraggable,
+  TitleDraggable,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
@@ -241,7 +243,8 @@ function App() {
               display: 'flex',
               alignItems: 'center',
               columnGap: '4px',
-              width: '100px',
+              // width: '100px',
+              // width: '100%',
               fontSize: '12px',
               fontWeight: 600,
               lineHeight: '16px',
@@ -263,6 +266,7 @@ function App() {
           </Box>
         ),
         timelineComponent: FadeInTool,
+        draggableComponent: FadeInDraggable,
         defaults: {
           title: 'Fade',
           template: '#fin',
@@ -278,7 +282,6 @@ function App() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              width: '67px',
               columnGap: '4px',
               fontSize: '12px',
               fontWeight: 600,
@@ -299,8 +302,8 @@ function App() {
             Title
           </Box>
         ),
-        // timelineComponent: <TitleTool />,
         timelineComponent: TitleTool,
+        draggableComponent: TitleDraggable,
         defaults: {
           title: 'Title',
           subtitle: 'Subtitle',
