@@ -558,13 +558,11 @@ function App() {
                 // ToolbarWrapper={ToolbarWrapper}
                 Settings={
                   <div>
-                    xxx
                     <IconButton onClick={handleClick}>
                       <Tooltip title="Settings">
                         <SettingsIcon style={{ color: '#606971' }} />
                       </Tooltip>
                     </IconButton>
-                    yyy
                     <SettingsPopUp
                       anchorEl={anchorEl}
                       autoScroll={scrolling}
@@ -573,7 +571,6 @@ function App() {
                       onToggleAutoScroll={handleToggleAutoScroll}
                       onToggleContextView={handleToggleContextView}
                     />
-                    zzz
                   </div>
                 }
                 tools={tools}
