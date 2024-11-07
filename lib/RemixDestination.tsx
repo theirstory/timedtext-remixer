@@ -7,9 +7,6 @@ import { Context } from './RemixContext';
 import { Player } from './Player';
 
 import type { Stack } from './interfaces';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { IconButton } from '../src/components/IconButton';
-import { SettingsPopUp } from '../src/components/SettingsPopUp';
 // import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
@@ -18,6 +15,8 @@ interface RemixDestinationProps {
   BlockWrapper?: ElementType;
   SectionContentWrapper?: ElementType;
   ToolbarWrapper?: ElementType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Settings?: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
@@ -29,12 +28,12 @@ const RemixDestination = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SectionContentWrapper = PlainDiv as unknown as ElementType,
   ToolbarWrapper = PlainDiv as unknown as ElementType,
+  Settings = null,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
@@ -66,22 +65,6 @@ const RemixDestination = ({
       setWidth(widthRef.current.offsetWidth);
     }
   }, [widthRef]);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleToggleAutoScroll = () => {
-    // TODO
-  };
-
-  const handleToggleContextView = () => {
-    //TODO
-  };
 
   return (
     <>
@@ -137,17 +120,7 @@ const RemixDestination = ({
             )}
           </Droppable>
         </ToolbarWrapper>
-        <IconButton handleClick={handleClick}>
-          <Tooltip title="Settings">
-            <SettingsIcon style={{ color: '#606971' }} />
-          </Tooltip>
-        </IconButton>
-        <SettingsPopUp
-          anchorEl={anchorEl}
-          handleClose={handleClose}
-          onToggleAutoScroll={handleToggleAutoScroll}
-          onToggleContextView={handleToggleContextView}
-        />
+        {Settings}
       </Box>
 
       <DestinationWrapper>

@@ -26,6 +26,9 @@ import { ts2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
 
+import SettingsIcon from '@mui/icons-material/Settings';
+import { SettingsPopUp } from './components/SettingsPopUp';
+
 import T4 from './data/66043ea15b6357760d02b9a4.json';
 import T5 from './data/61929022c65d8e0005450522.json';
 import T6 from './data/64380a5ea0e98efaffc0d029.json';
@@ -39,7 +42,7 @@ import {
   TEMPLATES,
   FadeInTool,
   TitleTool,
-  GAPTool,
+  // GAPTool,
   EmptyRemix,
   LeftPlayerWrapper,
   RightPlayerWrapper,
@@ -368,6 +371,24 @@ function App() {
     setToastOpen(false);
   };
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleClick', event.currentTarget);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleToggleAutoScroll = () => {
+    setScrolling(!scrolling);
+  };
+
+  const handleToggleContextView = () => {
+    setAutoscroll(!autoscroll);
+  };
+
   return (
     <>
       <style>
@@ -535,6 +556,26 @@ function App() {
                 SectionContentWrapper={SectionContentWrapper}
                 BlockWrapper={BlockWrapperRight}
                 // ToolbarWrapper={ToolbarWrapper}
+                Settings={
+                  <div>
+                    xxx
+                    <IconButton onClick={handleClick}>
+                      <Tooltip title="Settings">
+                        <SettingsIcon style={{ color: '#606971' }} />
+                      </Tooltip>
+                    </IconButton>
+                    yyy
+                    <SettingsPopUp
+                      anchorEl={anchorEl}
+                      autoScroll={scrolling}
+                      contextView={autoscroll}
+                      handleClose={handleClose}
+                      onToggleAutoScroll={handleToggleAutoScroll}
+                      onToggleContextView={handleToggleContextView}
+                    />
+                    zzz
+                  </div>
+                }
                 tools={tools}
                 Empty={EmptyRemix}
               />

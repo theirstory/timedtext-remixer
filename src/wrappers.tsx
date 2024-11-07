@@ -180,8 +180,8 @@ export const FadeInTool = (props: {
 
   return (
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      // onMouseEnter={() => setIsHovered(true)}
+      // onMouseLeave={() => setIsHovered(false)}
       sx={{
         borderRadius: '8px',
         border: '1px solid #D9DCDE',
@@ -402,8 +402,8 @@ export const TitleTool = (props: {
     //   className="widget"
     // >
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      // onMouseEnter={() => setIsHovered(true)}
+      // onMouseLeave={() => setIsHovered(false)}
       sx={{
         // backgroundColor: '#FFF',|
         borderRadius: '8px',
@@ -1085,8 +1085,8 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
 
   return (
     <Box
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      // onMouseEnter={() => setIsHovered(true)}
+      // onMouseLeave={() => setIsHovered(false)}
       sx={{
         // backgroundColor: '#FFF',|
         borderRadius: '8px',
