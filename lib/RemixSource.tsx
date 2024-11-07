@@ -144,7 +144,7 @@ const RemixSource = ({
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
 
-      <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper>
+      {/* <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper> */}
       <SourceWrapper>
         <Droppable
           droppableId={droppableId}

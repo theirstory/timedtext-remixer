@@ -1,12 +1,15 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useRef } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useEffect, useState, useRef } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 import { Tool } from './RemixDestination';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 
-export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => <div>{children}</div>;
+export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{children}</div>
+);
 
 export const PlainSpan = ({ children }: PropsWithChildren): JSX.Element => <span>{children}</span>;
 
@@ -40,7 +43,6 @@ export const Paragraph = memo(
     source?: Timeline;
     SelectionWrapper?: ElementType;
   }) => {
-    // console.log({ clip });
     const start = clip.source_range.start_time;
     const end = clip.source_range.duration + start;
 
@@ -80,7 +82,7 @@ export const Paragraph = memo(
     // }
 
     return (
-      <p {...attrs}>
+      <p {...attrs} style={{ margin: 0 }}>
         {intersects ? (
           <>
             {dragHandleProps && isDragging ? null : before.map((s, i) => <Span key={`bs-${i}`} data={s} />)}
@@ -133,12 +135,12 @@ export const Section = memo(
     tools?: any[] | undefined;
   }) => {
     const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
-      userSelect: 'none',
-      background: isDragging ? '#239B8B26' : 'transparent',
       ...draggableStyle,
+      userSelect: 'none',
+      background: 'transparent',
+      width: isDragging ? 'fit-content' : '100%',
+      height: isDragging ? 'fit-content' : 'auto',
     });
-
-    // console.log({ stack });
 
     const start = stack?.source_range?.start_time ?? 0;
     const end = (stack?.source_range?.duration ?? 0) + start;
@@ -176,7 +178,6 @@ export const Section = memo(
         const pEnd = pStart + (p as Clip).source_range.duration;
         return intersection([pStart, pEnd], adjustedInterval);
       });
-      // console.log({ before, selected, after });
     }
 
     // FIXME
@@ -184,7 +185,13 @@ export const Section = memo(
 
     // TODO use a different set of tool array for in-section widgets
     return (
-      <section {...attrs} id={stack?.metadata?.id} data-offset={offset} data-sid={sourceId}>
+      <section
+        {...attrs}
+        id={stack?.metadata?.id}
+        data-offset={offset}
+        data-sid={sourceId}
+        style={{ padding: 0, border: 'none', marginBottom: 0 }}
+      >
         {stack.metadata?.widget && tools?.find((t) => t.type === stack.metadata?.widget)?.timelineComponent && (
           <Tool
             Component={tools.find((t) => t.type === stack.metadata?.widget).timelineComponent}
@@ -203,60 +210,95 @@ export const Section = memo(
               ))}
 
               <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
-                {(provided, snapshot) => (
-                  <>
-                    <div
-                      key={`${interval?.[0]}-${interval?.[1]}`}
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
-                    >
-                      <SelectedBlocksWrapper>
-                        {selected.map((p, i: number) => (
-                          <BlockWrapper
-                            key={p?.metadata?.id ?? `sP-${i}`}
-                            metadata={p?.metadata}
-                            start={start}
-                            offset={offset}
+                {(provided, snapshot) => {
+                  return (
+                    <>
+                      <div
+                        key={`${interval?.[0]}-${interval?.[1]}`}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        style={{
+                          ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
+                        }}
+                      >
+                        {snapshot.isDragging ? (
+                          <div
+                            id="dragging-element"
+                            style={{
+                              borderRadius: '8px',
+                              border: '1px solid #D9DCDE',
+                              backgroundColor: '#FFF',
+                              boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              columnGap: '6px',
+                              position: 'fixed',
+                              top: '0',
+                            }}
                           >
-                            <Paragraph
-                              clip={p as Clip}
-                              interval={adjustedInterval}
-                              dragHandleProps={provided.dragHandleProps}
-                              isDragging={snapshot.isDragging}
-                              SelectionWrapper={SelectionWrapper}
-                              droppableId={droppableId}
-                              source={source}
-                            />
-                          </BlockWrapper>
-                        ))}
-                      </SelectedBlocksWrapper>
-                    </div>
-                    {snapshot.isDragging && (
-                      <>
-                        <div
-                        // style={getItemStyle(
-                        //   true,
-                        //   provided.draggableProps.style as CSSProperties
-                        // )}
-                        >
+                            <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
+                            <p
+                              style={{
+                                margin: 0,
+                                fontWeight: 600,
+                                color: '#606971',
+                                fontSize: '12px',
+                                lineHeight: '16px',
+                              }}
+                            >
+                              Text
+                            </p>
+                          </div>
+                        ) : (
                           <SelectedBlocksWrapper>
                             {selected.map((p, i: number) => (
                               <BlockWrapper
-                                key={p?.metadata?.id ?? `s2P-${i}`}
+                                key={p?.metadata?.id ?? `sP-${i}`}
                                 metadata={p?.metadata}
                                 start={start}
                                 offset={offset}
                               >
-                                <Paragraph clip={p as Clip} />
+                                <Paragraph
+                                  clip={p as Clip}
+                                  interval={adjustedInterval}
+                                  dragHandleProps={provided.dragHandleProps}
+                                  isDragging={snapshot.isDragging}
+                                  SelectionWrapper={SelectionWrapper}
+                                  droppableId={droppableId}
+                                  source={source}
+                                />
                               </BlockWrapper>
                             ))}
                           </SelectedBlocksWrapper>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
+                        )}
+                      </div>
+                      {snapshot.isDragging && (
+                        <>
+                          <div
+                          // style={getItemStyle(
+                          //   true,
+                          //   provided.draggableProps.style as CSSProperties
+                          // )}
+                          >
+                            <SelectedBlocksWrapper>
+                              {selected.map((p, i: number) => (
+                                <BlockWrapper
+                                  key={p?.metadata?.id ?? `s2P-${i}`}
+                                  metadata={p?.metadata}
+                                  start={start}
+                                  offset={offset}
+                                >
+                                  <Paragraph clip={p as Clip} />
+                                </BlockWrapper>
+                              ))}
+                            </SelectedBlocksWrapper>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                }}
               </Draggable>
 
               {after.map((p, i: number) => (
