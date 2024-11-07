@@ -27,6 +27,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
+import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 
 import Timecode from 'smpte-timecode';
 
@@ -38,7 +39,8 @@ import lowerThirdInactive from './Assets/lower-third-inactive.svg';
 import fullScreenInactive from './Assets/full-screen-inactive.svg';
 import fullScreenActive from './Assets/full-screen-active.svg';
 import blurLinear from './Assets/blur-linear.svg';
-import group from './Assets/group.svg';
+// import group from './Assets/group.svg';
+import { AddTransition } from './Assets/AddTransition.tsx';
 
 export const TEMPLATES = `
   <template id="video1">
@@ -376,6 +378,66 @@ export const FadeInTool = (props: {
     </Box>
   );
 };
+
+export const FadeInDraggable = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
+      columnGap: '4px',
+      width: '100%',
+      fontSize: '12px',
+      fontWeight: 600,
+      lineHeight: '16px',
+      color: '#239B8B',
+      backgroundColor: 'rgba(35, 155, 139, 0.15)',
+      padding: '6px',
+      borderRadius: '8px',
+      marginRight: '12px',
+      '&:hover': {
+        backgroundColor: 'rgba(35, 155, 139, 0.30)',
+      },
+      '&:active': {
+        backgroundColor: 'rgba(35, 155, 139, 0.30)',
+      },
+    }}
+  >
+    <AddTransition />
+    Transition
+  </Box>
+);
+
+export const TitleDraggable = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
+      columnGap: '4px',
+      width: '100%',
+      fontSize: '12px',
+      fontWeight: 600,
+      lineHeight: '16px',
+      color: '#239B8B',
+      backgroundColor: 'rgba(35, 155, 139, 0.15)',
+      padding: '6px',
+      borderRadius: '8px',
+      marginRight: '12px',
+      '&:hover': {
+        backgroundColor: 'rgba(35, 155, 139, 0.30)',
+      },
+      '&:active': {
+        backgroundColor: 'rgba(35, 155, 139, 0.30)',
+      },
+    }}
+  >
+    <PostAddOutlinedIcon style={{ width: '20px', height: '20px' }} />
+    Title
+  </Box>
+);
 
 export const TitleTool = (props: {
   id?: string;

@@ -115,7 +115,8 @@ const RemixDestination = ({
                             },
                           }}
                         >
-                          {tool.toolBarComponent}
+                          {/* {tool.toolBarComponent} */}
+                          {snapshot.isDragging ? <tool.draggableComponent /> : tool.toolBarComponent}
                         </div>
                         {snapshot.isDragging ? (
                           <div
