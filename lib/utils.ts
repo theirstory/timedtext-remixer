@@ -297,29 +297,29 @@ export const EMPTY_REMIX = {
                   "id": "T-EMPTY"
               },
               "children": [
-                {
-                  "OTIO_SCHEMA": "Stack.1",
-                  "metadata": {
-                    "id": "gap-1",
-                    "data": {
-                      "t": [0, 10],
-                      "media-src": GAP_VIDEO
-                    },
-                    "title": "GAP",
-                    "widget": "gap"
-                  },
-                  "media_reference": {
-                    "OTIO_SCHEMA": "MediaReference.1",
-                    "target": GAP_VIDEO
-                  },
-                  "source_range": {
-                    "OTIO_SCHEMA": "TimeRange.1",
-                    "start_time": 0,
-                    "duration": 10
-                  },
-                  "children": [],
-                  "effects": []
-                }
+                // {
+                //   "OTIO_SCHEMA": "Stack.1",
+                //   "metadata": {
+                //     "id": "gap-1",
+                //     "data": {
+                //       "t": [0, 10],
+                //       "media-src": GAP_VIDEO
+                //     },
+                //     "title": "GAP",
+                //     "widget": "gap"
+                //   },
+                //   "media_reference": {
+                //     "OTIO_SCHEMA": "MediaReference.1",
+                //     "target": GAP_VIDEO
+                //   },
+                //   "source_range": {
+                //     "OTIO_SCHEMA": "TimeRange.1",
+                //     "start_time": 0,
+                //     "duration": 10
+                //   },
+                //   "children": [],
+                //   "effects": []
+                // }
               ]
           }
       ]
