@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { useMemo, PropsWithChildren, useContext, useState, useCallback, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import {
   Box,
@@ -1010,9 +1010,16 @@ interface SelectionWrapperProps extends PropsWithChildren {
   first?: boolean;
   droppableId?: string;
   source: Timeline;
+  text?: string;
 }
 
-export const SelectionWrapper = ({ first, droppableId, source, children }: SelectionWrapperProps): JSX.Element => {
+export const SelectionWrapper = ({
+  first,
+  droppableId,
+  source,
+  text,
+  children,
+}: SelectionWrapperProps): JSX.Element => {
   const { dispatch, remixPlayerRef } = useContext(Context);
 
   const handleAdd = useCallback(() => {

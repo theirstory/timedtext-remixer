@@ -1,4 +1,4 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useEffect, useState, useRef } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useEffect, useState, useRef, useMemo } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
@@ -29,6 +29,7 @@ export const Paragraph = memo(
   ({
     clip,
     interval,
+    text,
     dragHandleProps,
     isDragging,
     droppableId,
@@ -37,6 +38,7 @@ export const Paragraph = memo(
   }: {
     clip: Clip;
     interval?: [number, number] | null | undefined;
+    text?: string;
     dragHandleProps?: DraggableProvidedDragHandleProps | null;
     isDragging?: boolean;
     droppableId?: string;
@@ -90,6 +92,7 @@ export const Paragraph = memo(
               first={selected[0].marked_range.start_time === interval?.[0] && !isDragging}
               droppableId={droppableId}
               source={source}
+              text={text}
             >
               <span className="selection" {...dragHandleProps}>
                 {selected.map((s, i) => (
@@ -162,6 +165,7 @@ export const Section = memo(
     let selected: (Clip | Stack | Gap)[] = [];
     let after: (Clip | Stack | Gap)[] = [];
     let intersects = false;
+    let text = '';
 
     if (adjustedInterval && intersection([start, end], adjustedInterval)) {
       intersects = true;
@@ -178,7 +182,21 @@ export const Section = memo(
         const pEnd = pStart + (p as Clip).source_range.duration;
         return intersection([pStart, pEnd], adjustedInterval);
       });
+      text = selected
+        .map((s) => {
+          if ((s as Clip).OTIO_SCHEMA === 'Clip.1') {
+            return (s as Clip).timed_texts?.map((t) => t.texts).join(' ');
+          }
+          return '';
+        })
+        .join(' ')
+        .split(' ')
+        .slice(0, 30) // limit to 30 words max
+        .join(' ');
     }
+
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const sectionWidth = sectionRef.current?.clientWidth;
 
     // FIXME
     if (interval) globalThis.foo = `selection-${interval?.[0]}-${interval?.[1]}`;
@@ -191,6 +209,7 @@ export const Section = memo(
         data-offset={offset}
         data-sid={sourceId}
         style={{ padding: 0, border: 'none', marginBottom: 0 }}
+        ref={sectionRef}
       >
         {stack.metadata?.widget && tools?.find((t) => t.type === stack.metadata?.widget)?.timelineComponent && (
           <Tool
@@ -245,9 +264,12 @@ export const Section = memo(
                                 color: '#606971',
                                 fontSize: '12px',
                                 lineHeight: '16px',
+                                width: sectionWidth,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                               }}
                             >
-                              Text
+                              {text}
                             </p>
                           </div>
                         ) : (
