@@ -462,7 +462,7 @@ function App() {
             <Box
               id="left-column-container"
               borderRadius="0px 8px 8px 8px"
-              sx={{ backgroundColor: '#FFFFFF' }}
+              sx={{ backgroundColor: '#FFFFFF', width: '685px' }}
               padding="16px"
             >
               <Box id="tabs-container" display="flex">
@@ -471,7 +471,13 @@ function App() {
                   value={tabValue}
                   onChange={handleTabChange}
                   aria-label="tabbed content"
-                  sx={{ minHeight: '0px' }}
+                  sx={{
+                    minHeight: '0px',
+                    '& .MuiTabs-scrollButtons.Mui-disabled': {
+                      width: '0px', // Elimina el espacio cuando está deshabilitado
+                      visibility: 'hidden', // Oculta visualmente cuando está deshabilitado
+                    },
+                  }}
                   variant="scrollable"
                   scrollButtons="auto"
                 >
@@ -500,7 +506,12 @@ function App() {
                         <Tooltip title={source?.metadata?.story?.title}>
                           <Toolbar disableGutters variant="dense" sx={{ minHeight: '0px' }}>
                             <Typography
-                              sx={{ width: '90px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                              sx={{
+                                maxWidth: '150px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
                               fontSize="14px"
                               fontWeight={700}
                               lineHeight="20px"
@@ -538,7 +549,7 @@ function App() {
             <Box
               id="right-column-container"
               borderRadius="8px"
-              sx={{ backgroundColor: '#FFFFFF', flex: 1 }}
+              sx={{ backgroundColor: '#FFFFFF', flex: 1, width: '685px' }}
               display="flex"
               flexDirection="column"
               paddingX="24px"

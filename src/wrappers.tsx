@@ -18,6 +18,8 @@ import {
   Menu,
   ListItemIcon,
   Tooltip,
+  SelectChangeEvent,
+  Select,
 } from '@mui/material';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -35,13 +37,13 @@ import Timecode from 'smpte-timecode';
 import { Context } from '../lib/RemixContext.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
 import type { Timeline } from '../lib/interfaces';
-import { EMPTY_VIDEO } from '../lib/video.js';
 import lowerThirdActive from './Assets/lower-third-active.svg';
 import lowerThirdInactive from './Assets/lower-third-inactive.svg';
 import fullScreenInactive from './Assets/full-screen-inactive.svg';
 import fullScreenActive from './Assets/full-screen-active.svg';
 import blurLinear from './Assets/blur-linear.svg';
-// import group from './Assets/group.svg';
+import textFullscreen from './Assets/text_fullscreen.svg';
+import textOverlay from './Assets/text_overlay.svg';
 import { AddTransition } from './Assets/AddTransition.tsx';
 
 export const TEMPLATES = `
@@ -389,7 +391,7 @@ export const FadeInDraggable = () => (
       justifyContent: 'center',
       boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
       columnGap: '4px',
-      width: '100%',
+      width: '95%',
       fontSize: '12px',
       fontWeight: 600,
       lineHeight: '16px',
@@ -419,7 +421,7 @@ export const TitleDraggable = () => (
       justifyContent: 'center',
       boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
       columnGap: '4px',
-      width: '100%',
+      width: '95%',
       fontSize: '12px',
       fontWeight: 600,
       lineHeight: '16px',
@@ -469,7 +471,6 @@ export const TitleTool = (props: {
     [],
   );
   const handleTemplateChange = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
-    console.log(value);
     setTemplate(value);
   }, []);
   // const handleDurationChange = useCallback(
@@ -477,7 +478,7 @@ export const TitleTool = (props: {
   //   [],
   // );
 
-  const handleDurationChange = (value) => setDuration(value);
+  const handleDurationChange = (value: number) => setDuration(value);
 
   const handleSave = useCallback(
     () => dispatch({ type: 'metadata', payload: { id, metadata: { id, title, subtitle, template, duration } } }),
@@ -529,6 +530,7 @@ export const TitleTool = (props: {
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
+
         <Box
           sx={{
             display: 'flex',
@@ -538,40 +540,6 @@ export const TitleTool = (props: {
           }}
           className="hovered-block"
         >
-          <IconButton
-            className="widget"
-            aria-label="delete"
-            id="long-button"
-            // aria-controls={open ? 'long-menu' : undefined}
-            // aria-expanded={open ? 'true' : undefined}
-            // aria-haspopup="true"
-            onClick={handleRemove}
-            sx={{
-              backgroundColor: '#F7F9FC',
-              '&:hover': {
-                backgroundColor: '#e7e9ea',
-              },
-              '&:active': {
-                backgroundColor: '#e7e9ea',
-              },
-              // minWidth: '0px',
-              marginBottom: '0px',
-              borderRadius: '4px',
-            }}
-          >
-            <Tooltip title="Delete">
-              <DeleteIcon fontSize="small" />
-            </Tooltip>
-          </IconButton>
-          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
-          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
-            <ToggleButton value="#title-lower3rds" size="small">
-              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
-            </ToggleButton>
-            <ToggleButton value="#title-full" size="small">
-              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} />
-            </ToggleButton>
-          </ToggleButtonGroup>
           <Box marginLeft="2px !important">
             <Button
               variant="contained"
@@ -606,6 +574,62 @@ export const TitleTool = (props: {
               </Typography>
             </Button>
           </Box>
+
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+
+          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
+            <ToggleButton value="#title-lower3rds" size="small">
+              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
+            </ToggleButton>
+            <ToggleButton value="#title-full" size="small">
+              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} />
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+
+          <ToggleButtonGroup
+            value={template}
+            exclusive
+            onChange={() => {
+              console.log('onChange TBD');
+            }}
+            onBlur={() => {
+              console.log('onBlur TBD');
+            }}
+          >
+            <ToggleButton value="#title-lower3rds" size="small">
+              <img src={textFullscreen} width="20px" height="20px" />
+            </ToggleButton>
+            <ToggleButton value="#title-full" size="small">
+              <img src={textOverlay} width="20px" height="20px" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+
+          <IconButton
+            className="widget"
+            aria-label="delete"
+            id="long-button"
+            onClick={handleRemove}
+            sx={{
+              backgroundColor: '#F7F9FC',
+              '&:hover': {
+                backgroundColor: '#e7e9ea',
+              },
+              '&:active': {
+                backgroundColor: '#e7e9ea',
+              },
+              marginBottom: '0px',
+              borderRadius: '4px',
+            }}
+          >
+            <Tooltip title="Delete">
+              <DeleteIcon fontSize="small" />
+            </Tooltip>
+          </IconButton>
+
           <Popover
             id="sort-options-popup"
             open={Boolean(openFilterOptions)}
