@@ -252,7 +252,7 @@ function App() {
               backgroundColor: 'rgba(35, 155, 139, 0.15)',
               padding: '6px',
               borderRadius: '8px',
-              marginRight: '12px',
+              marginRight: '8px',
               '&:hover': {
                 backgroundColor: 'rgba(35, 155, 139, 0.30)',
               },
@@ -572,7 +572,19 @@ function App() {
                 // ToolbarWrapper={ToolbarWrapper}
                 Settings={
                   <div>
-                    <IconButton onClick={handleClick}>
+                    <IconButton
+                      onClick={handleClick}
+                      sx={{
+                        borderRadius: '4px',
+                        padding: '6px',
+                        '&:hover': {
+                          backgroundColor: '#e7e9ea',
+                        },
+                        '&:active': {
+                          backgroundColor: '#e7e9ea',
+                        },
+                      }}
+                    >
                       <Tooltip title="Settings">
                         <SettingsIcon style={{ color: '#606971' }} />
                       </Tooltip>

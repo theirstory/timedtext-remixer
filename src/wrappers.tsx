@@ -29,9 +29,8 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import TvOffIcon from '@mui/icons-material/TvOff';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
-import TextFieldsIcon from '@mui/icons-material/TextFields';
+import TitleIcon from '@mui/icons-material/Title';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
-
 import Timecode from 'smpte-timecode';
 
 import { Context } from '../lib/RemixContext.js';
@@ -208,7 +207,7 @@ export const FadeInTool = (props: {
       className="widget"
     >
       <Toolbar disableGutters variant="dense" sx={{ paddingX: '12px' }}>
-        <DragHandleIcon style={{ marginRight: '8px' }} />
+        <DragHandleIcon style={{ marginRight: '8px', color: '#A7AEB4' }} />
         <img src={blurLinear} style={{ marginRight: '8px' }} />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
@@ -222,32 +221,6 @@ export const FadeInTool = (props: {
           }}
           className="hovered-block"
         >
-          <IconButton
-            className="widget"
-            aria-label="delete"
-            id="long-button"
-            // aria-controls={open ? 'long-menu' : undefined}
-            // aria-expanded={open ? 'true' : undefined}
-            // aria-haspopup="true"
-            onClick={handleRemove}
-            sx={{
-              backgroundColor: '#F7F9FC',
-              '&:hover': {
-                backgroundColor: '#e7e9ea',
-              },
-              '&:active': {
-                backgroundColor: '#e7e9ea',
-              },
-              // minWidth: '0px',
-              marginBottom: '0px',
-              borderRadius: '4px',
-            }}
-          >
-            <Tooltip title="Delete">
-              <DeleteIcon fontSize="small" />
-            </Tooltip>
-          </IconButton>
-          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
           <Box marginLeft="2px !important">
             <Button
               variant="contained"
@@ -282,6 +255,31 @@ export const FadeInTool = (props: {
               </Typography>
             </Button>
           </Box>
+
+          <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
+
+          <IconButton
+            className="widget"
+            aria-label="delete"
+            id="long-button"
+            onClick={handleRemove}
+            sx={{
+              backgroundColor: '#F7F9FC',
+              '&:hover': {
+                backgroundColor: '#e7e9ea',
+              },
+              '&:active': {
+                backgroundColor: '#e7e9ea',
+              },
+              marginBottom: '0px',
+              borderRadius: '4px',
+            }}
+          >
+            <Tooltip title="Delete">
+              <DeleteIcon fontSize="small" />
+            </Tooltip>
+          </IconButton>
+
           <Popover
             id="sort-options-popup"
             open={Boolean(openFilterOptions)}
@@ -342,6 +340,16 @@ export const FadeInTool = (props: {
             aria-controls={open ? 'long-menu' : undefined}
             aria-expanded={open ? 'true' : undefined}
             aria-haspopup="true"
+            sx={{
+              borderRadius: '4px',
+              padding: '6px',
+              '&:hover': {
+                backgroundColor: '#e7e9ea',
+              },
+              '&:active': {
+                backgroundColor: '#e7e9ea',
+              },
+            }}
             onClick={handleClick}
           >
             <MoreVertIcon />
@@ -514,7 +522,7 @@ export const TitleTool = (props: {
         border: '1px solid #D9DCDE',
         transition: 'opacity 0.3s ease',
         marginBottom: '12px',
-        padding: '12px',
+        padding: '4px 12px 12px 12px',
         '&:hover': {
           backgroundColor: '#F7F9FC',
           '.hovered-block': {
@@ -525,8 +533,8 @@ export const TitleTool = (props: {
       className="widget"
     >
       <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '16px' }}>
-        <DragHandleIcon style={{ marginRight: '8px' }} />
-        <TextFieldsIcon style={{ marginRight: '8px' }} />
+        <DragHandleIcon style={{ marginRight: '8px', color: '#A7AEB4' }} />
+        <TitleIcon style={{ marginRight: '8px', color: '#606971' }} />
         <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
           {name}
         </Typography>
@@ -690,6 +698,16 @@ export const TitleTool = (props: {
             aria-controls={open ? 'long-menu' : undefined}
             aria-expanded={open ? 'true' : undefined}
             aria-haspopup="true"
+            sx={{
+              borderRadius: '4px',
+              padding: '6px',
+              '&:hover': {
+                backgroundColor: '#e7e9ea',
+              },
+              '&:active': {
+                backgroundColor: '#e7e9ea',
+              },
+            }}
             onClick={handleClick}
           >
             <MoreVertIcon />
@@ -1204,7 +1222,7 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
         border: '1px solid #D9DCDE',
         transition: 'opacity 0.3s ease',
         marginBottom: '12px',
-        padding: '12px',
+        padding: '4px 12px 12px 12px',
         '&:hover': {
           backgroundColor: '#F7F9FC',
           '.hoverable-icon': {
@@ -1216,8 +1234,15 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
     >
       <div style={{ userSelect: 'none' }}>
         <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '8px' }}>
-          <DragHandleIcon style={{ marginRight: '8px' }} />
-          <Typography fontSize="12px" fontWeight={700} color="#75808A" component="div" sx={{ flexGrow: 1 }}>
+          <DragHandleIcon style={{ marginRight: '8px', color: '#A7AEB4' }} />
+          <Typography
+            fontSize="12px"
+            fontWeight={700}
+            color="#75808A"
+            component="div"
+            paddingRight="8px"
+            sx={{ flexGrow: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+          >
             {title}
           </Typography>
           <Box
@@ -1249,7 +1274,6 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
                 <DeleteIcon fontSize="small" />
               </Tooltip>
             </IconButton>
-            <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
             <IconButton
               className="widget"
@@ -1258,6 +1282,16 @@ export const SectionContentWrapper = ({ metadata, children }: SectionContentWrap
               aria-controls={open ? 'long-menu' : undefined}
               aria-expanded={open ? 'true' : undefined}
               aria-haspopup="true"
+              sx={{
+                borderRadius: '4px',
+                padding: '6px',
+                '&:hover': {
+                  backgroundColor: '#e7e9ea',
+                },
+                '&:active': {
+                  backgroundColor: '#e7e9ea',
+                },
+              }}
               onClick={handleClick}
             >
               <MoreVertIcon />

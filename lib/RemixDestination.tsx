@@ -44,8 +44,8 @@ const RemixDestination = ({
     }
   }, [remix]);
 
-  const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
-    background: isDraggingOver ? '#F1F2F3' : 'transparent',
+  const getListStyle = (): CSSProperties => ({
+    background: 'transparent',
     borderRadius: '8px',
     // height: '100%',
     width: '100%',
@@ -53,7 +53,9 @@ const RemixDestination = ({
 
   const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
     userSelect: 'none',
-    background: isDragging ? '#239B8B26' : 'transparent',
+    background: 'transparent',
+    borderRadius: '8px',
+    boxShadow: isDragging ? '0px 10px 12px 0px rgba(0, 0, 0, 0.20)' : 'none',
     ...draggableStyle,
   });
 
@@ -76,8 +78,8 @@ const RemixDestination = ({
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ToolbarWrapper>
           <Droppable droppableId="Toolbar" isDropDisabled={true}>
-            {(provided, snapshot) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle()}>
                 {tools.map((tool, i) => (
                   <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
                     {(provided, snapshot) => (
