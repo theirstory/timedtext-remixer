@@ -10,7 +10,7 @@ import type { State, Action, Timeline, Stack, Clip } from './interfaces';
 import { timelineStacks } from './utils';
 // import { TimedTextPlayerComponent } from './Player';
 // import { ReactWebComponent } from '@lit/react';
-import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js';
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const Context = createContext({
   sources: [] as Timeline[],
