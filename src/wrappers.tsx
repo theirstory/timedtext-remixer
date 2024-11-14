@@ -467,6 +467,7 @@ export const TitleTool = (props: {
   const [title, setTitle] = useState<string>(props.title ?? '');
   const [subtitle, setSubtitle] = useState<string>(props.subtitle ?? '');
   const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
+  const [template2, setTemplate2] = useState<string>(props.template ?? '#title-overlay');
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
 
@@ -480,6 +481,9 @@ export const TitleTool = (props: {
   );
   const handleTemplateChange = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
     setTemplate(value);
+  }, []);
+  const handleTemplateChange2 = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
+    setTemplate2(value);
   }, []);
   // const handleDurationChange = useCallback(
   //   ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
@@ -597,19 +601,17 @@ export const TitleTool = (props: {
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
           <ToggleButtonGroup
-            value={template}
+            value={template2}
             exclusive
-            onChange={() => {
-              console.log('onChange TBD');
-            }}
+            onChange={handleTemplateChange2}
             onBlur={() => {
               console.log('onBlur TBD');
             }}
           >
-            <ToggleButton value="#title-lower3rds" size="small">
+            <ToggleButton value="#title-overlay" size="small">
               <img src={textFullscreen} width="20px" height="20px" />
             </ToggleButton>
-            <ToggleButton value="#title-full" size="small">
+            <ToggleButton value="#title-insert" size="small">
               <img src={textOverlay} width="20px" height="20px" />
             </ToggleButton>
           </ToggleButtonGroup>

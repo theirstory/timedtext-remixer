@@ -15,6 +15,8 @@ export type Action =
 | { type: "test"; payload: any }
 | { type: "add-widget"; payload: any }
 | { type: "add-gap"; payload: any }
+| { type: "convert-to-gap"; payload: any }
+| { type: "convert-from-gap"; payload: any }
 | { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
 | { type: "move-up"; payload: any }
