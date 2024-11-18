@@ -49,6 +49,7 @@
     "@mui/material": "^5.15.14",
     "@theirstoryinc/timedtext-player": "0.0.5",
     "@types/smpte-timecode": "1.2.5",
+    "axios": "^1.7.7",
     "crypto-js": "^4.2.0",
     "immer": "^10.1.1",
     "interval-operations": "^2.0.0",

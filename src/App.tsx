@@ -1,18 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import {
-  Box,
-  Tab,
-  Tabs,
-  Typography,
-  IconButton,
-  Toolbar,
-  Drawer,
-  Tooltip,
-  Snackbar,
-  AlertColor,
-  Chip,
-} from '@mui/material';
+import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Snackbar, AlertColor } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
@@ -43,7 +31,7 @@ import {
   FadeInTool,
   TitleTool,
   // GAPTool,
-  EmptyRemix,
+  EmptyDestinationRemix,
   LeftPlayerWrapper,
   RightPlayerWrapper,
   SourceWrapper,
@@ -56,9 +44,11 @@ import {
   ExportRemix,
   FadeInDraggable,
   TitleDraggable,
+  EmptySourceRemix,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
+import { axiosInstance } from './services/axiosInstance.ts';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -77,24 +67,21 @@ function App() {
     setAutoscroll(event.target.checked);
   };
 
-  const allSources = useMemo(
+  const defaultSources = useMemo(
     () => [ts2timeline(T4), ts2timeline(T5), ts2timeline(T6), ts2timeline(T7), ts2timeline(T8)] as Timeline[],
     [],
   );
 
-  const [sources, dispatchSources] = useReducer(
-    (state: any, action: any) => {
-      switch (action.type) {
-        case 'add':
-          return [...state, action.payload];
-        case 'remove':
-          return state.filter((s: any) => s.metadata.id !== action.payload.id);
-        default:
-          return state;
-      }
-    },
-    [ts2timeline(T4), ts2timeline(T5), ts2timeline(T6), ts2timeline(T7), ts2timeline(T8)],
-  );
+  const [sources, dispatchSources] = useReducer((state: any, action: any) => {
+    switch (action.type) {
+      case 'add':
+        return [...state, action.payload];
+      case 'remove':
+        return state.filter((s: any) => s.metadata.id !== action.payload.id);
+      default:
+        return state;
+    }
+  }, []);
 
   // const initRemix = EMPTY_REMIX;
 
@@ -113,6 +100,29 @@ function App() {
   const autoscrollRef = React.useRef<any>();
   const scrollRef = React.useRef<any>();
   // const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
+
+  useEffect(() => {
+    // Remixer can get the token and URL from the parent window
+    // and use that in order to fetch the sources.
+    // Otherwise, it will use the default sources.
+    const setExternalAPIData = (event: MessageEvent) => {
+      const { token, url, backgroundColor } = event.data;
+      if (token && url) {
+        // Update axios instance with new token and base URL
+        axiosInstance.defaults.baseURL = url;
+        axiosInstance.defaults.headers['Authorization'] = token;
+      }
+      if (backgroundColor) {
+        document.body.style.backgroundColor = backgroundColor;
+      }
+    };
+
+    window.addEventListener('message', setExternalAPIData);
+
+    return () => {
+      window.removeEventListener('message', setExternalAPIData);
+    };
+  }, []);
 
   useEffect(() => {
     autoscrollRef.current = autoscroll;
@@ -407,7 +417,7 @@ function App() {
           }
 
           #EmptyRemix {
-            display: none;
+            display: flex;
           }
 
           div[data-rfd-draggable-id="S-EMPTY"] section {
@@ -429,7 +439,7 @@ function App() {
         <SourceDrawer
           open={drawerOpen}
           onClose={toggleDrawer(false)}
-          sources={allSources}
+          defaultSources={defaultSources}
           onClickSource={(source) => openTab(source)}
         />
       )}
@@ -453,17 +463,19 @@ function App() {
         >
           <Box
             id="columns-container"
-            display={'grid'}
+            display={'flex'}
             gap={'8px'}
             height={'100%'}
-            maxWidth={'1440px'}
-            gridTemplateColumns={'1fr 1fr'}
+            width={'100%'}
+            // maxWidth={'1440px'}
+            // gridTemplateColumns={'1fr 1fr'}
           >
             <Box
               id="left-column-container"
-              borderRadius="0px 8px 8px 8px"
-              sx={{ backgroundColor: '#FFFFFF', width: '685px' }}
+              borderRadius="8px"
+              sx={{ backgroundColor: '#FFFFFF' }}
               padding="16px"
+              width="100%"
             >
               <Box id="tabs-container" display="flex">
                 <Tabs
@@ -474,8 +486,8 @@ function App() {
                   sx={{
                     minHeight: '0px',
                     '& .MuiTabs-scrollButtons.Mui-disabled': {
-                      width: '0px', // Elimina el espacio cuando está deshabilitado
-                      visibility: 'hidden', // Oculta visualmente cuando está deshabilitado
+                      width: '0px',
+                      visibility: 'hidden',
                     },
                   }}
                   variant="scrollable"
@@ -542,6 +554,7 @@ function App() {
                 SelectionWrapper={SelectionWrapper}
                 ToolbarWrapper={ToolbarWrapper}
                 tools={toolsLeft}
+                Empty={EmptySourceRemix}
               />
               {/* </Box> */}
             </Box>
@@ -549,11 +562,12 @@ function App() {
             <Box
               id="right-column-container"
               borderRadius="8px"
-              sx={{ backgroundColor: '#FFFFFF', flex: 1, width: '685px' }}
+              sx={{ backgroundColor: '#FFFFFF' }}
               display="flex"
               flexDirection="column"
               paddingX="24px"
               paddingTop="24px"
+              width="100%"
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
@@ -600,7 +614,7 @@ function App() {
                   </div>
                 }
                 tools={tools}
-                Empty={EmptyRemix}
+                Empty={EmptyDestinationRemix}
               />
             </Box>
           </Box>

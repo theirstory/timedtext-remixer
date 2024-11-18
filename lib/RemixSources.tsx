@@ -17,6 +17,7 @@ interface RemixSourcesProps {
   id?: (t: Timeline) => string | undefined;
   active: string | undefined;
   tools?: any[] | undefined;
+  Empty?: ElementType | undefined;
 }
 
 const RemixSources = ({
@@ -29,6 +30,7 @@ const RemixSources = ({
   id = (source: Timeline) => source?.metadata?.id,
   active,
   tools = [],
+  Empty = PlainDiv as unknown as ElementType,
 }: RemixSourcesProps): JSX.Element => {
   const {
     sources,
@@ -44,22 +46,26 @@ const RemixSources = ({
 
   return (
     <>
-      {sources?.map((source, i) => (
-        <RemixSource
-          key={id(source) ?? `T${i}`}
-          index={i}
-          active={activeSource ? id(activeSource) === id(source) : i === 0}
-          PlayerWrapper={PlayerWrapper}
-          SourceWrapper={SourceWrapper}
-          BlockWrapper={BlockWrapper}
-          SelectedBlocksWrapper={SelectedBlocksWrapper}
-          SelectionWrapper={SelectionWrapper}
-          ToolbarWrapper={ToolbarWrapper}
-          source={source}
-          timestamp={latestTimestamp}
-          tools={tools}
-        />
-      ))}
+      {sources.length === 0 ? (
+        <Empty />
+      ) : (
+        sources?.map((source, i) => (
+          <RemixSource
+            key={id(source) ?? `T${i}`}
+            index={i}
+            active={activeSource ? id(activeSource) === id(source) : i === 0}
+            PlayerWrapper={PlayerWrapper}
+            SourceWrapper={SourceWrapper}
+            BlockWrapper={BlockWrapper}
+            SelectedBlocksWrapper={SelectedBlocksWrapper}
+            SelectionWrapper={SelectionWrapper}
+            ToolbarWrapper={ToolbarWrapper}
+            source={source}
+            timestamp={latestTimestamp}
+            tools={tools}
+          />
+        ))
+      )}
     </>
   );
 };

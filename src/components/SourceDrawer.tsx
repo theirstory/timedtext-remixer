@@ -3,23 +3,26 @@ import { Timeline } from '../../lib/interfaces';
 import SourceIcon from '@mui/icons-material/Source';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { axiosInstance } from '../services/axiosInstance';
 
 export const SourceDrawer = ({
   open,
   onClose,
-  sources,
+  defaultSources,
   onClickSource,
 }: {
   open: boolean;
   onClose: () => void;
-  sources: Timeline[];
+  defaultSources: Timeline[];
   onClickSource: (source: Timeline) => void;
 }) => {
   // const [filteredSources, setFilteredSources] = useState<Timeline[]>(sources);
-  const [stories, setStories] = useState<any>([]);
 
-  const [searchText, setSearchText] = useState('');
+  const [sourcesList, setSourcesList] = useState<Timeline[]>([]);
+  const [filteredSources, setFilteredSources] = useState(sourcesList);
+  const [searchTerm, setSearchTerm] = useState('');
+  const hasExternalSources = axiosInstance.defaults.baseURL && axiosInstance.defaults.headers['Authorization'];
 
   const formatDate = (dateString: string): string => {
     const dateObj = new Date(dateString);
@@ -27,20 +30,50 @@ export const SourceDrawer = ({
     return dateObj.toLocaleDateString('en-GB', options);
   };
 
-  useEffect(() => {
-    window.addEventListener('message', (event) => {
-      if (event.origin !== 'http://localhost:8001') return;
-      const results = event.data;
-      console.log('results en el ifram', results);
-      setStories(results.items);
-    });
-  }, []);
+  const fetchStories = useCallback(async () => {
+    // Check if external sources are available
+    // otherwise use defaultSources
+    if (hasExternalSources) {
+      try {
+        const response = await axiosInstance.get('/remixer/search', {
+          params: { search: searchTerm },
+        });
+        setSourcesList(response.data.items);
+      } catch (error) {
+        console.error('Error fetching external sources for remixer/search:', error);
+      }
+    } else {
+      setSourcesList(defaultSources);
+    }
+  }, [defaultSources, hasExternalSources, searchTerm]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      window.parent.postMessage(searchText, 'http://localhost:8001');
+      if (!sourcesList) return;
+
+      // Check if external sources are available and fetch them with the search term
+      if (hasExternalSources) {
+        fetchStories();
+        return;
+      }
+
+      // Filter the default sources with the search term
+      setFilteredSources(
+        sourcesList.filter((source) => {
+          if (!source.metadata) return false;
+          const { title, story } = source.metadata;
+          return (
+            title?.toLowerCase().includes(searchTerm) ||
+            story.author.full_name.toLowerCase().includes(searchTerm) ||
+            story.project?.name.toLowerCase().includes(searchTerm) ||
+            formatDate(story.record_date).toLowerCase().includes(searchTerm)
+          );
+        }),
+      );
     }
   };
+
+  console.log('sourcesList:', sourcesList);
 
   return (
     <Drawer
@@ -72,23 +105,8 @@ export const SourceDrawer = ({
         <TextField
           placeholder="Search"
           size="small"
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleKeyDown}
-          // onChange={(e) => {
-          //   const searchTerm = e.target.value.toLowerCase();
-          //   setFilteredSources(
-          //     sources.filter((source) => {
-          //       if (!source.metadata) return false;
-          //       const { title, story } = source.metadata;
-          //       return (
-          //         title?.toLowerCase().includes(searchTerm) ||
-          //         story.author.full_name.toLowerCase().includes(searchTerm) ||
-          //         story.project?.name.toLowerCase().includes(searchTerm) ||
-          //         formatDate(story.record_date).toLowerCase().includes(searchTerm)
-          //       );
-          //     }),
-          //   );
-          // }}
           sx={{
             '& .MuiOutlinedInput-root': {
               '&.Mui-focused fieldset': {
@@ -104,67 +122,7 @@ export const SourceDrawer = ({
             ),
           }}
         />
-        <Box id="sources-container" display="flex" flexDirection="column" rowGap="12px">
-          {stories?.map((story) => {
-            const { _id, title } = story;
-            return (
-              <Box
-                key={_id}
-                id="item-container"
-                borderRadius="8px"
-                border="1px solid #D9DCDE"
-                padding="12px"
-                display="flex"
-                flexDirection="column"
-                rowGap="12px"
-                sx={{
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: '#F1F2F3',
-                  },
-                }}
-                // onClick={() => onClickSource(source)}
-              >
-                <Box display="flex" alignItems="center" columnGap="4px">
-                  <SourceIcon sx={{ width: '16px', height: '16px', color: '#75808A' }} />
-                  <Typography
-                    color="#75808A"
-                    fontSize="14px"
-                    fontWeight={700}
-                    textOverflow="ellipsis"
-                    overflow="hidden"
-                    whiteSpace="nowrap"
-                  >
-                    {/* project */}
-                    {story?.project?.name ?? 'Diversity'}
-                  </Typography>
-                </Box>
-                <Box display="flex" flexDirection="column">
-                  <Typography
-                    color="#606971"
-                    fontSize="14px"
-                    fontWeight={700}
-                    textOverflow="ellipsis"
-                    overflow="hidden"
-                    whiteSpace="nowrap"
-                  >
-                    {title ?? ''}
-                  </Typography>
-                  <Typography
-                    color="#606971"
-                    fontSize="14px"
-                    fontWeight={700}
-                    textOverflow="ellipsis"
-                    overflow="hidden"
-                    whiteSpace="nowrap"
-                  >
-                    {story.creator.full_name ?? ''} • {formatDate(story.record_date ?? '')}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
+        <Box id="sources-container" display="flex" flexDirection="column" rowGap="12px"></Box>
       </Box>
     </Drawer>
   );

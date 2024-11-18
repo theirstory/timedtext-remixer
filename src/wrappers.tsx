@@ -32,6 +32,8 @@ import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import TitleIcon from '@mui/icons-material/Title';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import Timecode from 'smpte-timecode';
+import dragContentSVG from './Assets/drag-content.svg';
+import emptySourceSVG from './Assets/empty-source.svg';
 
 import { Context } from '../lib/RemixContext.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
@@ -896,34 +898,31 @@ const EMPTY_REMIX_SX = {
   display: 'flex',
   flexDirection: 'column',
   textAlign: '-webkit-center',
-  paddingY: '51px',
+  justifyContent: 'center',
+  alignItems: 'center',
 };
 
-export const EmptyRemix = (): JSX.Element => (
+export const EmptyDestinationRemix = (): JSX.Element => (
   <Box id="EmptyRemix" sx={EMPTY_REMIX_SX}>
     <Box borderRadius="96px" padding="32px" marginBottom="16px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="52" height="51" viewBox="0 0 52 51" fill="none">
-        <g clip-path="url(#clip0_1412_3498)">
-          <path
-            d="M36.3198 25.1551V38.0581L30.5313 32.421C30.0687 31.9705 29.3096 31.9705 28.847 32.421C28.3843 32.8715 28.3843 33.5992 28.847 34.0497L36.6638 41.6621C37.1264 42.1126 37.8736 42.1126 38.3362 41.6621L46.153 34.0497C46.6157 33.5992 46.6157 32.8715 46.153 32.421C45.6904 31.9705 44.9432 31.9705 44.4806 32.421L38.6921 38.0581V25.1551C38.6921 24.5198 38.1583 24 37.5059 24C36.8535 24 36.3198 24.5198 36.3198 25.1551Z"
-            fill="#606971"
-          />
-          <path
-            d="M6.9375 10H41.0625C42.4031 10 43.5 11.125 43.5 12.5C43.5 13.875 42.4031 15 41.0625 15H6.9375C5.59687 15 4.5 13.875 4.5 12.5C4.5 11.125 5.59687 10 6.9375 10ZM6.9375 20H26.4375C27.7781 20 28.875 21.125 28.875 22.5C28.875 23.875 27.7781 25 26.4375 25H6.9375C5.59687 25 4.5 23.875 4.5 22.5C4.5 21.125 5.59687 20 6.9375 20Z"
-            fill="#606971"
-          />
-        </g>
-        <defs>
-          <clipPath id="clip0_1412_3498">
-            <rect width="51" height="51" fill="white" transform="translate(0.5)" />
-          </clipPath>
-        </defs>
-      </svg>
+      <img src={dragContentSVG} alt="empty-destination-svg" width="51px" height="51px" />
     </Box>
-    <Typography color="#75808A" fontSize="14px" fontWeight={600} lineHeight="20px">
+    <Typography color="#75808A" fontSize="14px !important" fontWeight={'600 !important'} lineHeight="20px">
       Select text from a transcription <br />
       and click "Add to remix" or drag it <br />
       here to begin your remix.
+    </Typography>
+  </Box>
+);
+
+export const EmptySourceRemix = (): JSX.Element => (
+  <Box id="EmptyRemix" sx={EMPTY_REMIX_SX}>
+    <Box borderRadius="96px" padding="32px" marginBottom="16px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
+      <img src={emptySourceSVG} alt="empty-sources-svg" width="51px" height="51px" />
+    </Box>
+    <Typography color="#75808A" fontSize="14px" fontWeight={600} lineHeight="20px">
+      Click on Add media <br />
+      to open recordings.
     </Typography>
   </Box>
 );
@@ -970,8 +969,6 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
   const sx = useMemo(
     () => ({
       backgroundColor: '#FFFFFF',
-      // paddingY: '16px',
-      // marginTop: '16px',
       maxHeight: 'calc(100vh - 420px)',
       overflowY: 'auto',
       borderRadius: '8px',
@@ -985,11 +982,8 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
       '&::-webkit-scrollbar-track': {
         background: 'transparent',
       },
-      // paddingY: '16px',
-      // marginTop: '16px',
       '& p': {
         fontFamily: 'Public Sans, sans-serif',
-        // color: '#000000',
         fontSize: '14px',
         fontWeight: 400,
         lineHeight: '20px',
@@ -1011,8 +1005,8 @@ export const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element
     id="destinationWrapper"
     sx={{
       backgroundColor: '#FFFFFF',
-      minHeight: 'calc(100vh - 622px)',
-      maxHeight: 'calc(100vh - 455px)',
+      minHeight: 'calc(100vh - 450px)',
+      maxHeight: 'calc(100vh - 450px)',
       paddingRight: '4px',
       height: '100%',
       overflowY: 'auto',
