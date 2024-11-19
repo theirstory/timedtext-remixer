@@ -3,7 +3,7 @@ import { v5 as uuidv5 } from 'uuid';
 import stringify from 'json-stringify-deterministic';
 import CryptoJS from 'crypto-js';
 import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
-import { EMPTY_VIDEO, blackHLS } from "./video";
+import { EMPTY_VIDEO } from "./video";
 
 export const ipfsStyleHash = (data: any): string => {
   const jsonString = stringify(data);
@@ -43,7 +43,7 @@ export const ts2timeline = (ts: any): Timeline => {
               duration: w.end - w.start,
             },
             texts: w.text,
-          } as TimedText;
+          } as any as TimedText;
         });
 
       return {
@@ -56,7 +56,7 @@ export const ts2timeline = (ts: any): Timeline => {
             speaker: p.speaker,
             id: clipUUID,
           }
-        } as Metadata,
+        } as any as Metadata,
         media_reference: {
           OTIO_SCHEMA: "MediaReference.1",
           target: ts.videoURL,
@@ -113,7 +113,7 @@ export const ts2timeline = (ts: any): Timeline => {
                     },
                     transcript: ts.transcript,
                     title: ts.story.title,
-                },
+                } as any as Metadata,
                 media_reference: {
                     OTIO_SCHEMA: "MediaReference.1",
                     target: ts.videoURL,
@@ -176,7 +176,7 @@ export const ts2timeline = (ts: any): Timeline => {
               duration: w.end - w.start,
             },
             texts: w.text,
-          } as TimedText;
+          } as any as TimedText;
         });
 
       return {
@@ -189,7 +189,7 @@ export const ts2timeline = (ts: any): Timeline => {
             speaker: p.metadata?.speaker,
             id: clipUUID,
           }
-        } as Metadata,
+        } as any as Metadata,
         media_reference: {
           OTIO_SCHEMA: "MediaReference.1",
           target: tt.metadata.src,
@@ -216,7 +216,7 @@ export const ts2timeline = (ts: any): Timeline => {
         uuid: timelineUUID,
         ipfsHash,
         title: tt.metadata.title,
-      } as Metadata,
+      } as any as Metadata,
       tracks: {
         OTIO_SCHEMA: "Stack.1",
         metadata: {
@@ -257,7 +257,7 @@ export const ts2timeline = (ts: any): Timeline => {
                   },
                 ], // as (Clip | Stack)[],
               },
-            ] as (Clip | Stack)[],
+            ] as any as (Clip | Stack)[],
             // TDB single clip as single source transcript?
           },
         ] as Track[],

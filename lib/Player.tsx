@@ -25,7 +25,8 @@ export const TimedTextPlayerComponent = createComponent({
     onactivate: 'activate',
     onchange: 'change',
   },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) as any;
 
 const preventDefault = (e: React.MouseEvent) => e.preventDefault();
 const W80H100 = { width: 'auto', height: '300px' };
@@ -38,7 +39,8 @@ const MemoizedMediaPlayButton = memo(MediaPlayButton);
 const MemoizedMediaControlBar = memo(MediaControlBar);
 
 // Memoize TimedTextPlayerComponent to prevent unnecessary re-renders
-const MemoizedTimedTextPlayerComponent = memo(TimedTextPlayerComponent);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MemoizedTimedTextPlayerComponent = memo(TimedTextPlayerComponent) as any;
 
 // TODO player props
 // incl skip MediaController

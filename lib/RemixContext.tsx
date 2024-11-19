@@ -6,7 +6,7 @@ import { produce } from 'immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
 
-import type { State, Action, Timeline, Stack, Clip } from './interfaces';
+import type { State, Action, Timeline, Stack, Clip, Effect } from './interfaces';
 import { timelineStacks } from './utils';
 // import { TimedTextPlayerComponent } from './Player';
 // import { ReactWebComponent } from '@lit/react';
@@ -156,7 +156,8 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'add-gap': {
-        const { result, metadata, tool } = action.payload;
+        // TODO
+        // const { result, metadata, tool } = action.payload;
         // const stack = {
         //   OTIO_SCHEMA: 'Stack.1',
         //   metadata: {
@@ -269,7 +270,7 @@ const reducer = (state: State, action: Action): State => {
         if (!stack) return draftState;
 
         stack.source_range!.duration = duration;
-        stack.metadata!.data!.t = [0, duration];
+        (stack.metadata as any)!.data!.t = [0, duration];
         return draftState;
       }
 
@@ -326,7 +327,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
     const firstTTstart = (clips[0] as Clip)?.timed_texts?.[0].marked_range.start_time ?? 0;
     clips[0]!.source_range!.duration = firstClipDuration - (firstClipStart - firstTTstart);
     clips[0]!.source_range!.start_time = firstTTstart;
-    clips[0]!.metadata!.data!.t = `${firstTTstart},${firstTTstart + firstClipDuration}`;
+    (clips[0]!.metadata as any)!.data!.t = `${firstTTstart},${firstTTstart + firstClipDuration}`;
 
     // console.log({ firstClipStart, firstClipDuration, firstTTstart, sourceRange: current(clips[0]?.source_range) });
 
@@ -356,7 +357,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
       (lastTTs[lastTTs.length - 1]?.marked_range?.start_time ?? 0) +
       (lastTTs[lastTTs.length - 1]?.marked_range?.duration ?? 0);
     clips[clips.length - 1]!.source_range!.duration = lastClipDuration - (lastClipStart - lastTTend);
-    clips[clips.length - 1]!.metadata!.data!.t = `${lastClipStart},${lastTTend}`;
+    (clips[clips.length - 1]!.metadata as any)!.data!.t = `${lastClipStart},${lastTTend}`;
 
     // console.log({
     //   lastClipStart,
@@ -372,9 +373,9 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
 
     draft.children[0].children = clips;
 
-    if (!draft.metadata) draft.metadata = {};
-    draft.metadata.id = `SS-${nanoid()}`;
-    draft.metadata.data.t = [start - offset, end];
+    if (!draft.metadata) (draft.metadata as any) = {};
+    draft.metadata!.id = `SS-${nanoid()}`;
+    (draft.metadata as any)!.data.t = [start - offset, end];
   });
 
   return trimmedStack;
@@ -383,28 +384,28 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
 const applyEffects = (stacks: Stack[]): Stack[] => {
   // iterate effects and insert to next stack
   stacks.forEach((stack, i, arr) => {
-    if (stack.metadata?.type !== 'effect') return;
+    if ((stack.metadata as any)?.type !== 'effect') return;
 
-    const nextNonEffect = arr.slice(i + 1).find((s) => s.metadata?.type !== 'effect');
+    const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
     if (!nextNonEffect) return;
 
     const prevNonEffect = arr
       .slice(0, i)
       .reverse()
-      .find((s) => s.metadata?.type !== 'effect');
+      .find((s) => (s.metadata as any)?.type !== 'effect');
 
     const { metadata } = stack;
-    const duration = prevNonEffect ? metadata.duration / 2 : metadata.duration;
+    const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
     const stackStart = nextNonEffect.source_range?.start_time ?? 0;
 
     const effect = {
       OTIO_SCHEMA: 'Effect.1',
-      name: metadata.title,
+      name: metadata?.title,
       metadata: {
-        id: metadata.id,
+        id: metadata?.id,
         data: {
           t: `${stackStart},${stackStart + (duration ?? 1)}`,
-          effect: metadata.template,
+          effect: (metadata as any)?.template,
           ...metadata,
         },
         ...metadata,
@@ -414,10 +415,10 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
         start_time: 0,
         duration: duration ?? 1,
       },
-    };
+    } as Effect;
 
     if (!nextNonEffect.effects) nextNonEffect.effects = [];
-    const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata.id) ?? -1;
+    const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -1;
     if (effectIndex === -1) {
       nextNonEffect.effects?.push(effect);
     } else {
@@ -429,33 +430,33 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
   Array.from(stacks)
     .reverse()
     .forEach((stack, i, arr) => {
-      if (stack.metadata?.type !== 'effect') return;
+      if ((stack.metadata as any)?.type !== 'effect') return;
 
-      const nextNonEffect = arr.slice(i + 1).find((s) => s.metadata?.type !== 'effect');
+      const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
       if (!nextNonEffect) return;
 
       const prevNonEffect = arr
         .slice(0, i)
         .reverse()
-        .find((s) => s.metadata?.type !== 'effect');
+        .find((s) => (s.metadata as any)?.type !== 'effect');
 
       const { metadata } = stack;
-      const duration = prevNonEffect ? metadata.duration / 2 : metadata.duration;
+      const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
 
       const stackStart = nextNonEffect.source_range?.start_time ?? 0;
       const stackEnd = stackStart + (nextNonEffect.source_range?.duration ?? 0);
 
       const effect = {
         OTIO_SCHEMA: 'Effect.1',
-        name: metadata.title,
+        name: metadata?.title,
         metadata: {
-          id: metadata.id,
+          id: metadata?.id,
           reverse: true,
           data: {
             t: `${stackEnd - (duration ?? 1)},${stackEnd}`,
             // effect: metadata.template,
             ...metadata,
-            effect: metadata.template + '-reverse',
+            effect: (metadata as any)?.template + '-reverse',
             reverse: true,
           },
           ...metadata,
@@ -465,10 +466,10 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
           start_time: stackEnd - (duration ?? 1),
           duration: duration ?? 1,
         },
-      };
+      } as Effect;
 
       if (!nextNonEffect.effects) nextNonEffect.effects = [];
-      const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata.id) ?? -1;
+      const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -1;
       if (effectIndex === -1) {
         nextNonEffect.effects?.push(effect);
       } else {
@@ -478,7 +479,7 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
 
   // iterate non-effects and check for next effects
   stacks.forEach((stack, i, arr) => {
-    if (stack.metadata?.type === 'effect') return;
+    if ((stack.metadata as any)?.type === 'effect') return;
 
     if (!stack.effects) stack.effects = [];
 
@@ -486,12 +487,12 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
       let inEffect = false;
       const prevStackEffectIndex = arr.slice(0, i).findIndex((s) => s.metadata?.id === effect.metadata?.id);
       if (prevStackEffectIndex > -1) {
-        inEffect = !arr.slice(prevStackEffectIndex, i).find((s) => s.metadata?.type !== 'effect');
+        inEffect = !arr.slice(prevStackEffectIndex, i).find((s) => (s.metadata as any)?.type !== 'effect');
       }
 
       const nextStackEffectIndex = arr.slice(i + 1).findIndex((s) => s.metadata?.id === effect.metadata?.id);
       if (nextStackEffectIndex > -1) {
-        inEffect = !arr.slice(i + 1, i + 1 + nextStackEffectIndex).find((s) => s.metadata?.type !== 'effect');
+        inEffect = !arr.slice(i + 1, i + 1 + nextStackEffectIndex).find((s) => (s.metadata as any)?.type !== 'effect');
       }
 
       if (!inEffect) {

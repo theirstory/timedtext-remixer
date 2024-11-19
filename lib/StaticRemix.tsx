@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from 'react';
 import {
   MediaController,
@@ -51,7 +52,7 @@ player.addEventListener("playhead", (e) => {
 });`;
 
 export const StaticRemix = ({ remix, templates }: { remix: Timeline; templates: string }) => {
-  const poster = remix?.metadata?.poster ?? 'https://placehold.co/640x360?text=16:9';
+  const poster = (remix?.metadata as any)?.poster ?? 'https://placehold.co/640x360?text=16:9';
 
   const stacks: Stack[] = useMemo(() => {
     // TODO decide which to use and not allow both
@@ -90,12 +91,12 @@ export const StaticRemix = ({ remix, templates }: { remix: Timeline; templates: 
       <article id={`B${remix?.metadata?.id}`}>
         {stacks.map((stack: Stack, i, stacks) => (
           <>
-            {stack.metadata?.component ? null : (
+            {(stack.metadata as any)?.component ? null : (
               <StaticSection
                 key={stack?.metadata?.id ?? `S-${i}`}
                 stack={stack}
                 offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
-                sourceId={stack?.metadata?.sid}
+                sourceId={(stack?.metadata as any)?.sid}
               />
             )}
           </>
@@ -138,10 +139,10 @@ export const StaticSection = ({
   // const end = (stack?.source_range?.duration ?? 0) + start;
   // const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
-  const attrs = Object.keys(stack?.metadata?.data ?? {}).reduce((acc, key) => {
+  const attrs = Object.keys((stack?.metadata as any)?.data ?? {}).reduce((acc, key) => {
     return {
       ...acc,
-      [`data-${key.replaceAll('_', '-')}`]: stack?.metadata?.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: (stack?.metadata as any)?.data[key],
     } as Record<string, string>;
   }, {}) as unknown as Record<string, string>;
 
@@ -172,11 +173,11 @@ export const StaticParagraph = ({
   // const start = clip.source_range.start_time;
   // const end = clip.source_range.duration + start;
 
-  const attrs = Object.keys(clip?.metadata?.data ?? {}).reduce((acc, key) => {
+  const attrs = Object.keys((clip?.metadata as any)?.data ?? {}).reduce((acc, key) => {
     if (!key) return acc;
     return {
       ...acc,
-      [`data-${key.replaceAll('_', '-')}`]: clip.metadata.data[key],
+      [`data-${key.replaceAll('_', '-')}`]: (clip.metadata as any).data[key],
     };
   }, {});
 
@@ -204,11 +205,11 @@ export const StaticSpan = ({ data }: { data: TimedText }) => {
 const StaticEffects = ({ stack, reverse = false }: { stack: Stack; reverse?: boolean }) => {
   if (reverse)
     return stack?.effects
-      ?.filter((e) => e.metadata.reverse === true)
+      ?.filter((e) => (e.metadata as any).reverse === true)
       .map((e, i) => <StaticEffect key={e?.metadata?.id ?? `e-${i}`} effect={e} />);
 
   return stack?.effects
-    ?.filter((e) => !e.metadata.reverse) // FIXME
+    ?.filter((e) => !(e.metadata as any).reverse) // FIXME
     .map((e, i) => <StaticEffect key={e?.metadata?.id ?? `e-${i}`} effect={e} />);
 };
 

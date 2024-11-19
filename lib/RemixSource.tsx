@@ -30,11 +30,11 @@ const RemixSource = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
-  ToolbarWrapper = PlainDiv as unknown as ElementType,
+  // ToolbarWrapper = PlainDiv as unknown as ElementType,
   source,
   active,
   index,
-  tools = [],
+  // tools = [],
   timestamp = 0,
 }: RemixSourceProps): JSX.Element => {
   const { state } = useContext(Context);
@@ -139,7 +139,7 @@ const RemixSource = ({
   // );
 
   return (
-    <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
+    <div style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.sid ?? 'SID'}>
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
@@ -158,14 +158,14 @@ const RemixSource = ({
               style={getListStyle(snapshot.isDraggingOver)}
               onClick={handleSourceClick}
             >
-              <article id={'A' + source?.metadata?.id} data-sid={source?.metadata?.sid}>
+              <article id={'A' + source?.metadata?.id} data-sid={(source?.metadata as any)?.sid}>
                 {stacks.map((stack: Stack, i) => (
                   <Section
                     key={stack?.metadata?.id ?? `S${i}`}
                     stack={stack}
                     offset={offsets[i]}
                     interval={interval}
-                    sourceId={source?.metadata?.sid}
+                    sourceId={(source?.metadata as any)?.sid}
                     droppableId={droppableId}
                     source={source}
                     {...{

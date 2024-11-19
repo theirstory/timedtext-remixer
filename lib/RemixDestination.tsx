@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
-import { Box, Tooltip } from '@mui/material';
+import { Box } from '@mui/material';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
@@ -44,7 +45,8 @@ const RemixDestination = ({
     }
   }, [remix]);
 
-  const getListStyle = (): CSSProperties => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getListStyle = (_isDraggingOver?: boolean): CSSProperties => ({
     background: 'transparent',
     borderRadius: '8px',
     // height: '100%',
@@ -132,7 +134,11 @@ const RemixDestination = ({
             <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)}>
               <article id={`B${remix?.metadata?.id}`}>
                 {stacks.map((stack: Stack, i, stacks) => (
-                  <Draggable key={stack?.metadata?.id ?? `db-${i}`} draggableId={stack?.metadata?.id} index={i}>
+                  <Draggable
+                    key={stack?.metadata?.id ?? `db-${i}`}
+                    draggableId={stack?.metadata?.id as string}
+                    index={i}
+                  >
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
@@ -140,12 +146,14 @@ const RemixDestination = ({
                         {...provided.dragHandleProps}
                         style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                       >
-                        {stack.metadata?.component ? (
+                        {(stack.metadata as any)?.component ? (
                           <Tool
                             key={stack?.metadata?.id ?? `T-${i}`}
-                            Component={tools.find((t) => t.type === stack.metadata?.component).timelineComponent}
+                            Component={
+                              tools.find((t) => t.type === (stack.metadata as any)?.component).timelineComponent
+                            }
                             stack={stack}
-                            id={stack?.metadata?.id}
+                            id={stack?.metadata?.id as string}
                           />
                         ) : (
                           <Section
@@ -154,7 +162,7 @@ const RemixDestination = ({
                             offset={stacks.slice(0, i).reduce((acc, b) => acc + (b.source_range?.duration ?? 0), 0)}
                             BlockWrapper={BlockWrapper}
                             SectionContentWrapper={SectionContentWrapper}
-                            sourceId={stack?.metadata?.sid}
+                            sourceId={(stack?.metadata as any)?.sid}
                             tools={tools}
                           />
                         )}

@@ -1,4 +1,4 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useEffect, useState, useRef, useMemo } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useRef } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
@@ -48,11 +48,13 @@ export const Paragraph = memo(
     const start = clip.source_range.start_time;
     const end = clip.source_range.duration + start;
 
-    const attrs = Object.keys(clip?.metadata?.data ?? {}).reduce((acc, key) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const attrs = Object.keys((clip?.metadata as any)?.data ?? {}).reduce((acc, key) => {
       if (!key) return acc;
       return {
         ...acc,
-        [`data-${key.replaceAll('_', '-')}`]: clip.metadata.data[key],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [`data-${key.replaceAll('_', '-')}`]: (clip.metadata as any)?.data[key],
       };
     }, {});
 
@@ -149,10 +151,12 @@ export const Section = memo(
     const end = (stack?.source_range?.duration ?? 0) + start;
     const adjustedInterval = interval && ([interval[0] - offset, interval[1] - offset] as [number, number]);
 
-    const attrs = Object.keys(stack?.metadata?.data ?? {}).reduce((acc, key) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const attrs = Object.keys((stack?.metadata as any)?.data ?? {}).reduce((acc, key) => {
       return {
         ...acc,
-        [`data-${key.replaceAll('_', '-')}`]: stack?.metadata?.data[key],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [`data-${key.replaceAll('_', '-')}`]: (stack?.metadata as any)?.data[key],
       } as Record<string, string>;
     }, {}) as unknown as Record<string, string>;
 
@@ -199,7 +203,8 @@ export const Section = memo(
     const sectionWidth = sectionRef.current?.clientWidth;
 
     // FIXME
-    if (interval) globalThis.foo = `selection-${interval?.[0]}-${interval?.[1]}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (interval) (globalThis as any).foo = `selection-${interval?.[0]}-${interval?.[1]}`;
 
     // TODO use a different set of tool array for in-section widgets
     return (
@@ -211,13 +216,19 @@ export const Section = memo(
         style={{ padding: 0, border: 'none', marginBottom: 0 }}
         ref={sectionRef}
       >
-        {stack.metadata?.widget && tools?.find((t) => t.type === stack.metadata?.widget)?.timelineComponent && (
-          <Tool
-            Component={tools.find((t) => t.type === stack.metadata?.widget).timelineComponent}
-            stack={stack}
-            id={stack?.metadata?.id}
-          />
-        )}
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (stack.metadata as any)?.widget &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tools?.find((t) => t.type === (stack.metadata as any)?.widget)?.timelineComponent && (
+              <Tool
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Component={tools.find((t) => t.type === (stack.metadata as any)?.widget).timelineComponent}
+                stack={stack}
+                id={stack?.metadata?.id ?? 'missing-tool-id'}
+              />
+            )
+        }
         <SectionContentWrapper metadata={stack?.metadata}>
           <Effects stack={stack} />
           {intersects ? (
