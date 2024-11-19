@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "dist/main.js",
+  "main": "dist/timedtext-remixer.js",
   "types": "dist/main.d.ts",
   "files": [
     "dist"
