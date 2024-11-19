@@ -11,7 +11,7 @@ import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { ts2timeline } from '../lib/utils.js';
-import type { Timeline } from '../lib/interfaces';
+import type { ExternalSource, Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
 
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -49,6 +49,7 @@ import {
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
 import { axiosInstance } from './services/axiosInstance.ts';
+import { SourceDrawerExternalApi } from './components/SourceDrawerExternalApi.tsx';
 
 function App() {
   const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
@@ -89,6 +90,8 @@ function App() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
+  const [hasExternalSources, setHasExternalSources] = useState(false);
+  const [videoPosterUrl, setVideoPosterUrl] = useState(null);
   const toggleDrawer = (drawerOpen: boolean) => () => {
     setDrawerOpen(drawerOpen);
   };
@@ -106,11 +109,15 @@ function App() {
     // and use that in order to fetch the sources.
     // Otherwise, it will use the default sources.
     const setExternalAPIData = (event: MessageEvent) => {
-      const { token, url, backgroundColor } = event.data;
+      const { token, url, backgroundColor, videoPosterUrl } = event.data;
       if (token && url) {
         // Update axios instance with new token and base URL
         axiosInstance.defaults.baseURL = url;
         axiosInstance.defaults.headers['Authorization'] = token;
+        setHasExternalSources(true);
+      }
+      if (videoPosterUrl) {
+        setVideoPosterUrl(videoPosterUrl);
       }
       if (backgroundColor) {
         document.body.style.backgroundColor = backgroundColor;
@@ -123,7 +130,7 @@ function App() {
       window.removeEventListener('message', setExternalAPIData);
     };
   }, []);
-
+  console.log('videoPosterUrl', videoPosterUrl);
   useEffect(() => {
     autoscrollRef.current = autoscroll;
   }, [autoscroll]);
@@ -344,29 +351,26 @@ function App() {
     dispatchSources({ type: 'remove', payload: { id: source?.metadata?.id } });
   };
 
-  const hasExternalSources = useMemo(() => {
-    const baseURL = axiosInstance.defaults.baseURL;
-    const authorization = axiosInstance.defaults.headers['Authorization'];
-    return !!baseURL && !!authorization;
-  }, []);
-
-  const openTab = (source: Timeline) => {
+  const openTab = async (source: Timeline | ExternalSource) => {
     setDrawerOpen(false);
-    console.log('source', source);
-    const index = sources.findIndex((s: Timeline) => s?.metadata?.id === source?.metadata?.id);
+
+    if (hasExternalSources) {
+      const externalSource = source as ExternalSource;
+      const selectedStoryId = externalSource?.id;
+      const { data } = await axiosInstance.get(`/remixer/${selectedStoryId}/transcript`);
+
+      const timelineSource = ts2timeline(data);
+      dispatchSources({ type: 'add', payload: timelineSource });
+      setTabValue(sources.length);
+      return;
+    }
+    const sourceObject = source as Timeline;
+    const index = sources.findIndex((s: Timeline) => s?.metadata?.id === sourceObject?.metadata?.id);
     if (index >= 0) {
       setTabValue(index);
-    } else {
-      if (hasExternalSources) {
-        const timelineSource = ts2timeline(source);
-        console.log('EL TIMELINE SOURCE', timelineSource);
-        // dispatchSources({ type: 'add', payload: timelineSource });
-        // setTabValue(sources.length);
-        return;
-      }
-      dispatchSources({ type: 'add', payload: source });
-      setTabValue(sources.length);
     }
+    dispatchSources({ type: 'add', payload: source });
+    setTabValue(sources.length);
   };
 
   const saveRemix = useCallback(() => {
@@ -449,14 +453,21 @@ function App() {
 
         `}
       </style>
-      {drawerOpen && (
-        <SourceDrawer
-          open={drawerOpen}
-          onClose={toggleDrawer(false)}
-          defaultSources={defaultSources}
-          onClickSource={(source) => openTab(source)}
-        />
-      )}
+      {drawerOpen &&
+        (hasExternalSources ? (
+          <SourceDrawerExternalApi
+            open={drawerOpen}
+            onClose={toggleDrawer(false)}
+            onClickSource={(source) => openTab(source)}
+          />
+        ) : (
+          <SourceDrawer
+            open={drawerOpen}
+            onClose={toggleDrawer(false)}
+            defaultSources={defaultSources}
+            onClickSource={(source) => openTab(source)}
+          />
+        ))}
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
@@ -470,20 +481,12 @@ function App() {
         <RemixContext
           sources={sources}
           remix={remix}
-          poster="https://placehold.co/640x360?text=16:9"
+          poster={videoPosterUrl ?? 'https://placehold.co/640x360?text=16:9'}
           width={620}
           height={360}
           tools={tools}
         >
-          <Box
-            id="columns-container"
-            display={'flex'}
-            gap={'8px'}
-            height={'100%'}
-            width={'100%'}
-            // maxWidth={'1440px'}
-            // gridTemplateColumns={'1fr 1fr'}
-          >
+          <Box id="columns-container" display={'flex'} gap={'8px'} height={'100%'} width={'100%'}>
             <Box
               id="left-column-container"
               borderRadius="8px"
@@ -498,6 +501,7 @@ function App() {
                   onChange={handleTabChange}
                   aria-label="tabbed content"
                   sx={{
+                    maxWidth: '400px',
                     minHeight: '0px',
                     '& .MuiTabs-scrollButtons.Mui-disabled': {
                       width: '0px',
@@ -559,7 +563,6 @@ function App() {
                   </IconButton>
                 </Tooltip>
               </Box>
-              {/* <Box height="100%"> */}
               <RemixSources
                 active={active}
                 PlayerWrapper={LeftPlayerWrapper}
@@ -570,7 +573,6 @@ function App() {
                 tools={toolsLeft}
                 Empty={EmptySourceRemix}
               />
-              {/* </Box> */}
             </Box>
 
             <Box
@@ -590,14 +592,10 @@ function App() {
                 <TopRightIcons handleLoad={loadRemix} handleSave={saveRemix} handleExport={exportRemix} />
               </Box>
               <RemixDestination
-                PlayerWrapper={
-                  // isDestinationEmpty ? EmptyPlayer :
-                  RightPlayerWrapper
-                }
+                PlayerWrapper={RightPlayerWrapper}
                 DestinationWrapper={DestinationWrapper}
                 SectionContentWrapper={SectionContentWrapper}
                 BlockWrapper={BlockWrapperRight}
-                // ToolbarWrapper={ToolbarWrapper}
                 Settings={
                   <div>
                     <IconButton

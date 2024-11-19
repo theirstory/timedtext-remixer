@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
 import { axiosInstance } from '../services/axiosInstance';
 
-const useFetchStories = (searchTerm: string) => {
+const useFetchStories = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [storyList, setStoryList] = useState([]);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchStories = useCallback(async () => {
+  const fetchStories = useCallback(async (searchTerm: string) => {
     try {
       setIsFetching(true);
       setError(null);

@@ -12,18 +12,18 @@ export type State = {
 };
 
 export type Action =
-| { type: "test"; payload: any }
-| { type: "add-widget"; payload: any }
-| { type: "add-gap"; payload: any }
-| { type: "metadata"; payload: any }
-| { type: "move"; payload: DropResult }
-| { type: "move-up"; payload: any }
-| { type: "move-down"; payload: any }
-| { type: "remove"; payload: any }
-| { type: "add"; payload: [DropResult, Timeline, [number, number]] }
-| { type: "add-at"; payload: [string, Timeline, [number, number]] }
-| { type: "change-duration"; payload: any }
-| { type: "update"; payload: any };
+  | { type: 'test'; payload: any }
+  | { type: 'add-widget'; payload: any }
+  | { type: 'add-gap'; payload: any }
+  | { type: 'metadata'; payload: any }
+  | { type: 'move'; payload: DropResult }
+  | { type: 'move-up'; payload: any }
+  | { type: 'move-down'; payload: any }
+  | { type: 'remove'; payload: any }
+  | { type: 'add'; payload: [DropResult, Timeline, [number, number]] }
+  | { type: 'add-at'; payload: [string, Timeline, [number, number]] }
+  | { type: 'change-duration'; payload: any }
+  | { type: 'update'; payload: any };
 
 export interface Stack {
   OTIO_SCHEMA: string;
@@ -112,4 +112,14 @@ export interface Effect {
   name: string;
   metadata: Metadata;
   source_range: TimeRange; // TODO: verify with OTIO spec
+}
+
+export interface ExternalSource {
+  id: string;
+  title: string;
+  url: string;
+  participants: string[];
+  project: string;
+  creator: string;
+  created: string;
 }
