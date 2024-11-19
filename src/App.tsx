@@ -344,12 +344,26 @@ function App() {
     dispatchSources({ type: 'remove', payload: { id: source?.metadata?.id } });
   };
 
+  const hasExternalSources = useMemo(() => {
+    const baseURL = axiosInstance.defaults.baseURL;
+    const authorization = axiosInstance.defaults.headers['Authorization'];
+    return !!baseURL && !!authorization;
+  }, []);
+
   const openTab = (source: Timeline) => {
     setDrawerOpen(false);
+    console.log('source', source);
     const index = sources.findIndex((s: Timeline) => s?.metadata?.id === source?.metadata?.id);
     if (index >= 0) {
       setTabValue(index);
     } else {
+      if (hasExternalSources) {
+        const timelineSource = ts2timeline(source);
+        console.log('EL TIMELINE SOURCE', timelineSource);
+        // dispatchSources({ type: 'add', payload: timelineSource });
+        // setTabValue(sources.length);
+        return;
+      }
       dispatchSources({ type: 'add', payload: source });
       setTabValue(sources.length);
     }
