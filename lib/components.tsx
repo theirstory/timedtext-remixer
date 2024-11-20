@@ -205,7 +205,7 @@ export const Section = memo(
     const [y, setY] = useState(0);
     const [mouseY, setMouseY] = useState(0);
     const recordMouseY = useCallback(
-      (e) => {
+      (e: React.MouseEvent<HTMLDivElement>) => {
         setMouseY(e.clientY);
         if (ref.current) {
           setY((ref.current as unknown as HTMLElement).getBoundingClientRect().y);
