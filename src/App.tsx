@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
-import {
-  Box,
-  Tab,
-  Tabs,
-  Typography,
-  IconButton,
-  Toolbar,
-  Drawer,
-  Tooltip,
-  Snackbar,
-  AlertColor,
-  Chip,
-} from '@mui/material';
+import { renderToString } from 'react-dom/server';
+import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Snackbar, AlertColor } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
@@ -22,6 +11,7 @@ import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
+import { StaticRemix } from '../lib/StaticRemix.js';
 import { ts2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
@@ -61,18 +51,20 @@ import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
 
 function App() {
-  const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX);
+  const [remix, setRemix] = useState<Timeline>(EMPTY_REMIX as unknown as Timeline);
   const [tabValue, setTabValue] = React.useState(0);
   const [autoscroll, setAutoscroll] = React.useState(false);
   const [scrolling, setScrolling] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAutoscrollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAutoscroll(event.target.checked);
   };
@@ -363,12 +355,20 @@ function App() {
   }, []);
 
   const exportRemix = useCallback(() => {
-    // const html = renderToString(<StaticRemix remix={remix} />);
-    // console.log(html);
+    const html = renderToString(<StaticRemix remix={remix} templates={TEMPLATES} />);
+    console.log(html);
+
+    const element = document.createElement('a');
+    const file = new Blob([html], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = 'remix.html';
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+
     setToastMessage('Remix exported successfully');
     setToastSeverity('success');
     setToastOpen(true);
-  }, []);
+  }, [remix]);
 
   const handleCloseToast = () => {
     setToastOpen(false);
