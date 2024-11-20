@@ -599,13 +599,11 @@ function App() {
                     />
                   ))}
                 </Tabs>
-                {sources.length === 0 && (
-                  <Tooltip title="Add media">
-                    <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
-                      <PlaylistAddIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
+                <Tooltip title="Add media">
+                  <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
+                    <PlaylistAddIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
               <RemixSources
                 active={active}
