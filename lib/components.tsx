@@ -1,4 +1,4 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useRef } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
@@ -201,6 +201,18 @@ export const Section = memo(
 
     const sectionRef = useRef<HTMLDivElement>(null);
     const sectionWidth = sectionRef.current?.clientWidth;
+    const ref = useRef<HTMLDivElement>(null);
+    const [y, setY] = useState(0);
+    const [mouseY, setMouseY] = useState(0);
+    const recordMouseY = useCallback(
+      (e) => {
+        setMouseY(e.clientY);
+        if (ref.current) {
+          setY((ref.current as unknown as HTMLElement).getBoundingClientRect().y);
+        }
+      },
+      [ref],
+    );
 
     // FIXME
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -243,13 +255,16 @@ export const Section = memo(
                 {(provided, snapshot) => {
                   return (
                     <>
+                      <div ref={ref} style={{ height: 0 }}></div>
                       <div
                         key={`${interval?.[0]}-${interval?.[1]}`}
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         style={{
                           ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
+                          height: snapshot.isDragging ? 50 : 'fit-content',
                         }}
+                        onMouseDown={recordMouseY}
                       >
                         {snapshot.isDragging ? (
                           <div
@@ -264,7 +279,8 @@ export const Section = memo(
                               alignItems: 'center',
                               columnGap: '6px',
                               position: 'fixed',
-                              top: '0',
+                              // top: '0',
+                              top: ref.current ? mouseY - y - 25 : 0,
                             }}
                           >
                             <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
