@@ -930,6 +930,24 @@ export const EmptyRemix = (): JSX.Element => (
   </Box>
 );
 
+const EMPTY_SOURCE_SX = {
+  height: '100%',
+  borderRadius: '8px',
+  display: 'flex',
+  flexDirection: 'column',
+  textAlign: '-webkit-center',
+  paddingY: '51px',
+};
+
+export const EmptySource = (): JSX.Element => (
+  <Box id="EmptySource" sx={EMPTY_SOURCE_SX}>
+    <Typography color="#75808A" fontSize="14px" fontWeight={600} lineHeight="20px">
+      Open a transcript here <br />
+      to begin your remix.
+    </Typography>
+  </Box>
+);
+
 // export const EmptyPlayer = (): JSX.Element => (
 //   <Box id="EmptyPlayer" height="302px" borderRadius="8px" sx={{ backgroundColor: '#464C53', textAlign: 'center' }}>
 //     <Typography>TheirStory</Typography>

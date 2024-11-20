@@ -34,6 +34,7 @@ import {
   TitleTool,
   // GAPTool,
   EmptyRemix,
+  EmptySource,
   LeftPlayerWrapper,
   RightPlayerWrapper,
   SourceWrapper,
@@ -542,6 +543,7 @@ function App() {
                 SelectionWrapper={SelectionWrapper}
                 ToolbarWrapper={ToolbarWrapper}
                 tools={toolsLeft}
+                Empty={EmptySource}
               />
               {/* </Box> */}
             </Box>
