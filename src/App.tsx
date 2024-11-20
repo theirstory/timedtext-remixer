@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, useEffect, useState, useCallback, useReducer } from 'react';
+import React, { useMemo, useEffect, useState, useCallback, useReducer, useRef } from 'react';
 import { Box, Tab, Tabs, Typography, IconButton, Toolbar, Drawer, Tooltip, Snackbar, AlertColor } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
@@ -58,7 +58,15 @@ function App() {
   const [scrolling, setScrolling] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>('success');
+  const isDestinationRemixerEmpty = remix?.tracks?.children[0].children.length === 0;
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
+  const [emptyVideoPosterUrl, setEmptyVideoPosterUrl] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const hasExternalSourcesRef = useRef(false);
+  const remixerIdRef = useRef();
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -84,14 +92,8 @@ function App() {
     }
   }, []);
 
-  // const initRemix = EMPTY_REMIX;
-
   const active = useMemo(() => sources[tabValue]?.metadata?.id, [tabValue, sources]);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
-  const [hasExternalSources, setHasExternalSources] = useState(false);
-  const [videoPosterUrl, setVideoPosterUrl] = useState(null);
   const toggleDrawer = (drawerOpen: boolean) => () => {
     setDrawerOpen(drawerOpen);
   };
@@ -109,18 +111,22 @@ function App() {
     // and use that in order to fetch the sources.
     // Otherwise, it will use the default sources.
     const setExternalAPIData = (event: MessageEvent) => {
-      const { token, url, backgroundColor, videoPosterUrl } = event.data;
+      const { remixerId, token, url, backgroundColor, videoPosterUrl } = event.data;
+      console.log('remixerId', remixerId);
+      if (remixerId) {
+        remixerIdRef.current = remixerId;
+      }
       if (token && url) {
         // Update axios instance with new token and base URL
         axiosInstance.defaults.baseURL = url;
         axiosInstance.defaults.headers['Authorization'] = token;
-        setHasExternalSources(true);
-      }
-      if (videoPosterUrl) {
-        setVideoPosterUrl(videoPosterUrl);
+        hasExternalSourcesRef.current = true;
       }
       if (backgroundColor) {
         document.body.style.backgroundColor = backgroundColor;
+      }
+      if (videoPosterUrl) {
+        setEmptyVideoPosterUrl(videoPosterUrl);
       }
     };
 
@@ -130,7 +136,7 @@ function App() {
       window.removeEventListener('message', setExternalAPIData);
     };
   }, []);
-  console.log('videoPosterUrl', videoPosterUrl);
+
   useEffect(() => {
     autoscrollRef.current = autoscroll;
   }, [autoscroll]);
@@ -354,9 +360,15 @@ function App() {
   const openTab = async (source: Timeline | ExternalSource) => {
     setDrawerOpen(false);
 
-    if (hasExternalSources) {
+    if (hasExternalSourcesRef.current) {
       const externalSource = source as ExternalSource;
       const selectedStoryId = externalSource?.id;
+      if (!selectedStoryId) return;
+      const index = sources.findIndex((s: Timeline) => s?.metadata?.story._id === selectedStoryId);
+      if (index >= 0) {
+        setTabValue(index);
+        return;
+      }
       const { data } = await axiosInstance.get(`/remixer/${selectedStoryId}/transcript`);
 
       const timelineSource = ts2timeline(data);
@@ -373,28 +385,56 @@ function App() {
     setTabValue(sources.length);
   };
 
-  const saveRemix = useCallback(() => {
-    console.log('remix', remix);
-    localStorage.setItem('remix', JSON.stringify(remix));
-    setToastMessage('Remix saved successfully');
-    setToastSeverity('success');
-    setToastOpen(true);
+  const saveRemix = useCallback(async () => {
+    try {
+      setIsSaving(true);
+      if (hasExternalSourcesRef.current) {
+        await axiosInstance.put(`/remixer/${remixerIdRef.current}`, { data: remix });
+      } else {
+        localStorage.setItem('remix', JSON.stringify(remix));
+      }
+      setToastMessage('Remix saved successfully');
+    } catch (err) {
+      console.log('Error saving remix:', err);
+      setToastMessage('Error saving remix');
+    } finally {
+      setIsSaving(false);
+      setToastOpen(true);
+    }
   }, [remix]);
 
-  const loadRemix = useCallback(() => {
-    const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
-    console.log('remix', remix2);
-    if (remix2) setRemix(remix2);
-    setToastMessage('Remix loaded successfully');
-    setToastSeverity('success');
-    setToastOpen(true);
+  const loadRemix = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      if (hasExternalSourcesRef.current) {
+        const response = await axiosInstance.get(`/remixer/${remixerIdRef.current}`);
+        const remix2 = response.data;
+        if (remix2) setRemix(remix2.data);
+        return;
+      }
+
+      const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
+      if (remix2) setRemix(remix2);
+      setToastMessage('Remix loaded successfully');
+      setToastOpen(true);
+    } catch {
+      setToastMessage('Error loading remix');
+      setToastOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    if (remixerIdRef.current) loadRemix();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRemix, remixerIdRef.current]);
+
   const exportRemix = useCallback(() => {
+    setIsExporting(true);
     // const html = renderToString(<StaticRemix remix={remix} />);
     // console.log(html);
     setToastMessage('Remix exported successfully');
-    setToastSeverity('success');
     setToastOpen(true);
   }, []);
 
@@ -419,7 +459,7 @@ function App() {
   const handleToggleContextView = () => {
     setAutoscroll(!autoscroll);
   };
-
+  console.log('sources', sources);
   return (
     <>
       <style>
@@ -434,7 +474,7 @@ function App() {
             opacity: 10;
           }
 
-          #EmptyRemix {
+          #EmptyRemixSource {
             display: flex;
           }
 
@@ -442,8 +482,12 @@ function App() {
             display: none;
           }
 
-          div[data-rfd-draggable-id="S-EMPTY"] ~ #EmptyRemix {
+          div[data-rfd-draggable-id="S-EMPTY"] ~ #EmptyRemixDestination {
             display: block;
+          }
+
+          div[data-rfd-draggable-id="S-EMPTY"] ~ #EmptyRemixDestination p:first-of-type {
+          margin-top: 16px;
           }
 
           section p {
@@ -453,35 +497,32 @@ function App() {
 
         `}
       </style>
-      {drawerOpen &&
-        (hasExternalSources ? (
-          <SourceDrawerExternalApi
-            open={drawerOpen}
-            onClose={toggleDrawer(false)}
-            onClickSource={(source) => openTab(source)}
-          />
-        ) : (
-          <SourceDrawer
-            open={drawerOpen}
-            onClose={toggleDrawer(false)}
-            defaultSources={defaultSources}
-            onClickSource={(source) => openTab(source)}
-          />
-        ))}
+      {hasExternalSourcesRef.current ? (
+        <SourceDrawerExternalApi
+          open={drawerOpen}
+          onClose={toggleDrawer(false)}
+          onClickSource={(source) => openTab(source)}
+        />
+      ) : (
+        <SourceDrawer
+          open={drawerOpen}
+          onClose={toggleDrawer(false)}
+          defaultSources={defaultSources}
+          onClickSource={(source) => openTab(source)}
+        />
+      )}
       <Drawer open={exportDrawerOpen} onClose={toggleExportDrawer(false)} anchor="right">
         {exportDrawerOpen ? <ExportRemix remix={remix} /> : null}
       </Drawer>
-      <Box
-        id="container"
-        ref={remixRef}
-        display="flex"
-        justifyContent="center"
-        sx={{ padding: '8px', height: 'calc(100% - 16px)' }}
-      >
+      <Box id="container" ref={remixRef} display="flex" justifyContent="center" sx={{ padding: '8px', height: '100%' }}>
         <RemixContext
           sources={sources}
           remix={remix}
-          poster={videoPosterUrl ?? 'https://placehold.co/640x360?text=16:9'}
+          poster={
+            emptyVideoPosterUrl ??
+            'https://placehold.co/640x360/464C53/7D848A?font=playfair-display&text=TheirStory' ??
+            'https://placehold.co/640x360?text=16:9'
+          }
           width={620}
           height={360}
           tools={tools}
@@ -492,7 +533,8 @@ function App() {
               borderRadius="8px"
               sx={{ backgroundColor: '#FFFFFF' }}
               padding="16px"
-              width="100%"
+              width="50%"
+              maxWidth="45vw"
             >
               <Box id="tabs-container" display="flex">
                 <Tabs
@@ -501,7 +543,7 @@ function App() {
                   onChange={handleTabChange}
                   aria-label="tabbed content"
                   sx={{
-                    maxWidth: '400px',
+                    maxWidth: '100%',
                     minHeight: '0px',
                     '& .MuiTabs-scrollButtons.Mui-disabled': {
                       width: '0px',
@@ -557,11 +599,13 @@ function App() {
                     />
                   ))}
                 </Tabs>
-                <Tooltip title="Add media">
-                  <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
-                    <PlaylistAddIcon />
-                  </IconButton>
-                </Tooltip>
+                {sources.length === 0 && (
+                  <Tooltip title="Add media">
+                    <IconButton onClick={toggleDrawer(true)} aria-label="toggleDrawer" sx={{ marginLeft: 'auto' }}>
+                      <PlaylistAddIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
               <RemixSources
                 active={active}
@@ -571,7 +615,7 @@ function App() {
                 SelectionWrapper={SelectionWrapper}
                 ToolbarWrapper={ToolbarWrapper}
                 tools={toolsLeft}
-                Empty={EmptySourceRemix}
+                Empty={() => EmptySourceRemix({ onClick: toggleDrawer(true) })}
               />
             </Box>
 
@@ -583,13 +627,21 @@ function App() {
               flexDirection="column"
               paddingX="24px"
               paddingTop="24px"
-              width="100%"
+              width="50%"
+              maxWidth="45vw"
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography fontSize="14px" fontWeight={700} lineHeight="20px" color="#464C53">
                   Remix
                 </Typography>
-                <TopRightIcons handleLoad={loadRemix} handleSave={saveRemix} handleExport={exportRemix} />
+                <TopRightIcons
+                  handleLoad={loadRemix}
+                  handleSave={saveRemix}
+                  handleExport={exportRemix}
+                  isExporting={isExporting}
+                  isLoading={isLoading}
+                  isSaving={isSaving}
+                />
               </Box>
               <RemixDestination
                 PlayerWrapper={RightPlayerWrapper}
@@ -626,7 +678,7 @@ function App() {
                   </div>
                 }
                 tools={tools}
-                Empty={EmptyDestinationRemix}
+                Empty={isDestinationRemixerEmpty ? EmptyDestinationRemix : undefined}
               />
             </Box>
           </Box>

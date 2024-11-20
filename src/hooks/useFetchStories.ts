@@ -6,7 +6,7 @@ const useFetchStories = () => {
   const [storyList, setStoryList] = useState([]);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchStories = useCallback(async (searchTerm: string) => {
+  const fetchStories = useCallback(async (searchTerm?: string) => {
     try {
       setIsFetching(true);
       setError(null);

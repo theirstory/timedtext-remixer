@@ -3,14 +3,14 @@ import { useCallback, useRef, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import { SourceDrawerItem } from './SourceDrawerItem';
-import { Timeline } from '../../lib/interfaces';
+import { ExternalSource, Timeline } from '../../lib/interfaces';
 import { formatDate } from '../utils/dateUtils';
 
 interface SourceDrawerProps {
   open: boolean;
   onClose: () => void;
   defaultSources: Timeline[];
-  onClickSource: (source: Timeline) => void;
+  onClickSource: (source: Timeline | ExternalSource) => void;
 }
 
 export const SourceDrawer = ({ open, onClose, defaultSources, onClickSource }: SourceDrawerProps) => {
@@ -67,7 +67,26 @@ export const SourceDrawer = ({ open, onClose, defaultSources, onClickSource }: S
             },
           }}
         />
-        <Box display="flex" flexDirection="column" gap="12px">
+        <Box
+          display="flex"
+          flexDirection="column"
+          gap="12px"
+          paddingRight="4px"
+          sx={{
+            height: '750px',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#606971',
+              borderRadius: '10px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+          }}
+        >
           {filteredSources.map((source) => (
             <SourceDrawerItem key={source.id} source={source} onClick={onClickSource} />
           ))}

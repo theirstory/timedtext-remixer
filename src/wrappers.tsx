@@ -900,11 +900,12 @@ const EMPTY_REMIX_SX = {
   textAlign: '-webkit-center',
   justifyContent: 'center',
   alignItems: 'center',
+  rowGap: '16px',
 };
 
 export const EmptyDestinationRemix = (): JSX.Element => (
-  <Box id="EmptyRemix" sx={EMPTY_REMIX_SX}>
-    <Box borderRadius="96px" padding="32px" marginBottom="16px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
+  <Box id="EmptyRemixDestination" sx={{ ...EMPTY_REMIX_SX, paddingTop: '80px' }}>
+    <Box borderRadius="96px" padding="32px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
       <img src={dragContentSVG} alt="empty-destination-svg" width="51px" height="51px" />
     </Box>
     <Typography color="#75808A" fontSize="14px !important" fontWeight={'600 !important'} lineHeight="20px">
@@ -915,15 +916,35 @@ export const EmptyDestinationRemix = (): JSX.Element => (
   </Box>
 );
 
-export const EmptySourceRemix = (): JSX.Element => (
-  <Box id="EmptyRemix" sx={EMPTY_REMIX_SX}>
-    <Box borderRadius="96px" padding="32px" marginBottom="16px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
+export const EmptySourceRemix = ({ onClick }: { onClick: () => void }): JSX.Element => (
+  <Box id="EmptyRemixSource" sx={EMPTY_REMIX_SX}>
+    <Box borderRadius="96px" padding="32px" width="fit-content" sx={{ backgroundColor: '#F7F9FC' }}>
       <img src={emptySourceSVG} alt="empty-sources-svg" width="51px" height="51px" />
     </Box>
     <Typography color="#75808A" fontSize="14px" fontWeight={600} lineHeight="20px">
       Click on Add media <br />
       to open recordings.
     </Typography>
+    <Button
+      variant="contained"
+      startIcon={<PlaylistAddIcon />}
+      onClick={onClick}
+      sx={{
+        fontSize: '14px',
+        fontWeight: 600,
+        lineHeight: '20px',
+        color: '#606971',
+        textTransform: 'none',
+        borderRadius: '8px',
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D9DCDE',
+        '&:hover': {
+          backgroundColor: '#e7e9ea',
+        },
+      }}
+    >
+      Add media
+    </Button>
   </Box>
 );
 
@@ -991,7 +1012,6 @@ export const SourceWrapper = ({ children }: PropsWithChildren): JSX.Element => {
     }),
     [],
   );
-
   return (
     <Box id="sourceWrapper" sx={sx}>
       {children}
@@ -1004,6 +1024,9 @@ export const DestinationWrapper = ({ children }: PropsWithChildren): JSX.Element
   <Box
     id="destinationWrapper"
     sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
       backgroundColor: '#FFFFFF',
       minHeight: 'calc(100vh - 450px)',
       maxHeight: 'calc(100vh - 450px)',
