@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Drawer, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { Timeline } from '../../lib/interfaces';
 import SourceIcon from '@mui/icons-material/Source';
@@ -64,7 +65,7 @@ export const SourceDrawer = ({
                   title?.toLowerCase().includes(searchTerm) ||
                   story.author.full_name.toLowerCase().includes(searchTerm) ||
                   story.project?.name.toLowerCase().includes(searchTerm) ||
-                  formatDate(story.record_date).toLowerCase().includes(searchTerm)
+                  formatDate(story?.record_date).toLowerCase().includes(searchTerm)
                 );
               }),
             );
@@ -116,7 +117,7 @@ export const SourceDrawer = ({
                     overflow="hidden"
                     whiteSpace="nowrap"
                   >
-                    {story.project?.name ?? 'Diversity'}
+                    {story?.project?.name ?? 'Diversity'}
                   </Typography>
                 </Box>
                 <Box display="flex" flexDirection="column">
@@ -138,7 +139,7 @@ export const SourceDrawer = ({
                     overflow="hidden"
                     whiteSpace="nowrap"
                   >
-                    {story.author.full_name ?? ''} • {formatDate(story.record_date ?? '')}
+                    {story?.author?.full_name ?? ''} • {formatDate(story?.record_date ?? '')}
                   </Typography>
                 </Box>
               </Box>

@@ -12,7 +12,7 @@ import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
-import { ts2timeline } from '../lib/utils.js';
+import { ts2timeline2, timeline2remix, remix2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
 
@@ -71,7 +71,7 @@ function App() {
   };
 
   const allSources = useMemo(
-    () => [ts2timeline(T4), ts2timeline(T5), ts2timeline(T6), ts2timeline(T7), ts2timeline(T8)] as Timeline[],
+    () => [ts2timeline2(T4), ts2timeline2(T5), ts2timeline2(T6), ts2timeline2(T7), ts2timeline2(T8)] as Timeline[],
     [],
   );
 
@@ -86,7 +86,7 @@ function App() {
           return state;
       }
     },
-    [ts2timeline(T4), ts2timeline(T5), ts2timeline(T6), ts2timeline(T7), ts2timeline(T8)],
+    [ts2timeline2(T4), ts2timeline2(T5), ts2timeline2(T6), ts2timeline2(T7), ts2timeline2(T8)],
   );
 
   // const initRemix = EMPTY_REMIX;
@@ -322,7 +322,7 @@ function App() {
     [],
   );
 
-  const onTabClose = (e: Event, source: Timeline) => {
+  const onTabClose = (e: MouseEvent, source: Timeline) => {
     e.stopPropagation();
     dispatchSources({ type: 'remove', payload: { id: source?.metadata?.id } });
   };
@@ -339,8 +339,12 @@ function App() {
   };
 
   const saveRemix = useCallback(() => {
+    const remix2 = timeline2remix(remix);
     console.log('remix', remix);
-    localStorage.setItem('remix', JSON.stringify(remix));
+    console.log('remix2', remix2);
+    const remix3 = remix2timeline(remix2);
+    console.log('remix3', remix3);
+    localStorage.setItem('remix', JSON.stringify(remix2));
     setToastMessage('Remix saved successfully');
     setToastSeverity('success');
     setToastOpen(true);
@@ -349,7 +353,9 @@ function App() {
   const loadRemix = useCallback(() => {
     const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
     console.log('remix', remix2);
-    if (remix2) setRemix(remix2);
+    const remix3 = remix2timeline(remix2);
+    console.log('remix3', remix3);
+    if (remix3) setRemix(remix3);
     setToastMessage('Remix loaded successfully');
     setToastSeverity('success');
     setToastOpen(true);
@@ -517,9 +523,9 @@ function App() {
                               fontWeight={700}
                               lineHeight="20px"
                             >
-                              {source?.metadata?.story?.title}
+                              {source?.metadata?.title}
                             </Typography>
-                            <IconButton sx={{ padding: 0 }} onClick={(e) => onTabClose(e, source)}>
+                            <IconButton sx={{ padding: 0 }} onClick={(e: React.MouseEvent) => onTabClose(e, source)}>
                               <CloseIcon style={{ width: '20px', height: '20px' }} />
                             </IconButton>
                           </Toolbar>
