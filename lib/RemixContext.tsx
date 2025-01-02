@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PropsWithChildren, createContext, useReducer, useRef, LegacyRef, useEffect, useCallback } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { produce } from 'immer';
+import { current, produce } from 'immer';
 // import { useImmerReducer } from 'use-immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
@@ -351,12 +351,15 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
       });
 
     const lastClipStart = clips[clips.length - 1]?.source_range?.start_time ?? 0;
-    const lastClipDuration = clips[clips.length - 1]?.source_range?.duration ?? 0;
+    const lastClipDuration = clips[clips.length - 1]?.source_range?.duration ?? 0; // FIXME
     const lastTTs = (clips[clips.length - 1] as Clip)?.timed_texts ?? [];
     const lastTTend =
       (lastTTs[lastTTs.length - 1]?.marked_range?.start_time ?? 0) +
       (lastTTs[lastTTs.length - 1]?.marked_range?.duration ?? 0);
-    clips[clips.length - 1]!.source_range!.duration = lastClipDuration - (lastClipStart - lastTTend);
+
+    // clips[clips.length - 1]!.source_range!.duration = lastClipDuration - (lastClipStart - lastTTend);
+    clips[clips.length - 1]!.source_range!.duration = lastTTend - lastClipStart;
+
     (clips[clips.length - 1]!.metadata as any)!.data!.t = `${lastClipStart},${lastTTend}`;
 
     // console.log({
@@ -381,34 +384,100 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
   return trimmedStack;
 };
 
-const applyEffects = (stacks: Stack[]): Stack[] => {
-  // iterate effects and insert to next stack
+export const applyEffects2 = (stacks: Stack[]): Stack[] => {
+  // use immer to call applyEffects
+  return produce(stacks, (draft) => {
+    applyEffects(draft);
+  });
+};
+
+export const applyEffects3 = (stacks: Stack[]): Stack[] => {
   stacks.forEach((stack, i, arr) => {
     if ((stack.metadata as any)?.type !== 'effect') return;
 
     const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
+    console.log({ nextNonEffect: nextNonEffect ? current(nextNonEffect) : null });
     if (!nextNonEffect) return;
 
     const prevNonEffect = arr
       .slice(0, i)
       .reverse()
       .find((s) => (s.metadata as any)?.type !== 'effect');
+    console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
+
+    if (!nextNonEffect.source_range) throw new Error("nextNonEffect doesn't have source_range");
+    const stackStart = nextNonEffect.source_range.start_time;
+    const stackDuration = nextNonEffect.source_range.duration;
+    const stackEnd = stackStart + stackDuration;
+    console.log({ stackStart, stackDuration, stackEnd });
+    if (isNaN(stackStart) || isNaN(stackDuration)) throw new Error('stackStart or stackDuration is NaN');
+    const effectDuration = (stack.metadata as any)?.duration;
+    console.log({ effectDuration });
+    if (!effectDuration || isNaN(effectDuration)) throw new Error('effectDuration is NaN or zero or undefined');
+
+    // TODO half duration if prevNonEffect
+
+    const effect = {
+      OTIO_SCHEMA: 'Effect.1',
+      name: stack.metadata?.title,
+      metadata: {
+        id: stack.metadata?.id,
+        ...stack.metadata,
+        data: {
+          ...stack.metadata,
+          t: `${stackStart},${stackStart + effectDuration}`,
+          effect: (stack.metadata as any)?.template,
+        },
+      },
+      source_range: {
+        OTIO_SCHEMA: 'TimeRange.1',
+        start_time: 0,
+        duration: effectDuration,
+      },
+    } as Effect;
+    if (!nextNonEffect.effects) nextNonEffect.effects = [];
+    const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === stack.metadata?.id) ?? -1;
+    if (effectIndex === -1) {
+      nextNonEffect.effects?.push(effect);
+    } else {
+      nextNonEffect.effects?.splice(effectIndex, 1, effect);
+    }
+  });
+
+  return stacks;
+};
+
+export const applyEffects = (stacks: Stack[]): Stack[] => {
+  // iterate effects and insert to next stack
+  stacks.forEach((stack, i, arr) => {
+    if ((stack.metadata as any)?.type !== 'effect') return;
+
+    const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
+    console.log({ nextNonEffect: nextNonEffect ? current(nextNonEffect) : null });
+    if (!nextNonEffect) return;
+
+    const prevNonEffect = arr
+      .slice(0, i)
+      .reverse()
+      .find((s) => (s.metadata as any)?.type !== 'effect');
+    console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
 
     const { metadata } = stack;
     const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
-    const stackStart = nextNonEffect.source_range?.start_time ?? 0;
+    if (!nextNonEffect.source_range) throw new Error("nextNonEffect doesn't have source_range");
+    const stackStart = nextNonEffect.source_range.start_time;
 
     const effect = {
       OTIO_SCHEMA: 'Effect.1',
       name: metadata?.title,
       metadata: {
         id: metadata?.id,
+        ...metadata,
         data: {
+          ...metadata,
           t: `${stackStart},${stackStart + (duration ?? 1)}`,
           effect: (metadata as any)?.template,
-          ...metadata,
         },
-        ...metadata,
       },
       source_range: {
         OTIO_SCHEMA: 'TimeRange.1',
@@ -451,15 +520,15 @@ const applyEffects = (stacks: Stack[]): Stack[] => {
         name: metadata?.title,
         metadata: {
           id: metadata?.id,
+          ...metadata,
           reverse: true,
           data: {
+            ...metadata,
             t: `${stackEnd - (duration ?? 1)},${stackEnd}`,
             // effect: metadata.template,
-            ...metadata,
             effect: (metadata as any)?.template + '-reverse',
             reverse: true,
           },
-          ...metadata,
         },
         source_range: {
           OTIO_SCHEMA: 'TimeRange.1',
