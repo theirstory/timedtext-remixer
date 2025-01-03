@@ -12,18 +12,12 @@ import RemixContext from '../lib/RemixContext.js';
 import RemixSources from '../lib/RemixSources.js';
 import RemixDestination from '../lib/RemixDestination.js';
 import { StaticRemix } from '../lib/StaticRemix.js';
-import { ts2timeline2, ts2timeline3, timeline2remix2, remix2timeline2 } from '../lib/utils.js';
+import { timeline2remix, remix2timeline } from '../lib/utils.js';
 import type { Timeline } from '../lib/interfaces';
 import { AddTransition } from './Assets/AddTransition.tsx';
 
 import SettingsIcon from '@mui/icons-material/Settings';
 import { SettingsPopUp } from './components/SettingsPopUp';
-
-import T4 from './data/66043ea15b6357760d02b9a4.json';
-import T5 from './data/61929022c65d8e0005450522.json';
-import T6 from './data/64380a5ea0e98efaffc0d029.json';
-import T7 from './data/6165da2ee1d20f0005a0fc0a.json';
-import T8 from './data/63e4ea003770cdb1733b6199.json';
 
 import rT4 from './data/r-66043ea15b6357760d02b9a4.json';
 import rT5 from './data/r-61929022c65d8e0005450522.json';
@@ -79,18 +73,9 @@ function App() {
 
   const allSources = useMemo(
     // () => [ts2timeline3(T4), ts2timeline3(T5), ts2timeline3(T6), ts2timeline3(T7), ts2timeline3(T8)] as Timeline[],
-    () => [
-      remix2timeline2(rT4),
-      remix2timeline2(rT5),
-      remix2timeline2(rT6),
-      remix2timeline2(rT7),
-      remix2timeline2(rT8),
-    ],
+    () => [remix2timeline(rT4), remix2timeline(rT5), remix2timeline(rT6), remix2timeline(rT7), remix2timeline(rT8)],
     [],
   );
-
-  // console.log('s2', ts2timeline2(T4));
-  // console.log('s3', ts2timeline3(T4));
 
   const [sources, dispatchSources] = useReducer(
     (state: any, action: any) => {
@@ -103,8 +88,7 @@ function App() {
           return state;
       }
     },
-    [ts2timeline3(T4), ts2timeline2(T5), ts2timeline2(T6), ts2timeline2(T7), ts2timeline2(T8)],
-    // [remix2timeline2(rT4), remix2timeline2(rT5), remix2timeline2(rT6), remix2timeline2(rT7), remix2timeline2(rT8)],
+    [remix2timeline(rT4), remix2timeline(rT5), remix2timeline(rT6), remix2timeline(rT7), remix2timeline(rT8)],
   );
 
   // const initRemix = EMPTY_REMIX;
@@ -363,7 +347,7 @@ function App() {
     // const remix3 = remix2timeline(remix2);
     // console.log('remix3', remix3);
 
-    const remix4 = timeline2remix2(remix);
+    const remix4 = timeline2remix(remix);
     console.log('remix4', remix4);
     // const remix5 = remix2timeline2(remix4);
     // console.log('remix4->t', remix5);
@@ -379,7 +363,7 @@ function App() {
     const remix2 = JSON.parse(localStorage.getItem('remix') || 'null');
     console.log('remix', remix2);
     // const remix3 = remix2timeline(remix2);
-    const remix4 = remix2timeline2(remix2);
+    const remix4 = remix2timeline(remix2);
     // console.log('remix3', remix3);
     // if (remix3) setRemix(remix3);
     if (remix4) setRemix(remix4);

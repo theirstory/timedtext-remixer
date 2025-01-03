@@ -384,69 +384,6 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
   return trimmedStack;
 };
 
-export const applyEffects2 = (stacks: Stack[]): Stack[] => {
-  // use immer to call applyEffects
-  return produce(stacks, (draft) => {
-    applyEffects(draft);
-  });
-};
-
-export const applyEffects3 = (stacks: Stack[]): Stack[] => {
-  stacks.forEach((stack, i, arr) => {
-    if ((stack.metadata as any)?.type !== 'effect') return;
-
-    const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
-    console.log({ nextNonEffect: nextNonEffect ? current(nextNonEffect) : null });
-    if (!nextNonEffect) return;
-
-    const prevNonEffect = arr
-      .slice(0, i)
-      .reverse()
-      .find((s) => (s.metadata as any)?.type !== 'effect');
-    console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
-
-    if (!nextNonEffect.source_range) throw new Error("nextNonEffect doesn't have source_range");
-    const stackStart = nextNonEffect.source_range.start_time;
-    const stackDuration = nextNonEffect.source_range.duration;
-    const stackEnd = stackStart + stackDuration;
-    console.log({ stackStart, stackDuration, stackEnd });
-    if (isNaN(stackStart) || isNaN(stackDuration)) throw new Error('stackStart or stackDuration is NaN');
-    const effectDuration = (stack.metadata as any)?.duration;
-    console.log({ effectDuration });
-    if (!effectDuration || isNaN(effectDuration)) throw new Error('effectDuration is NaN or zero or undefined');
-
-    // TODO half duration if prevNonEffect
-
-    const effect = {
-      OTIO_SCHEMA: 'Effect.1',
-      name: stack.metadata?.title,
-      metadata: {
-        id: stack.metadata?.id,
-        ...stack.metadata,
-        data: {
-          ...stack.metadata,
-          t: `${stackStart},${stackStart + effectDuration}`,
-          effect: (stack.metadata as any)?.template,
-        },
-      },
-      source_range: {
-        OTIO_SCHEMA: 'TimeRange.1',
-        start_time: 0,
-        duration: effectDuration,
-      },
-    } as Effect;
-    if (!nextNonEffect.effects) nextNonEffect.effects = [];
-    const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === stack.metadata?.id) ?? -1;
-    if (effectIndex === -1) {
-      nextNonEffect.effects?.push(effect);
-    } else {
-      nextNonEffect.effects?.splice(effectIndex, 1, effect);
-    }
-  });
-
-  return stacks;
-};
-
 export const applyEffects = (stacks: Stack[]): Stack[] => {
   // iterate effects and insert to next stack
   stacks.forEach((stack, i, arr) => {

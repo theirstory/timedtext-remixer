@@ -2,9 +2,10 @@
 import { v5 as uuidv5 } from 'uuid';
 import stringify from 'json-stringify-deterministic';
 import CryptoJS from 'crypto-js';
+import { produce } from 'immer';
 import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
 import { EMPTY_VIDEO } from "./video";
-import { applyEffects, applyEffects2 } from "./RemixContext";
+import { applyEffects } from "./RemixContext";
 
 export const ipfsStyleHash = (data: any): string => {
   const jsonString = stringify(data);
@@ -12,172 +13,42 @@ export const ipfsStyleHash = (data: any): string => {
   return `Qm${hash}`;
 };
 
-
-// export const ts2timeline = (ts: any): Timeline => {
-//   const TS_NAMESPACE = 'BDB8B8B5-B481-45C3-B9EC-82C5441C2A3E';
-//   const storyId = ts.story._id;
-//   const timelineUUID = uuidv5(storyId, TS_NAMESPACE);
-
-//   const { words, paragraphs } = ts.transcript;
-//   const totalDuration = words[words.length - 1].end ?? ts.story.duration ?? 0;
-
-//   const clips = paragraphs.map((p: any): Clip => {
-//     const clipUUID = uuidv5(`${p.start},${p.end}`, TS_NAMESPACE);
-
-//     const timedTexts = words
-//       .filter((w: any) =>
-//         p.start <= w.start && w.end <= p.end
-//       )
-//       .map((w: any): TimedText => {
-//         const timedTextUUID = uuidv5(`${w.start},${w.end}`, clipUUID);
-//         return {
-//           OTIO_SCHEMA: "TimedText.1",
-//           metadata: {
-//             id: timedTextUUID,
-//             data: {
-//               t: `${w.start},${w.end}`
-//             },
-//           },
-//           marked_range: {
-//             OTIO_SCHEMA: "TimeRange.1",
-//             start_time: w.start,
-//             duration: w.end - w.start,
-//           },
-//           texts: w.text,
-//         } as any as TimedText;
-//       });
-
-//     return {
-//       OTIO_SCHEMA: "Clip.1",
-//       metadata: {
-//         id: clipUUID,
-//         speaker: p.speaker,
-//         data: {
-//           t: `${p.start},${p.end}`,
-//           speaker: p.speaker,
-//           id: clipUUID,
-//         }
-//       } as any as Metadata,
-//       media_reference: {
-//         OTIO_SCHEMA: "MediaReference.1",
-//         target: ts.videoURL,
-//       },
-//       source_range: {
-//         OTIO_SCHEMA: "TimeRange.1",
-//         start_time: p.start,
-//         duration: p.end - p.start,
-//       } as TimeRange,
-//       timed_texts: timedTexts as TimedText[],
-//     };
-//   }) ?? [];
-
-//   const firstClip = clips?.[0];
-//   const lastClip = clips?.[clips.length - 1];
-
-//   const clipsStart = firstClip?.source_range?.start_time ?? 0;
-//   // if (clipsStart === 0) clipsStart = 1/5; // FIXME: hack to avoid black frame at start, and fix player zero bug
-//   // if (clipsStart === 0) {
-//   //   const firstTTstart = clips[0].timed_texts[0].marked_range.start_time;
-//   //   const firstTTend = clips[0].timed_texts[0].marked_range.start_time + clips[0].timed_texts[0].marked_range.duration;
-//   //   clipsStart = firstTTstart + ((firstTTend - firstTTstart) / 2);
-//   // }
-//   const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time + lastClip.source_range?.duration : totalDuration;
-
-//   const timeline: Timeline = {
-//     OTIO_SCHEMA: "Timeline.1",
-//     metadata: {
-//       id: timelineUUID,
-//       story: ts.story,
-//       title: ts.story.title,
-//       videoURL: ts.videoURL,
-//     } as Metadata,
-//     tracks: {
-//       OTIO_SCHEMA: "Stack.1",
-//       metadata: {
-//           title: ts.story.title,
-//       },
-//       children: [
-//         {
-//           OTIO_SCHEMA: "Track.1",
-//           kind: "video", // TBD audio only tracks
-//           metadata: {
-//           },
-//           children: [
-//             {
-//               OTIO_SCHEMA: "Stack.1",
-//               metadata: {
-//                   data: {
-//                       t: `${clipsStart},${clipsEnd}`,
-//                       "media-src": ts.videoURL,
-//                       id: timelineUUID,
-//                       story: storyId,
-//                   },
-//                   transcript: ts.transcript,
-//                   title: ts.story.title,
-//               } as any as Metadata,
-//               media_reference: {
-//                   OTIO_SCHEMA: "MediaReference.1",
-//                   target: ts.videoURL,
-//               },
-//               source_range: {
-//                   OTIO_SCHEMA: "TimeRange.1",
-//                   start_time: clipsStart,
-//                   duration: clipsEnd - clipsStart,
-//               } as TimeRange,
-//               children: [
-//                 {
-//                   OTIO_SCHEMA: "Track.1",
-//                   kind: "video",
-//                   children: clips as Clip[],
-//                 },
-//               ], // as (Clip | Stack)[],
-//             },
-//           ] as (Clip | Stack)[],
-//           // TDB single clip as single source transcript?
-//         },
-//       ] as Track[],
-//     } as Stack,
-//   };
-
-//   return timeline;
+// export const ts2timeline2 = (ts: any): Timeline => {
+//   return timedText2timeline(ts2timedText(ts));
 // };
 
-export const ts2timeline2 = (ts: any): Timeline => {
-  return timedText2timeline(ts2timedText(ts));
-};
+// export const ts2timeline3 = (ts: any): Timeline => {
+//   const remix = ts2timedText3(ts);
+//   console.log('ts2timeline3 ' + remix.metadata.storyId, remix);
+//   return remix2timeline2(remix);
+// };
 
-export const ts2timeline3 = (ts: any): Timeline => {
-  const remix = ts2timedText3(ts);
-  console.log('ts2timeline3 ' + remix.metadata.storyId, remix);
-  return remix2timeline2(remix);
-};
+// export const ts2timedText = (ts: any): any => {
+//   const { title, description } = ts.story;
+//   const { storyId, words, paragraphs } = ts.transcript;
 
-export const ts2timedText = (ts: any): any => {
-  const { title, description } = ts.story;
-  const { storyId, words, paragraphs } = ts.transcript;
+//   const segments = paragraphs.map((p: any): any => {
+//     return {
+//       start: p.start,
+//       end: p.end,
+//       metadata: {
+//         speaker: p.speaker,
+//       },
+//       tokens: words.filter((w: any) => p.start <= w.start && w.end <= p.end),
+//     };
+//   });
 
-  const segments = paragraphs.map((p: any): any => {
-    return {
-      start: p.start,
-      end: p.end,
-      metadata: {
-        speaker: p.speaker,
-      },
-      tokens: words.filter((w: any) => p.start <= w.start && w.end <= p.end),
-    };
-  });
-
-  return {
-    metadata: {
-      id: storyId,
-      storyId,
-      title,
-      description,
-      src: ts.videoURL,
-    },
-    segments,
-  };
-};
+//   return {
+//     metadata: {
+//       id: storyId,
+//       storyId,
+//       title,
+//       description,
+//       src: ts.videoURL,
+//     },
+//     segments,
+//   };
+// };
 
 export const ts2timedText3 = (ts: any): Remix => {
   const { title, description } = ts.story;
@@ -424,7 +295,7 @@ export const stack2segment = (stack: Stack): Segment => {
   } as Segment;
 };
 
-export const timeline2remix2 = (source: Timeline): Remix => {
+export const timeline2remix = (source: Timeline): Remix => {
   const stacks = timelineStacks(source);
   const segments = stacks.map(stack2segment);
 
@@ -437,7 +308,7 @@ export const timeline2remix2 = (source: Timeline): Remix => {
 const segment2stack = (segment: Segment): Stack => {
   const { metadata, blocks, start, end } = segment;
   const clips = blocks.map((b: Block) => {
-    const { text, start, end, metadata, tokens } = b;
+    const { start, end, metadata, tokens } = b;
     const clipUUID = uuidv5(`${start},${end}`, "F7222ED3-9A6E-4409-BCC7-F88820C07A58");
 
     const timedTexts = tokens.map((t: Token) => {
@@ -511,9 +382,8 @@ const segment2stack = (segment: Segment): Stack => {
   } as Stack;
 };
 
-export const remix2timeline2 = (remix: Remix): Timeline => {
+export const remix2timeline = (remix: Remix): Timeline => {
   const { metadata, segments } = remix;
-  // const timelines = segments.map((s: Segment) => segment2stack(s));
 
   const timeline: Timeline = {
     OTIO_SCHEMA: "Timeline.1",
@@ -532,17 +402,7 @@ export const remix2timeline2 = (remix: Remix): Timeline => {
           metadata: {
           },
           children: [
-            // ...timelines.map((t: Timeline): Stack => ({
-            //   OTIO_SCHEMA: "Stack.1",
-            //   metadata: {
-            //     ...t.metadata,
-            //   },
-            //   children: applyEffects(timelineStacks(t).flatMap((s: Stack) => s.children)),
-            //   source_range: t.source_range,
-            //   media_reference: t.media_reference,
-            // } as Stack)),
-            // ...segments.map(segment2stack),
-            ...applyEffects2(segments.map(segment2stack)),
+            ...produce(segments.map(segment2stack), (draft) => applyEffects(draft))
           ] as any as (Clip | Stack)[],
           // TDB single clip as single source transcript?
         },
@@ -588,53 +448,6 @@ export const stack2timedText = (stack: Stack): any => {
     segments
   };
 };
-
-// export const remix2timeline = (remix: any): Timeline => {
-//   const { metadata, items } = remix;
-//   const timelines = items.map((i: any) => timedText2timeline(i, "F7222ED3-9A6E-4409-BCC7-F88820C07A58"));
-
-//   const timeline: Timeline = {
-//     OTIO_SCHEMA: "Timeline.1",
-//     metadata: {
-//       ...(metadata ?? {}),
-//     } as any as Metadata,
-//     tracks: {
-//       OTIO_SCHEMA: "Stack.1",
-//       metadata: {
-//           title: metadata.title,
-//       },
-//       children: [
-//         {
-//           OTIO_SCHEMA: "Track.1",
-//           kind: "video", // TBD audio only tracks
-//           metadata: {
-//           },
-//           children: [
-//             ...timelines.map((t: Timeline) => ({
-//               OTIO_SCHEMA: "Stack.1",
-//               metadata: {
-//                 ...t.metadata,
-//               },
-//               children: applyEffects(timelineStacks(t).flatMap((s: Stack) => s.children)),
-//             })),
-//           ] as any as (Clip | Stack)[],
-//           // TDB single clip as single source transcript?
-//         },
-//       ] as Track[],
-//     } as Stack,
-//   };
-
-//   return timeline;
-// };
-
-// export const timeline2remix = (source: Timeline): any => {
-//   const stacks = timelineStacks(source);
-//   const items = stacks.map(stack2timedText);
-//   return {
-//     metadata:source.metadata,
-//     items,
-//   };
-// };
 
 export const timelineStacks = (source: Timeline): Stack[] => {
   console.log('timelineStacks?', source);
