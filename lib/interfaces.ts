@@ -115,3 +115,28 @@ export interface Effect {
   metadata: Metadata;
   source_range: TimeRange; // TODO: verify with OTIO spec
 }
+
+export interface Remix {
+  metadata: any;
+  segments: Segment[];
+}
+export interface Segment {
+  start: number;
+  end: number;
+  metadata: any;
+  blocks: Block[];
+}
+export interface Block {
+  text: string;
+  start: number;
+  end: number;
+  metadata: any;
+  tokens: Token[];
+}
+
+export interface Token {
+  text: string;
+  start: number;
+  end: number;
+  metadata: any;
+}

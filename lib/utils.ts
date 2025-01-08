@@ -3,7 +3,7 @@ import { v5 as uuidv5 } from 'uuid';
 import stringify from 'json-stringify-deterministic';
 import CryptoJS from 'crypto-js';
 import { produce } from 'immer';
-import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
+import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline, Remix, Segment, Block, Token } from "./interfaces";
 import { EMPTY_VIDEO } from "./video";
 import { applyEffects } from "./RemixContext";
 
@@ -50,53 +50,53 @@ export const ipfsStyleHash = (data: any): string => {
 //   };
 // };
 
-export const ts2timedText3 = (ts: any): Remix => {
-  const { title, description } = ts.story;
-  const { storyId, words, paragraphs } = ts.transcript;
+// export const ts2timedText3 = (ts: any): Remix => {
+//   const { title, description } = ts.story;
+//   const { storyId, words, paragraphs } = ts.transcript;
 
-  const blocks = paragraphs.map((p: any): any => {
-    const tokens = words.filter((w: any) => p.start <= w.start && w.end <= p.end).map((w: any) => {
-      return {
-        text: w.text,
-        start: w.start,
-        end: w.end,
-        metadata: {},
-      } as Token;
-    });
+//   const blocks = paragraphs.map((p: any): any => {
+//     const tokens = words.filter((w: any) => p.start <= w.start && w.end <= p.end).map((w: any) => {
+//       return {
+//         text: w.text,
+//         start: w.start,
+//         end: w.end,
+//         metadata: {},
+//       } as Token;
+//     });
 
-    return {
-      text: tokens.map((t: any) => t.text).join(' '),
-      start: p.start,
-      end: p.end,
-      metadata: {
-        speaker: p.speaker,
-      },
-      tokens,
-    } as Block;
-  });
+//     return {
+//       text: tokens.map((t: any) => t.text).join(' '),
+//       start: p.start,
+//       end: p.end,
+//       metadata: {
+//         speaker: p.speaker,
+//       },
+//       tokens,
+//     } as Block;
+//   });
 
-  const end = blocks[blocks.length - 1].end ?? ts.story.duration;
+//   const end = blocks[blocks.length - 1].end ?? ts.story.duration;
 
-  return {
-    metadata: {
-      id: storyId,
-      storyId,
-      title,
-      description,
-      src: ts.videoURL,
-    },
-    segments: [{
-      start: 0,
-      end,
-      metadata: {
-        start: 0,
-        end,
-        src: ts.videoURL,
-      },
-      blocks,
-    }],
-  };
-};
+//   return {
+//     metadata: {
+//       id: storyId,
+//       storyId,
+//       title,
+//       description,
+//       src: ts.videoURL,
+//     },
+//     segments: [{
+//       start: 0,
+//       end,
+//       metadata: {
+//         start: 0,
+//         end,
+//         src: ts.videoURL,
+//       },
+//       blocks,
+//     }],
+//   };
+// };
 
 export const timedText2timeline = (tt: any, NS: string = "F7222ED3-9A6E-4409-BCC7-F88820C07A58"): Timeline => {
   const ipfsHash = ipfsStyleHash(stringify(tt));
@@ -226,30 +226,30 @@ export const timedText2timeline = (tt: any, NS: string = "F7222ED3-9A6E-4409-BCC
   return timeline;
 };
 
-interface Remix {
-  metadata: any;
-  segments: Segment[];
-}
-interface Segment {
-  start: number;
-  end: number;
-  metadata: any;
-  blocks: Block[];
-}
-interface Block {
-  text: string;
-  start: number;
-  end: number;
-  metadata: any;
-  tokens: Token[];
-}
+// interface Remix {
+//   metadata: any;
+//   segments: Segment[];
+// }
+// interface Segment {
+//   start: number;
+//   end: number;
+//   metadata: any;
+//   blocks: Block[];
+// }
+// interface Block {
+//   text: string;
+//   start: number;
+//   end: number;
+//   metadata: any;
+//   tokens: Token[];
+// }
 
-interface Token {
-  text: string;
-  start: number;
-  end: number;
-  metadata: any;
-}
+// interface Token {
+//   text: string;
+//   start: number;
+//   end: number;
+//   metadata: any;
+// }
 
 export const stack2segment = (stack: Stack): Segment => {
   // Convert a stack back to a timed text segment

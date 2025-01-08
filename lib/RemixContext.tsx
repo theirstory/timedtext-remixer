@@ -351,7 +351,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
       });
 
     const lastClipStart = clips[clips.length - 1]?.source_range?.start_time ?? 0;
-    const lastClipDuration = clips[clips.length - 1]?.source_range?.duration ?? 0; // FIXME
+    // const lastClipDuration = clips[clips.length - 1]?.source_range?.duration ?? 0; // FIXME
     const lastTTs = (clips[clips.length - 1] as Clip)?.timed_texts ?? [];
     const lastTTend =
       (lastTTs[lastTTs.length - 1]?.marked_range?.start_time ?? 0) +
