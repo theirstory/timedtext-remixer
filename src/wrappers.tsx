@@ -458,52 +458,84 @@ export const TitleTool = (props: {
   subtitle?: string;
   template?: string;
   duration?: number;
+  gap?: boolean;
 }): JSX.Element => {
   const { dispatch } = useContext(Context);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const id = props.id ?? `Title-${Date.now()}`;
+  const id = useMemo(() => props.id ?? `Title-${Date.now()}`, [props.id]);
   const name = props.name ?? 'Title';
   const [title, setTitle] = useState<string>(props.title ?? '');
   const [subtitle, setSubtitle] = useState<string>(props.subtitle ?? '');
   const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
-  const [template2, setTemplate2] = useState<string>(props.template ?? '#title-overlay');
+  const [gap, setGap] = useState<boolean>(props.gap ?? false);
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
 
   const handleTitleChange = useCallback(
-    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setTitle(value),
-    [],
+    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
+      setTitle(value);
+      dispatch({
+        type: 'metadata',
+        payload: { id, metadata: { title: value } },
+      });
+    },
+    [id, dispatch],
   );
+
   const handleSubtitleChange = useCallback(
-    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => setSubtitle(value),
-    [],
+    ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
+      setSubtitle(value);
+      dispatch({
+        type: 'metadata',
+        payload: { id, metadata: { subtitle: value } },
+      });
+    },
+    [id, dispatch],
   );
-  const handleTemplateChange = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
-    setTemplate(value);
-  }, []);
-  const handleTemplateChange2 = useCallback((_event: React.MouseEvent<HTMLElement>, value: string) => {
-    setTemplate2(value);
-  }, []);
-  // const handleDurationChange = useCallback(
-  //   ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => setDuration(value as unknown as number),
-  //   [],
-  // );
 
-  const handleDurationChange = (value: number) => setDuration(value);
+  const handleTemplateChange = useCallback(
+    (_event: React.MouseEvent<HTMLElement>, value: string) => {
+      setTemplate(value);
+      dispatch({
+        type: 'metadata',
+        payload: { id, metadata: { template: value } },
+      });
+    },
+    [id, dispatch],
+  );
 
-  const handleSave = useCallback(
-    () => dispatch({ type: 'metadata', payload: { id, metadata: { id, title, subtitle, template, duration } } }),
-    [id, title, subtitle, template, duration, dispatch],
+  const handleTemplateChange2 = useCallback(
+    (_event: React.MouseEvent<HTMLElement>, value: string) => {
+      setGap(value as unknown as boolean);
+      dispatch({
+        type: 'metadata',
+        payload: { id, metadata: { gap: value } },
+      });
+    },
+    [id, dispatch],
+  );
+
+  const handleDurationChange = useCallback(
+    (value: number) => {
+      setDuration(value);
+      dispatch({
+        type: 'metadata',
+        payload: { id, metadata: { duration: value } },
+      });
+    },
+    [id, dispatch],
   );
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
   const handleRemove = useCallback(() => {
     dispatch({ type: 'remove', payload: { id } });
     handleClose();
@@ -513,6 +545,7 @@ export const TitleTool = (props: {
     dispatch({ type: 'move-up', payload: { id } });
     handleClose();
   }, [id, dispatch]);
+
   const handleMoveDown = useCallback(() => {
     dispatch({ type: 'move-down', payload: { id } });
     handleClose();
@@ -589,7 +622,7 @@ export const TitleTool = (props: {
 
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
-          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onBlur={handleSave}>
+          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange}>
             <ToggleButton value="#title-lower3rds" size="small">
               <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
             </ToggleButton>
@@ -600,18 +633,11 @@ export const TitleTool = (props: {
 
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
-          <ToggleButtonGroup
-            value={template2}
-            exclusive
-            onChange={handleTemplateChange2}
-            onBlur={() => {
-              console.log('onBlur TBD');
-            }}
-          >
-            <ToggleButton value="#title-overlay" size="small">
+          <ToggleButtonGroup value={gap} exclusive onChange={handleTemplateChange2}>
+            <ToggleButton value={false} size="small">
               <img src={textFullscreen} width="20px" height="20px" />
             </ToggleButton>
-            <ToggleButton value="#title-insert" size="small">
+            <ToggleButton value={true} size="small">
               <img src={textOverlay} width="20px" height="20px" />
             </ToggleButton>
           </ToggleButtonGroup>
@@ -752,7 +778,6 @@ export const TitleTool = (props: {
         value={title}
         style={{ width: '100%', marginBottom: '16px', backgroundColor: '#fff' }}
         onChange={handleTitleChange}
-        onBlur={handleSave}
         size="small"
       />
       <TextField
@@ -760,133 +785,10 @@ export const TitleTool = (props: {
         value={subtitle}
         style={{ width: '100%', backgroundColor: '#fff' }}
         onChange={handleSubtitleChange}
-        onBlur={handleSave}
         size="small"
       />
       {/* // </div> */}
     </Box>
-  );
-};
-
-export const GAPTool = (props: { id?: string; name?: string; template?: string; stack?: Stack }): JSX.Element => {
-  const { dispatch } = useContext(Context);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const id = props.id;
-  const stack = props.stack;
-  const name = 'GAP';
-
-  const [duration, setDuration] = useState<number>(stack?.source_range?.duration ?? 5);
-
-  const handleDurationChange = useCallback(
-    ({ target: { value } }: SelectChangeEvent<{ value: unknown }>) => {
-      setDuration(value as unknown as number);
-      dispatch({ type: 'change-duration', payload: { id, duration: value as unknown as number } });
-    },
-    [id, dispatch],
-  );
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const handleRemove = useCallback(() => {
-    dispatch({ type: 'remove', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
-  const handleMoveUp = useCallback(() => {
-    dispatch({ type: 'move-up', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
-  const handleMoveDown = useCallback(() => {
-    dispatch({ type: 'move-down', payload: { id } });
-    handleClose();
-  }, [id, dispatch]);
-
-  return (
-    <div
-      style={{
-        backgroundColor: '#a3ebbf',
-        borderRadius: '8px',
-        border: '1px solid #D9DCDE',
-        padding: '12px',
-        marginBottom: '12px',
-      }}
-      className="widget"
-    >
-      <Toolbar disableGutters variant="dense">
-        <TvOffIcon />
-        &nbsp;&nbsp;
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          {name}
-        </Typography>
-        <Select
-          value={duration as any}
-          label="seconds"
-          onChange={handleDurationChange}
-          // onBlur={handleSave}
-          size="small"
-        >
-          <MenuItem value={5}>5</MenuItem>
-          <MenuItem value={10}>10</MenuItem>
-          <MenuItem value={15}>15</MenuItem>
-        </Select>
-        &nbsp;&nbsp;&nbsp;
-        <Divider orientation="vertical" flexItem />
-        &nbsp;&nbsp;
-        <IconButton
-          className="widget"
-          aria-label="more"
-          id="long-button"
-          aria-controls={open ? 'long-menu' : undefined}
-          aria-expanded={open ? 'true' : undefined}
-          aria-haspopup="true"
-          onClick={handleClick}
-        >
-          <MoreVertIcon />
-        </IconButton>
-        <Menu
-          className="widget"
-          id="long-menu"
-          MenuListProps={{
-            'aria-labelledby': 'long-button',
-          }}
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          slotProps={{
-            paper: {
-              style: {
-                maxHeight: ITEM_HEIGHT * 4.5,
-                width: '20ch',
-              },
-            },
-          }}
-        >
-          <MenuItem onClick={handleMoveUp}>
-            <ListItemIcon>
-              <ArrowUpwardIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">move up</Typography>
-          </MenuItem>
-          <MenuItem onClick={handleMoveDown}>
-            <ListItemIcon>
-              <ArrowDownwardIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">move down</Typography>
-          </MenuItem>
-          <MenuItem onClick={handleRemove}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <Typography variant="inherit">delete</Typography>
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-    </div>
   );
 };
 

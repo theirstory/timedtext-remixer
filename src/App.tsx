@@ -304,22 +304,9 @@ function App() {
           subtitle: 'Subtitle',
           template: '#title-full',
           duration: 5,
+          gap: false,
         },
       },
-      // {
-      //   name: 'gap',
-      //   type: 'gap',
-      //   draggable: true,
-      //   toolBarComponent: <Chip label="GAP" variant="outlined" />,
-      //   // timelineComponent: <FadeInTool />,
-      //   timelineComponent: GAPTool,
-      //   defaults: {
-      //     title: 'GAP',
-      //     template: '#fin',
-      //     duration: 5,
-      //     type: 'gap',
-      //   },
-      // },
     ],
     [],
   );

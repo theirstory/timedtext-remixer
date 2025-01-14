@@ -125,6 +125,20 @@ const reducer = (state: State, action: Action): State => {
         const stack = draftState.remix?.tracks.children[0].children?.[stackIndex];
         stack!.metadata = { ...stack?.metadata, ...metadata };
 
+        // update gap stack
+        if (stack?.metadata?.gap && stack!.effects?.length !== undefined && stack!.effects?.length > 0) {
+          console.log({ stack: current(stack) });
+          stack!.source_range!.duration = stack?.metadata?.duration;
+          stack!.metadata!.data!.t = `1,${stack?.metadata?.duration}`;
+          stack!.effects![0].source_range!.duration = stack?.metadata?.duration;
+          stack!.effects![0].metadata = { ...stack!.effects![0].metadata, ...stack!.metadata };
+          stack!.effects![0].metadata!.data = {
+            ...stack!.effects![0].metadata!.data,
+            ...stack!.metadata,
+            effect: { ...stack!.effects![0].metadata!.data, ...stack!.metadata }.template,
+          };
+        }
+
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
         return draftState;
       }
@@ -133,21 +147,71 @@ const reducer = (state: State, action: Action): State => {
         const { result, metadata, tools } = action.payload;
         const tool = tools.find((t: any) => t.name === result.draggableId) ?? { defaults: {} };
 
-        const stack = {
-          OTIO_SCHEMA: 'Stack.1',
-          metadata: {
-            id: metadata.id ?? `E-${nanoid()}`,
-            type: 'effect',
-            ...tool.defaults,
-            ...metadata,
-          },
-          source_range: {
-            OTIO_SCHEMA: 'TimeRange.1',
-            start_time: 0,
-            duration: metadata.duration ?? 1,
-          },
-          children: [],
-        };
+        const GAP = tool.defaults?.gap ?? false;
+        const id = `E-${nanoid()}`;
+        const stack = GAP
+          ? {
+              OTIO_SCHEMA: 'Stack.1',
+              metadata: {
+                ...metadata,
+                ...tool.defaults,
+                id: metadata.id ?? id,
+                data: {
+                  t: `1,${{ ...tool.defaults, ...metadata }.duration ?? 5}`,
+                  'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
+                },
+                gap: true,
+                title: 'GAP2',
+                widget: 'title',
+                component: false,
+              },
+              media_reference: {
+                OTIO_SCHEMA: 'MediaReference.1',
+                target: 'https://lab.hyperaud.io/tmp/black_video.mp4',
+              },
+              source_range: {
+                OTIO_SCHEMA: 'TimeRange.1',
+                start_time: 1,
+                duration: { ...tool.defaults, ...metadata }.duration ?? 5,
+              },
+              children: [],
+              effects: [
+                {
+                  OTIO_SCHEMA: 'Effect.1',
+                  name: metadata?.title,
+                  metadata: {
+                    id: metadata?.id,
+                    ...metadata,
+                    data: {
+                      ...tool.defaults,
+                      ...metadata,
+                      t: `1,5`,
+                      effect: { ...tool.defaults, ...metadata }.template,
+                    },
+                  },
+                  source_range: {
+                    OTIO_SCHEMA: 'TimeRange.1',
+                    start_time: 1,
+                    duration: { ...tool.defaults, ...metadata }.duration ?? 5,
+                  },
+                },
+              ],
+            }
+          : {
+              OTIO_SCHEMA: 'Stack.1',
+              metadata: {
+                id: metadata.id ?? id,
+                type: 'effect',
+                ...tool.defaults,
+                ...metadata,
+              },
+              source_range: {
+                OTIO_SCHEMA: 'TimeRange.1',
+                start_time: 0,
+                duration: metadata.duration ?? 1,
+              },
+              children: [],
+            };
 
         if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
 
@@ -155,30 +219,30 @@ const reducer = (state: State, action: Action): State => {
         return draftState;
       }
 
-      case 'add-gap': {
-        // TODO
-        // const { result, metadata, tool } = action.payload;
-        // const stack = {
-        //   OTIO_SCHEMA: 'Stack.1',
-        //   metadata: {
-        //     id: metadata.id ?? `E-${nanoid()}`,
-        //     type: 'effect',
-        //     ...tool.defaults,
-        //     ...metadata,
-        //   },
-        //   source_range: {
-        //     OTIO_SCHEMA: 'TimeRange.1',
-        //     start_time: 0,
-        //     duration: metadata.duration ?? 1,
-        //   },
-        //   children: [],
-        // };
+      // case 'add-gap': {
+      //   // TODO
+      //   // const { result, metadata, tool } = action.payload;
+      //   // const stack = {
+      //   //   OTIO_SCHEMA: 'Stack.1',
+      //   //   metadata: {
+      //   //     id: metadata.id ?? `E-${nanoid()}`,
+      //   //     type: 'effect',
+      //   //     ...tool.defaults,
+      //   //     ...metadata,
+      //   //   },
+      //   //   source_range: {
+      //   //     OTIO_SCHEMA: 'TimeRange.1',
+      //   //     start_time: 0,
+      //   //     duration: metadata.duration ?? 1,
+      //   //   },
+      //   //   children: [],
+      //   // };
 
-        // if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
+      //   // if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
 
-        // applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
-        return draftState;
-      }
+      //   // applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+      //   return draftState;
+      // }
 
       case 'add': {
         const [result, source, [start, end]] = action.payload;
@@ -384,7 +448,92 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
   return trimmedStack;
 };
 
+const applyGaps = (stacks: Stack[]): Stack[] => {
+  return stacks;
+};
+
+// TODO: fix component/widget use
+
 export const applyEffects = (stacks: Stack[]): Stack[] => {
+  // convert gaps
+  stacks.forEach((stack) => {
+    // skip proper gap
+    if (stack?.metadata?.gap && stack!.effects?.length !== undefined && stack!.effects?.length > 0) return;
+    // make gap
+    if (
+      stack?.metadata?.gap &&
+      (stack!.effects?.length === undefined || (stack!.effects?.length !== undefined && stack!.effects?.length === 0))
+    ) {
+      const metadata = stack.metadata;
+      const id = metadata?.id ?? `E-${nanoid()}`;
+
+      stack.metadata = {
+        ...metadata,
+        id,
+        data: {
+          t: `1,${metadata?.duration ?? 5}`,
+          'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
+        },
+        gap: true,
+        widget: 'title',
+        component: false,
+      };
+
+      stack.media_reference = {
+        OTIO_SCHEMA: 'MediaReference.1',
+        target: 'https://lab.hyperaud.io/tmp/black_video.mp4',
+      };
+
+      stack.source_range = {
+        OTIO_SCHEMA: 'TimeRange.1',
+        start_time: 1,
+        duration: metadata?.duration ?? 5,
+      };
+
+      stack.effects = [
+        {
+          OTIO_SCHEMA: 'Effect.1',
+          name: metadata?.title,
+          metadata: {
+            ...metadata,
+            id,
+            data: {
+              ...metadata,
+              t: `1,5`,
+              effect: metadata?.template,
+            },
+          },
+          source_range: {
+            OTIO_SCHEMA: 'TimeRange.1',
+            start_time: 1,
+            duration: metadata?.duration ?? 5,
+          },
+        },
+      ];
+    }
+    // remove gap
+    if (stack?.metadata?.gap === false && stack!.effects?.length !== undefined && stack!.effects?.length > 0) {
+      const metadata = stack.metadata;
+      const id = metadata?.id ?? `E-${nanoid()}`;
+
+      stack.metadata = {
+        ...metadata,
+        id,
+        type: 'effect',
+        gap: false,
+        component: 'title',
+        widget: false,
+      };
+      stack.source_range = {
+        OTIO_SCHEMA: 'TimeRange.1',
+        start_time: 0,
+        duration: metadata.duration ?? 1,
+      };
+      stack.effects = [];
+    }
+  });
+  applyGaps(stacks);
+
   // iterate effects and insert to next stack
   stacks.forEach((stack, i, arr) => {
     if ((stack.metadata as any)?.type !== 'effect') return;
@@ -486,6 +635,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
   // iterate non-effects and check for next effects
   stacks.forEach((stack, i, arr) => {
     if ((stack.metadata as any)?.type === 'effect') return;
+    if ((stack.metadata as any)?.gap) return;
 
     if (!stack.effects) stack.effects = [];
 
