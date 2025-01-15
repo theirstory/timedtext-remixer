@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, PropsWithChildren, useContext, useState, useCallback, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import {
   Box,
   Button,
@@ -462,9 +463,9 @@ export const TitleTool = (props: {
 }): JSX.Element => {
   const { dispatch } = useContext(Context);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const open = useMemo(() => Boolean(anchorEl), [anchorEl]);
   const id = useMemo(() => props.id ?? `Title-${Date.now()}`, [props.id]);
-  const name = props.name ?? 'Title';
+  const name = useMemo(() => props.name ?? 'Title', [props.name]);
   const [title, setTitle] = useState<string>(props.title ?? '');
   const [subtitle, setSubtitle] = useState<string>(props.subtitle ?? '');
   const [template, setTemplate] = useState<string>(props.template ?? '#title-full');
@@ -472,59 +473,67 @@ export const TitleTool = (props: {
   const [duration, setDuration] = useState<number>(props.duration ?? 5);
   const [openFilterOptions, setOpenFilterOptions] = useState<null | HTMLElement>(null);
 
+  const debouncedDispatch = useDebouncedCallback(
+    (value) => {
+      dispatch(value);
+    },
+    2000,
+    { leading: true },
+  );
+
   const handleTitleChange = useCallback(
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
       setTitle(value);
-      dispatch({
+      debouncedDispatch({
         type: 'metadata',
         payload: { id, metadata: { title: value } },
       });
     },
-    [id, dispatch],
+    [id, debouncedDispatch],
   );
 
   const handleSubtitleChange = useCallback(
     ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
       setSubtitle(value);
-      dispatch({
+      debouncedDispatch({
         type: 'metadata',
         payload: { id, metadata: { subtitle: value } },
       });
     },
-    [id, dispatch],
+    [id, debouncedDispatch],
   );
 
   const handleTemplateChange = useCallback(
     (_event: React.MouseEvent<HTMLElement>, value: string) => {
       setTemplate(value);
-      dispatch({
+      debouncedDispatch({
         type: 'metadata',
         payload: { id, metadata: { template: value } },
       });
     },
-    [id, dispatch],
+    [id, debouncedDispatch],
   );
 
   const handleTemplateChange2 = useCallback(
     (_event: React.MouseEvent<HTMLElement>, value: string) => {
       setGap(value as unknown as boolean);
-      dispatch({
+      debouncedDispatch({
         type: 'metadata',
         payload: { id, metadata: { gap: value } },
       });
     },
-    [id, dispatch],
+    [id, debouncedDispatch],
   );
 
   const handleDurationChange = useCallback(
     (value: number) => {
       setDuration(value);
-      dispatch({
+      debouncedDispatch({
         type: 'metadata',
         payload: { id, metadata: { duration: value } },
       });
     },
-    [id, dispatch],
+    [id, debouncedDispatch],
   );
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -532,27 +541,28 @@ export const TitleTool = (props: {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
   const handleRemove = useCallback(() => {
-    dispatch({ type: 'remove', payload: { id } });
+    debouncedDispatch({ type: 'remove', payload: { id } });
     handleClose();
-  }, [id, dispatch]);
+  }, [id, debouncedDispatch, handleClose]);
 
   const handleMoveUp = useCallback(() => {
-    dispatch({ type: 'move-up', payload: { id } });
+    debouncedDispatch({ type: 'move-up', payload: { id } });
     handleClose();
-  }, [id, dispatch]);
+  }, [id, debouncedDispatch, handleClose]);
 
   const handleMoveDown = useCallback(() => {
-    dispatch({ type: 'move-down', payload: { id } });
+    debouncedDispatch({ type: 'move-down', payload: { id } });
     handleClose();
-  }, [id, dispatch]);
+  }, [id, debouncedDispatch, handleClose]);
 
   return (
     <Box
+      key={id}
       sx={{
         backgroundColor: '#FFF',
         borderRadius: '8px',

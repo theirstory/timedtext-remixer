@@ -429,6 +429,10 @@ function App() {
             /* content-visibility: auto; */
           }
 
+          .widget + .SectionContentWrapper {
+            display: none;
+          }
+
         `}
       </style>
       {drawerOpen && (

@@ -641,12 +641,16 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
 
     stack.effects.forEach((effect) => {
       let inEffect = false;
-      const prevStackEffectIndex = arr.slice(0, i).findIndex((s) => s.metadata?.id === effect.metadata?.id);
+      const prevStackEffectIndex = arr
+        .slice(0, i)
+        .findIndex((s) => s.metadata?.id === effect.metadata?.id && !s.metadata?.gap);
       if (prevStackEffectIndex > -1) {
         inEffect = !arr.slice(prevStackEffectIndex, i).find((s) => (s.metadata as any)?.type !== 'effect');
       }
 
-      const nextStackEffectIndex = arr.slice(i + 1).findIndex((s) => s.metadata?.id === effect.metadata?.id);
+      const nextStackEffectIndex = arr
+        .slice(i + 1)
+        .findIndex((s) => s.metadata?.id === effect.metadata?.id && !s.metadata?.gap);
       if (nextStackEffectIndex > -1) {
         inEffect = !arr.slice(i + 1, i + 1 + nextStackEffectIndex).find((s) => (s.metadata as any)?.type !== 'effect');
       }
