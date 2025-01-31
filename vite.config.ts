@@ -21,5 +21,8 @@ export default defineConfig({
     rollupOptions: {
       external: ['react', 'react/jsx-runtime'],
     }
+  },
+  optimizeDeps: {
+    exclude: ['@theirstoryinc/timedtext-player']
   }
 })

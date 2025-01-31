@@ -73,7 +73,7 @@ const RemixDestination = ({
   return (
     <>
       <PlayerWrapper>
-        <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={false} {...{ poster }} />
+        <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={true} {...{ poster }} />
       </PlayerWrapper>
 
       <div ref={widthRef} style={{ width: '100%', height: 0 }}></div>

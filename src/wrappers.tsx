@@ -206,6 +206,7 @@ export const FadeInTool = (props: {
         },
       }}
       className="widget"
+      onClick={handleSave}
     >
       <Toolbar disableGutters variant="dense" sx={{ paddingX: '12px' }}>
         <DragHandleIcon style={{ marginRight: '8px', color: '#A7AEB4' }} />
@@ -477,7 +478,7 @@ export const TitleTool = (props: {
     (value) => {
       dispatch(value);
     },
-    2000,
+    1000,
     { leading: true },
   );
 
@@ -560,6 +561,13 @@ export const TitleTool = (props: {
     handleClose();
   }, [id, debouncedDispatch, handleClose]);
 
+  const handleSave = useCallback(() => {
+    debouncedDispatch({
+      type: 'metadata',
+      payload: { id, metadata: {} },
+    });
+  }, [id, debouncedDispatch]);
+
   return (
     <Box
       key={id}
@@ -578,6 +586,7 @@ export const TitleTool = (props: {
         },
       }}
       className="widget"
+      onClick={handleSave}
     >
       <Toolbar disableGutters variant="dense" sx={{ minHeight: 0, marginBottom: '16px' }}>
         <DragHandleIcon style={{ marginRight: '8px', color: '#A7AEB4' }} />
@@ -811,6 +820,7 @@ const EMPTY_REMIX_SX = {
   flexDirection: 'column',
   textAlign: '-webkit-center',
   paddingY: '51px',
+  // backgroundColor: 'lightyellow',
 };
 
 export const EmptyRemix = (): JSX.Element => (
@@ -991,7 +1001,7 @@ export const SelectionWrapper = ({
   first,
   droppableId,
   source,
-  text,
+  // text,
   children,
 }: SelectionWrapperProps): JSX.Element => {
   const { dispatch, remixPlayerRef } = useContext(Context);

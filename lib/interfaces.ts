@@ -9,6 +9,7 @@ export type State = {
   poster?: string;
   width?: number;
   height?: number;
+  playhead?: number;
 };
 
 export type Action =

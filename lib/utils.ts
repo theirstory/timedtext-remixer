@@ -196,8 +196,9 @@ export const timedText2timeline = (tt: any, NS: string = "F7222ED3-9A6E-4409-BCC
                       metadata: JSON.stringify(tt.metadata ?? {}),
                       t: `${clipsStart},${clipsEnd}`,
                       "media-src": tt.metadata?.src,
-                      id: timelineUUID,
+                      sid: timelineUUID,
                   },
+                  sid: timelineUUID,
               },
               media_reference: {
                   OTIO_SCHEMA: "MediaReference.1",
@@ -305,7 +306,7 @@ export const timeline2remix = (source: Timeline): Remix => {
   } as Remix;
 };
 
-const segment2stack = (segment: Segment): Stack => {
+const segment2stack = (segment: Segment, sid: string): Stack => {
   const { metadata, blocks, start, end } = segment;
   const clips = blocks.map((b: Block) => {
     const { start, end, metadata, tokens } = b;
@@ -318,7 +319,7 @@ const segment2stack = (segment: Segment): Stack => {
         metadata: {
           id: timedTextUUID,
           data: {
-            t: `${t.start},${t.end}`
+            t: `${t.start},${t.end}`,
           },
         },
         marked_range: {
@@ -335,10 +336,13 @@ const segment2stack = (segment: Segment): Stack => {
       metadata: {
         id: clipUUID,
         speaker: metadata.speaker,
+        sid,
         data: {
           t: `${start},${end}`,
           speaker: metadata.speaker,
           id: clipUUID,
+          sid,
+          metadata: JSON.stringify({...metadata, sid, id: clipUUID}),
         }
       } as any as Metadata,
       media_reference: {
@@ -358,9 +362,12 @@ const segment2stack = (segment: Segment): Stack => {
     OTIO_SCHEMA: "Stack.1",
     metadata: {
       ...(metadata ?? {}),
+      sid,
       data: {
         t: `${metadata.start},${metadata.end}`, // FIXME: should we use start and end?
         "media-src": metadata.src,
+        sid,
+        metadata: JSON.stringify({...metadata, sid}),
       },
     },
     media_reference: {
@@ -385,6 +392,8 @@ const segment2stack = (segment: Segment): Stack => {
 export const remix2timeline = (remix: Remix): Timeline => {
   const { metadata, segments } = remix;
 
+  const { id = 'no-id' } = metadata;
+
   const timeline: Timeline = {
     OTIO_SCHEMA: "Timeline.1",
     metadata: {
@@ -402,7 +411,7 @@ export const remix2timeline = (remix: Remix): Timeline => {
           metadata: {
           },
           children: [
-            ...produce(segments.map(segment2stack), (draft) => applyEffects(draft))
+            ...produce(segments.map((s) => segment2stack(s, id)), (draft) => applyEffects(draft))
           ] as any as (Clip | Stack)[],
           // TDB single clip as single source transcript?
         },

@@ -47,6 +47,7 @@ const RemixContext = ({
     poster,
     width, // FIXME
     height,
+    playhead: 0,
   };
 
   const remixPlayerRef = useRef<TimedTextPlayer>(null);
@@ -58,12 +59,13 @@ const RemixContext = ({
   }, [remix]);
 
   useEffect(() => {
-    const event = new CustomEvent('remixChange', {
-      detail: state.remix,
-      bubbles: true,
-    });
-    remixPlayerRef.current!.dispatchEvent(event);
-  }, [state.remix, remixPlayerRef]);
+    try {
+      console.log('reloadRemix', state.playhead);
+      remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
+    } catch (error) {
+      console.log('FIXME', error);
+    }
+  }, [state.remix, state.playhead, remixPlayerRef]);
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
@@ -140,6 +142,10 @@ const reducer = (state: State, action: Action): State => {
         }
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
         return draftState;
       }
 
@@ -216,33 +222,14 @@ const reducer = (state: State, action: Action): State => {
         if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
+        if (stackIndex === -1) return draftState;
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
         return draftState;
       }
-
-      // case 'add-gap': {
-      //   // TODO
-      //   // const { result, metadata, tool } = action.payload;
-      //   // const stack = {
-      //   //   OTIO_SCHEMA: 'Stack.1',
-      //   //   metadata: {
-      //   //     id: metadata.id ?? `E-${nanoid()}`,
-      //   //     type: 'effect',
-      //   //     ...tool.defaults,
-      //   //     ...metadata,
-      //   //   },
-      //   //   source_range: {
-      //   //     OTIO_SCHEMA: 'TimeRange.1',
-      //   //     start_time: 0,
-      //   //     duration: metadata.duration ?? 1,
-      //   //   },
-      //   //   children: [],
-      //   // };
-
-      //   // if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
-
-      //   // applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
-      //   return draftState;
-      // }
 
       case 'add': {
         const [result, source, [start, end]] = action.payload;
@@ -251,6 +238,13 @@ const reducer = (state: State, action: Action): State => {
         if (stack) draftState.remix?.tracks.children[0].children.splice(result?.destination?.index ?? 0, 0, stack);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const stackIndex =
+          draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === stack?.metadata?.id) ?? -1;
+        if (stackIndex === -1) return draftState;
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
         return draftState;
       }
 
@@ -267,6 +261,13 @@ const reducer = (state: State, action: Action): State => {
         if (stack) draftState.remix?.tracks.children[0].children.splice(index ?? 0, 0, stack);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const stackIndex =
+          draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === stack?.metadata?.id) ?? -1;
+        if (stackIndex === -1) return draftState;
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
         return draftState;
       }
 
@@ -278,6 +279,14 @@ const reducer = (state: State, action: Action): State => {
         draftState.remix?.tracks.children[0].children.splice(destination?.index ?? 0, 0, removed);
 
         applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const stackIndex =
+          draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === removed?.metadata?.id) ??
+          -1;
+        if (stackIndex === -1) return draftState;
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
         return draftState;
       }
 
@@ -292,6 +301,12 @@ const reducer = (state: State, action: Action): State => {
         draftState.remix?.tracks.children[0].children.splice(stackIndex, 1);
         draftState.remix?.tracks.children[0].children.splice(stackIndex + 1, 0, stack);
 
+        applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
+
         return draftState;
       }
 
@@ -305,6 +320,12 @@ const reducer = (state: State, action: Action): State => {
 
         draftState.remix?.tracks.children[0].children.splice(stackIndex, 1);
         draftState.remix?.tracks.children[0].children.splice(stackIndex - 1, 0, stack);
+
+        applyEffects(draftState.remix?.tracks.children[0].children as Stack[]);
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
 
         return draftState;
       }
@@ -322,6 +343,11 @@ const reducer = (state: State, action: Action): State => {
           //
         }
 
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
+
         return draftState;
       }
 
@@ -335,6 +361,12 @@ const reducer = (state: State, action: Action): State => {
 
         stack.source_range!.duration = duration;
         (stack.metadata as any)!.data!.t = [0, duration];
+
+        const offset = draftState.remix?.tracks.children[0].children
+          .slice(0, stackIndex)
+          .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
+        draftState.playhead = offset === 0 ? 0.1 : offset;
+
         return draftState;
       }
 
@@ -539,14 +571,14 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
     if ((stack.metadata as any)?.type !== 'effect') return;
 
     const nextNonEffect = arr.slice(i + 1).find((s) => (s.metadata as any)?.type !== 'effect');
-    console.log({ nextNonEffect: nextNonEffect ? current(nextNonEffect) : null });
+    // console.log({ nextNonEffect: nextNonEffect ? current(nextNonEffect) : null });
     if (!nextNonEffect) return;
 
     const prevNonEffect = arr
       .slice(0, i)
       .reverse()
       .find((s) => (s.metadata as any)?.type !== 'effect');
-    console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
+    // console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
 
     const { metadata } = stack;
     const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
@@ -575,7 +607,9 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
     if (!nextNonEffect.effects) nextNonEffect.effects = [];
     const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -1;
     if (effectIndex === -1) {
-      nextNonEffect.effects?.push(effect);
+      if (nextNonEffect.effects.length === 0) {
+        nextNonEffect.effects = [effect];
+      } else nextNonEffect.effects?.push(effect);
     } else {
       nextNonEffect.effects?.splice(effectIndex, 1, effect);
     }
@@ -624,9 +658,12 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
       } as Effect;
 
       if (!nextNonEffect.effects) nextNonEffect.effects = [];
-      const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -1;
+      const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -2;
+      console.log({ effect, nextNonEffect, effectIndex });
       if (effectIndex === -1) {
-        nextNonEffect.effects?.push(effect);
+        if (nextNonEffect.effects.length === 0) {
+          nextNonEffect.effects = [effect];
+        } else nextNonEffect.effects?.push(effect);
       } else {
         nextNonEffect.effects?.splice(effectIndex, 1, effect);
       }

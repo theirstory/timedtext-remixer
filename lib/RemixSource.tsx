@@ -139,7 +139,7 @@ const RemixSource = ({
   // );
 
   return (
-    <div style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.sid ?? 'SID'}>
+    <div style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.id ?? 'SID'}>
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>

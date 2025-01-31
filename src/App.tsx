@@ -72,8 +72,8 @@ function App() {
   };
 
   const allSources = useMemo(
-    // () => [ts2timeline3format(T4), ts2timeline3(T5), ts2timeline3(T6), ts2timeline3(T7), ts2timeline3(T8)] as Timeline[],
     () => [remix2timeline(rT4), remix2timeline(rT5), remix2timeline(rT6), remix2timeline(rT7), remix2timeline(rT8)],
+    // () => [remix2timeline(rT4)],
     [],
   );
 
@@ -89,6 +89,7 @@ function App() {
       }
     },
     [remix2timeline(rT4), remix2timeline(rT5), remix2timeline(rT6), remix2timeline(rT7), remix2timeline(rT8)],
+    // [remix2timeline(rT4)],
   );
 
   // const initRemix = EMPTY_REMIX;
@@ -105,8 +106,8 @@ function App() {
   };
 
   const remixRef = React.useRef<any>();
-  const autoscrollRef = React.useRef<any>();
-  const scrollRef = React.useRef<any>();
+  const autoscrollRef = React.useRef<any>(); // actually context live-view
+  const scrollRef = React.useRef<any>(); // actually auto scrolling
   // const [css, dispatchCss] = useReducer((state: any, action: any) => ({ ...state, ...action }), {});
 
   useEffect(() => {
@@ -117,16 +118,19 @@ function App() {
     scrollRef.current = scrolling;
   }, [scrolling]);
 
+  // const css2: { [key: string]: string } = {};
+  const css3 = React.useRef<{ [key: string]: string }>({});
+
   useEffect(() => {
     if (!remixRef.current) return;
 
     const remixRefCurrent = remixRef.current;
     const listener = remixRefCurrent.addEventListener('playhead', (e: any) => {
       const { pseudo, transcript, section, clip, timedText } = e.detail;
-      // console.log('playhead', e.detail);
-      const css2: { [key: string]: string } = {};
+      console.log('playhead', e.detail, e.target);
+      // const css2: { [key: string]: string } = {};
 
-      const { sid } = section?.metadata?.data ?? { sid: 'default' };
+      const { sid } = section?.metadata ?? { id: 'default' };
       const sectionEl = document.querySelector(section.metadata.selector);
 
       if (timedText) {
@@ -134,10 +138,11 @@ function App() {
 
         const time = element?.getAttribute('data-t')?.split(',')?.[0];
         const players = Array.from(document.querySelectorAll(`div[data-sid="${sid}"] timedtext-player`));
+        console.log({ players, sid, section, pseudo, autoscroll: autoscrollRef.current, scrollRef: scrollRef.current });
         players.forEach((player) => {
           if (pseudo && autoscrollRef.current) {
-            const sourceIndex = sources.findIndex((s: { metadata: { sid: any } }) => s?.metadata?.sid === sid);
-            setTabValue(sourceIndex);
+            const sourceIndex = sources.findIndex((s: { metadata: { id: any } }) => s?.metadata?.id === sid);
+            if (sourceIndex > -1) setTabValue(sourceIndex);
           } else {
             // const node = document.querySelector(selector);
             // if (node && autoscrollRef.current)
@@ -146,18 +151,15 @@ function App() {
             //   });
           }
           if (pseudo || !time || e.target === player) return;
-          (player as any).currentPseudoTime = parseFloat(time);
+          if (autoscrollRef.current && player) {
+            (player as any).currentPseudoTime = parseFloat(time);
+            // (player as any).currentTime = parseFloat(time);
+          }
         });
 
         const node = sectionEl?.querySelector(clip.metadata.selector);
         // console.log('node', clip.metadata.selector);
         if (node && (autoscrollRef.current || !pseudo) && scrollRef.current) {
-          // console.log('scrolling', {
-          //   node,
-          //   selector: clip.metadata.selector,
-          //   autoscroll: autoscrollRef.current,
-          //   pseudo,
-          // });
           scrollIntoView(node, {
             behavior: 'smooth',
           });
@@ -189,9 +191,10 @@ function App() {
         `;
 
         // dispatchCss({ [transcript]: cssText });
-        css2[transcript] = cssText;
+        console.log({ css3 });
+        css3.current[transcript] = cssText;
         const style = document.getElementById('injected');
-        style!.innerHTML = Object.values(css2).join('\n\n');
+        style!.innerHTML = Object.values(css3.current).join('\n/* */\n');
       }
     });
 
