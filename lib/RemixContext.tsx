@@ -163,7 +163,7 @@ const reducer = (state: State, action: Action): State => {
                 ...tool.defaults,
                 id: metadata.id ?? id,
                 data: {
-                  t: `1,${{ ...tool.defaults, ...metadata }.duration ?? 5}`,
+                  t: `1,${({ ...tool.defaults, ...metadata }.duration ?? 5) + 1}`,
                   'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
                 },
                 gap: true,
@@ -178,7 +178,7 @@ const reducer = (state: State, action: Action): State => {
               source_range: {
                 OTIO_SCHEMA: 'TimeRange.1',
                 start_time: 1,
-                duration: { ...tool.defaults, ...metadata }.duration ?? 5,
+                duration: ({ ...tool.defaults, ...metadata }.duration ?? 5) + 1,
               },
               children: [],
               effects: [
@@ -198,7 +198,7 @@ const reducer = (state: State, action: Action): State => {
                   source_range: {
                     OTIO_SCHEMA: 'TimeRange.1',
                     start_time: 1,
-                    duration: { ...tool.defaults, ...metadata }.duration ?? 5,
+                    duration: ({ ...tool.defaults, ...metadata }.duration ?? 5) + 1,
                   },
                 },
               ],
@@ -503,7 +503,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
         ...metadata,
         id,
         data: {
-          t: `1,${metadata?.duration ?? 5}`,
+          t: `1,${(metadata?.duration ?? 5) + 1}`,
           'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
         },
         gap: true,
@@ -519,7 +519,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
       stack.source_range = {
         OTIO_SCHEMA: 'TimeRange.1',
         start_time: 1,
-        duration: metadata?.duration ?? 5,
+        duration: (metadata?.duration ?? 5) + 1,
       };
 
       stack.effects = [
@@ -531,14 +531,14 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
             id,
             data: {
               ...metadata,
-              t: `1,5`,
+              t: `0,5`, // FIXME this is overrided in apply effects?
               effect: metadata?.template,
             },
           },
           source_range: {
             OTIO_SCHEMA: 'TimeRange.1',
             start_time: 1,
-            duration: metadata?.duration ?? 5,
+            duration: (metadata?.duration ?? 5) + 1,
           },
         },
       ];
@@ -564,7 +564,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
       stack.effects = [];
     }
   });
-  applyGaps(stacks);
+  applyGaps(stacks); // TODO move above into this
 
   // iterate effects and insert to next stack
   stacks.forEach((stack, i, arr) => {
@@ -581,7 +581,9 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
     // console.log({ prevNonEffect: prevNonEffect ? current(prevNonEffect) : null });
 
     const { metadata } = stack;
-    const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
+    const duration = prevNonEffect
+      ? ((metadata as any)?.duration ?? 0) / ((metadata as any)?.apply === 'both' ? 2 : 1)
+      : ((metadata as any)?.duration ?? 0);
     if (!nextNonEffect.source_range) throw new Error("nextNonEffect doesn't have source_range");
     const stackStart = nextNonEffect.source_range.start_time;
 
@@ -630,7 +632,10 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
         .find((s) => (s.metadata as any)?.type !== 'effect');
 
       const { metadata } = stack;
-      const duration = prevNonEffect ? ((metadata as any)?.duration ?? 0) / 2 : ((metadata as any)?.duration ?? 0);
+      if ((metadata as any)?.apply === 'next') return;
+      const duration = prevNonEffect
+        ? ((metadata as any)?.duration ?? 0) / ((metadata as any)?.apply === 'both' ? 2 : 1)
+        : ((metadata as any)?.duration ?? 0);
 
       const stackStart = nextNonEffect.source_range?.start_time ?? 0;
       const stackEnd = stackStart + (nextNonEffect.source_range?.duration ?? 0);

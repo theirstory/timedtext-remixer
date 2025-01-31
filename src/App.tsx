@@ -269,6 +269,7 @@ function App() {
           title: 'Fade',
           template: '#fin',
           duration: 5,
+          apply: 'both',
         },
       },
       {
@@ -308,6 +309,7 @@ function App() {
           template: '#title-full',
           duration: 5,
           gap: false,
+          apply: 'next',
         },
       },
     ],

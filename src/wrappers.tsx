@@ -63,7 +63,7 @@ export const TEMPLATES = `
   </template>
 
   <template id="title-full">
-    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
+    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
       <style>
@@ -82,7 +82,7 @@ export const TEMPLATES = `
   </template>
 
   <template id="title-full-reverse">
-    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .7);">
+    <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
       <style>
@@ -568,6 +568,8 @@ export const TitleTool = (props: {
     });
   }, [id, debouncedDispatch]);
 
+  const ignoreClick = useCallback((e) => e.stopPropagation(), []);
+
   return (
     <Box
       key={id}
@@ -604,7 +606,7 @@ export const TitleTool = (props: {
           }}
           className="hovered-block"
         >
-          <Box marginLeft="2px !important">
+          <Box marginLeft="2px !important" onClick={ignoreClick}>
             <Button
               variant="contained"
               disableElevation
@@ -641,24 +643,32 @@ export const TitleTool = (props: {
 
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
-          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange}>
-            <ToggleButton value="#title-lower3rds" size="small">
-              <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
-            </ToggleButton>
-            <ToggleButton value="#title-full" size="small">
-              <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} />
-            </ToggleButton>
+          <ToggleButtonGroup value={template} exclusive onChange={handleTemplateChange} onClick={ignoreClick}>
+            <Tooltip title="Lower Third">
+              <ToggleButton value="#title-lower3rds" size="small">
+                <img src={template === '#title-full' ? lowerThirdInactive : lowerThirdActive} />
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip title="Full Screen">
+              <ToggleButton value="#title-full" size="small">
+                <img src={template === '#title-full' ? fullScreenActive : fullScreenInactive} />
+              </ToggleButton>
+            </Tooltip>
           </ToggleButtonGroup>
 
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
 
-          <ToggleButtonGroup value={gap} exclusive onChange={handleTemplateChange2}>
-            <ToggleButton value={false} size="small">
-              <img src={textFullscreen} width="20px" height="20px" />
-            </ToggleButton>
-            <ToggleButton value={true} size="small">
-              <img src={textOverlay} width="20px" height="20px" />
-            </ToggleButton>
+          <ToggleButtonGroup value={gap} exclusive onChange={handleTemplateChange2} onClick={ignoreClick}>
+            <Tooltip title="Overlay">
+              <ToggleButton value={false} size="small">
+                <img src={textOverlay} width="20px" height="20px" />
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip title="Insert">
+              <ToggleButton value={true} size="small">
+                <img src={textFullscreen} width="20px" height="20px" />
+              </ToggleButton>
+            </Tooltip>
           </ToggleButtonGroup>
 
           <Divider orientation="vertical" sx={{ marginX: '8px', height: '24px' }} />
@@ -692,6 +702,7 @@ export const TitleTool = (props: {
             anchorEl={openFilterOptions}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+            onClick={ignoreClick}
           >
             <MenuList sx={{ backgroundColor: '#F7F9FC' }}>
               <MenuItem
@@ -792,20 +803,22 @@ export const TitleTool = (props: {
           </Menu>
         </Box>
       </Toolbar>
-      <TextField
-        label="Title"
-        value={title}
-        style={{ width: '100%', marginBottom: '16px', backgroundColor: '#fff' }}
-        onChange={handleTitleChange}
-        size="small"
-      />
-      <TextField
-        label="Subtitle (optional)"
-        value={subtitle}
-        style={{ width: '100%', backgroundColor: '#fff' }}
-        onChange={handleSubtitleChange}
-        size="small"
-      />
+      <div onClick={ignoreClick}>
+        <TextField
+          label="Title"
+          value={title}
+          style={{ width: '100%', marginBottom: '16px', backgroundColor: '#fff' }}
+          onChange={handleTitleChange}
+          size="small"
+        />
+        <TextField
+          label="Subtitle (optional)"
+          value={subtitle}
+          style={{ width: '100%', backgroundColor: '#fff' }}
+          onChange={handleSubtitleChange}
+          size="small"
+        />
+      </div>
       {/* // </div> */}
     </Box>
   );
