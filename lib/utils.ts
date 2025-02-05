@@ -1,165 +1,482 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { intersection } from "interval-operations";
-import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline } from "./interfaces";
-import { nanoid } from "nanoid";
+import { v5 as uuidv5 } from 'uuid';
+import stringify from 'json-stringify-deterministic';
+import CryptoJS from 'crypto-js';
+import { produce } from 'immer';
+import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline, Remix, Segment, Block, Token } from "./interfaces";
+import { EMPTY_VIDEO } from "./video";
+import { applyEffects } from "./RemixContext";
 
-export const ts2timeline = (ts: any): Timeline => {
-    const { words, paragraphs } = ts.transcript;
-    const totalDuration = words[words.length - 1].end ?? ts.story.duration ?? 0;
+export const ipfsStyleHash = (data: any): string => {
+  const jsonString = stringify(data);
+  const hash = CryptoJS.SHA256(jsonString).toString();
+  return `Qm${hash}`;
+};
 
-    const clips = paragraphs.map((p: any): Clip => {
-      const timedTexts = words
-        .filter((w: any) =>
-          // intersection([w.start, w.end], [p.start, p.end])
-          p.start <= w.start && w.end <= p.end
-        )
-        .map((w: any): TimedText => {
-          return {
-            OTIO_SCHEMA: "TimedText.1",
-            metadata: {
-              id: `TT-${nanoid()}`,
-              data: {
-                t: `${w.start},${w.end}`
-              }
+// export const ts2timeline2 = (ts: any): Timeline => {
+//   return timedText2timeline(ts2timedText(ts));
+// };
+
+// export const ts2timeline3 = (ts: any): Timeline => {
+//   const remix = ts2timedText3(ts);
+//   console.log('ts2timeline3 ' + remix.metadata.storyId, remix);
+//   return remix2timeline2(remix);
+// };
+
+// export const ts2timedText = (ts: any): any => {
+//   const { title, description } = ts.story;
+//   const { storyId, words, paragraphs } = ts.transcript;
+
+//   const segments = paragraphs.map((p: any): any => {
+//     return {
+//       start: p.start,
+//       end: p.end,
+//       metadata: {
+//         speaker: p.speaker,
+//       },
+//       tokens: words.filter((w: any) => p.start <= w.start && w.end <= p.end),
+//     };
+//   });
+
+//   return {
+//     metadata: {
+//       id: storyId,
+//       storyId,
+//       title,
+//       description,
+//       src: ts.videoURL,
+//     },
+//     segments,
+//   };
+// };
+
+// export const ts2timedText3 = (ts: any): Remix => {
+//   const { title, description } = ts.story;
+//   const { storyId, words, paragraphs } = ts.transcript;
+
+//   const blocks = paragraphs.map((p: any): any => {
+//     const tokens = words.filter((w: any) => p.start <= w.start && w.end <= p.end).map((w: any) => {
+//       return {
+//         text: w.text,
+//         start: w.start,
+//         end: w.end,
+//         metadata: {},
+//       } as Token;
+//     });
+
+//     return {
+//       text: tokens.map((t: any) => t.text).join(' '),
+//       start: p.start,
+//       end: p.end,
+//       metadata: {
+//         speaker: p.speaker,
+//       },
+//       tokens,
+//     } as Block;
+//   });
+
+//   const end = blocks[blocks.length - 1].end ?? ts.story.duration;
+
+//   return {
+//     metadata: {
+//       id: storyId,
+//       storyId,
+//       title,
+//       description,
+//       src: ts.videoURL,
+//     },
+//     segments: [{
+//       start: 0,
+//       end,
+//       metadata: {
+//         start: 0,
+//         end,
+//         src: ts.videoURL,
+//       },
+//       blocks,
+//     }],
+//   };
+// };
+
+export const timedText2timeline = (tt: any, NS: string = "F7222ED3-9A6E-4409-BCC7-F88820C07A58"): Timeline => {
+  const ipfsHash = ipfsStyleHash(stringify(tt));
+  const timelineUUID = uuidv5(tt.id ?? tt.metadata?.id ?? ipfsHash, NS);
+  const id = tt.id ?? tt.metadata?.id ?? timelineUUID;
+
+  const { segments = [] } = tt;
+  const tokens = segments.flatMap((p: any) => p.tokens ?? []);
+  const start = tt.metadata?.start ?? tokens?.[0]?.start ?? 0;
+  const end = tt.metadata?.end ?? tokens?.[tokens.length - 1]?.end ?? tt.metadata?.duration ?? 0;
+  const totalDuration = end - start;
+
+  const clips = segments.map((p: any): Clip => {
+    const start = p.start ?? tokens?.[0]?.start ?? 0;
+    const end = p.end ?? tokens?.[tokens.length - 1]?.end ?? totalDuration;
+    const clipUUID = uuidv5(`${start},${end}`, timelineUUID);
+
+    const timedTexts = (p.tokens ?? tokens)
+      .filter((w: any) =>
+        start <= w.start && w.end <= end
+      )
+      .map((w: any): TimedText => {
+        const timedTextUUID = uuidv5(`${w.start},${w.end}`, clipUUID);
+        return {
+          OTIO_SCHEMA: "TimedText.1",
+          metadata: {
+            id: timedTextUUID,
+            data: {
+              t: `${w.start},${w.end}`
             },
-            marked_range: {
-              OTIO_SCHEMA: "TimeRange.1",
-              start_time: w.start,
-              duration: w.end - w.start,
-            },
-            texts: w.text,
-          } as TimedText;
-        });
-
-      return {
-        OTIO_SCHEMA: "Clip.1",
-        metadata: {
-          id: `C-${nanoid()}`,
-          speaker: p.speaker,
-          data: {
-            t: `${p.start},${p.end}`
-          }
-        } as Metadata,
-        media_reference: {
-          OTIO_SCHEMA: "MediaReference.1",
-          target: ts.videoURL,
-        },
-        source_range: {
-          OTIO_SCHEMA: "TimeRange.1",
-          start_time: p.start,
-          duration: p.end - p.start,
-        } as TimeRange,
-        timed_texts: timedTexts as TimedText[],
-      };
-    }) ?? [];
-
-    const firstClip = clips?.[0];
-    const lastClip = clips?.[clips.length - 1];
-
-    let clipsStart = firstClip?.source_range?.start_time ?? 0;
-    if (clipsStart === 0) clipsStart = 1/5; // FIXME: hack to avoid black frame at start, and fix player zero bug
-    const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time + lastClip.source_range?.duration : totalDuration;
-
-    const timeline: Timeline = {
-      OTIO_SCHEMA: "Timeline.1",
-      metadata: {
-        sid: ts.transcript._id, // TODO TBD
-        id: ts.transcript._id, // TODO TBD
-        story: ts.story,
-        videoURL: ts.videoURL,
-      } as Metadata,
-      tracks: {
-        OTIO_SCHEMA: "Stack.1",
-        metadata: {
-            id: `S-${nanoid()}`,
-        },
-        // media_reference: {
-        //   OTIO_SCHEMA: "MediaReference.1",
-        //   target: ts.videoURL,
-        // },
-        // source_range: {
-        //   OTIO_SCHEMA: "TimeRange.1",
-        //   start_time: 0,
-        //   duration: totalDuration,
-        // } as TimeRange,
-        children: [
-          {
-            OTIO_SCHEMA: "Track.1",
-            kind: "video", // TBD audio only tracks
-            metadata: {
-                id: `T-${nanoid()}`,
-            },
-            children: [
-              {
-                OTIO_SCHEMA: "Stack.1",
-                metadata: {
-                    sid: ts.transcript._id, // TODO TBD
-                    id: `S-${nanoid()}`,
-                    data: {
-                        t: `${clipsStart},${clipsEnd}`,
-                        "media-src": ts.videoURL,
-                    },
-                    transcript: ts.transcript,
-                },
-                media_reference: {
-                    OTIO_SCHEMA: "MediaReference.1",
-                    target: ts.videoURL,
-                },
-                source_range: {
-                    OTIO_SCHEMA: "TimeRange.1",
-                    start_time: clipsStart,
-                    duration: clipsEnd - clipsStart,
-                } as TimeRange,
-                children: [
-                  {
-                    OTIO_SCHEMA: "Track.1",
-                    kind: "video",
-                    children: clips as Clip[],
-                  },
-                ], // as (Clip | Stack)[],
-              },
-            ] as (Clip | Stack)[],
-            // TDB single clip as single source transcript?
           },
-        ] as Track[],
-      } as Stack,
-    };
+          marked_range: {
+            OTIO_SCHEMA: "TimeRange.1",
+            start_time: w.start,
+            duration: w.end - w.start,
+          },
+          texts: w.text,
+        } as any as TimedText;
+      });
 
-    return timeline;
+    return {
+      OTIO_SCHEMA: "Clip.1",
+      metadata: {
+        id: clipUUID,
+        speaker: p.metadata?.speaker,
+        data: {
+          t: `${start},${end}`,
+          speaker: p.metadata?.speaker,
+          id: clipUUID,
+        }
+      } as any as Metadata,
+      media_reference: {
+        OTIO_SCHEMA: "MediaReference.1",
+        target: tt.metadata.src,
+      },
+      source_range: {
+        OTIO_SCHEMA: "TimeRange.1",
+        start_time: start,
+        duration: end - start,
+      } as TimeRange,
+      timed_texts: timedTexts as TimedText[],
+    };
+  }) ?? [];
+
+  const firstClip = clips?.[0];
+  const lastClip = clips?.[clips.length - 1];
+
+  const clipsStart = firstClip?.source_range?.start_time ?? 0;
+  const clipsEnd = lastClip?.source_range ? lastClip.source_range?.start_time + lastClip.source_range?.duration : totalDuration;
+
+  const timeline: Timeline = {
+    OTIO_SCHEMA: "Timeline.1",
+    metadata: {
+      ...(tt.metadata ?? {}),
+      id,
+      uuid: timelineUUID,
+      ipfsHash,
+      title: tt.metadata?.title ?? id,
+    } as any as Metadata,
+    tracks: {
+      OTIO_SCHEMA: "Stack.1",
+      metadata: {
+          title: tt.metadata.title,
+      },
+      children: [
+        {
+          OTIO_SCHEMA: "Track.1",
+          kind: "video", // TBD audio only tracks
+          metadata: {
+          },
+          children: [
+            {
+              OTIO_SCHEMA: "Stack.1",
+              metadata: {
+                  ...(tt.metadata ?? {}),
+                  data: {
+                      metadata: JSON.stringify(tt.metadata ?? {}),
+                      t: `${clipsStart},${clipsEnd}`,
+                      "media-src": tt.metadata?.src,
+                      sid: timelineUUID,
+                  },
+                  sid: timelineUUID,
+                  // title: tt.metadata?.title ?? id,
+              },
+              media_reference: {
+                  OTIO_SCHEMA: "MediaReference.1",
+                  target: tt.metadata?.src,
+              },
+              source_range: {
+                  OTIO_SCHEMA: "TimeRange.1",
+                  start_time: clipsStart,
+                  duration: clipsEnd - clipsStart,
+              } as TimeRange,
+              children: [
+                {
+                  OTIO_SCHEMA: "Track.1",
+                  kind: "video",
+                  children: clips as Clip[],
+                },
+              ], // as (Clip | Stack)[],
+            },
+          ] as any as (Clip | Stack)[],
+          // TDB single clip as single source transcript?
+        },
+      ] as Track[],
+    } as Stack,
   };
 
+  return timeline;
+};
+
+// interface Remix {
+//   metadata: any;
+//   segments: Segment[];
+// }
+// interface Segment {
+//   start: number;
+//   end: number;
+//   metadata: any;
+//   blocks: Block[];
+// }
+// interface Block {
+//   text: string;
+//   start: number;
+//   end: number;
+//   metadata: any;
+//   tokens: Token[];
+// }
+
+// interface Token {
+//   text: string;
+//   start: number;
+//   end: number;
+//   metadata: any;
+// }
+
+export const stack2segment = (stack: Stack): Segment => {
+  // Convert a stack back to a timed text segment
+  const track = stack.children?.[0] as Track;
+  const clips = (track?.children?.filter(
+    (c) => c.OTIO_SCHEMA === 'Clip.1'
+  ) ?? []) as Clip[];
+
+  const blocks = clips.map(clip => {
+    const tokens = clip.timed_texts?.map(tt => ({
+      text: tt.texts,
+      start: tt.marked_range.start_time,
+      end: tt.marked_range.start_time + tt.marked_range.duration
+    } as Token)) || [];
+
+    return {
+      text: clip.timed_texts?.map((tt: TimedText) => tt.texts).join(' '),
+      start: clip.source_range.start_time,
+      end: clip.source_range.start_time + clip.source_range.duration,
+      metadata: {
+        speaker: (clip.metadata as any)?.speaker,
+      },
+      tokens
+    } as Block;
+  });
+
+  // throw error if there is no source_range start_time or duration
+  if (!stack.source_range || typeof stack.source_range.start_time === 'undefined' || isNaN(stack.source_range.start_time) || typeof stack.source_range.duration === 'undefined' || isNaN(stack.source_range.duration)) {
+    console.log('stack', stack);
+    throw new Error('source_range start_time or duration is missing');
+  }
+
+  return {
+    metadata: {
+      ...(stack.metadata ?? {}),
+      start: stack.source_range.start_time,
+      end: stack.source_range.start_time + stack.source_range.duration,
+      src: (stack.metadata as any)?.data?.['media-src'], // FIXME: we always need source?
+    },
+    blocks,
+    start: stack.source_range.start_time,
+    end: stack.source_range.start_time + stack.source_range.duration
+  } as Segment;
+};
+
+export const timeline2remix = (source: Timeline): Remix => {
+  const stacks = timelineStacks(source);
+  const segments = stacks.map(stack2segment);
+
+  return {
+    metadata: source.metadata,
+    segments,
+  } as Remix;
+};
+
+const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
+  const { metadata, blocks, start, end } = segment;
+  const clips = blocks.map((b: Block) => {
+    const { start, end, metadata, tokens } = b;
+    const clipUUID = uuidv5(`${start},${end}`, "F7222ED3-9A6E-4409-BCC7-F88820C07A58");
+
+    const timedTexts = tokens.map((t: Token) => {
+      const timedTextUUID = uuidv5(`${t.start},${t.end}`, clipUUID);
+      return {
+        OTIO_SCHEMA: "TimedText.1",
+        metadata: {
+          id: timedTextUUID,
+          data: {
+            t: `${t.start},${t.end}`,
+          },
+        },
+        marked_range: {
+          OTIO_SCHEMA: "TimeRange.1",
+          start_time: t.start,
+          duration: t.end - t.start,
+        },
+        texts: t.text,
+      } as any as TimedText;
+    });
+
+    return {
+      OTIO_SCHEMA: "Clip.1",
+      metadata: {
+        id: clipUUID,
+        speaker: metadata.speaker,
+        sid,
+        data: {
+          t: `${start},${end}`,
+          speaker: metadata.speaker,
+          id: clipUUID,
+          sid,
+          metadata: JSON.stringify({...metadata, sid, id: clipUUID}),
+        }
+      } as any as Metadata,
+      media_reference: {
+        OTIO_SCHEMA: "MediaReference.1",
+        target: metadata.src,
+      },
+      source_range: {
+        OTIO_SCHEMA: "TimeRange.1",
+        start_time: start,
+        duration: end - start,
+      } as TimeRange,
+      timed_texts: timedTexts as TimedText[],
+    };
+  });
+
+  return {
+    OTIO_SCHEMA: "Stack.1",
+    metadata: {
+      ...(metadata ?? {}),
+      sid,
+      data: {
+        t: `${metadata.start},${metadata.end}`, // FIXME: should we use start and end?
+        "media-src": metadata.src,
+        sid,
+        metadata: JSON.stringify({...metadata, sid}),
+      },
+      title,
+    },
+    media_reference: {
+      OTIO_SCHEMA: "MediaReference.1",
+      target: metadata.src,
+    },
+    source_range: {
+      OTIO_SCHEMA: "TimeRange.1",
+      start_time: start,
+      duration: end - start,
+    },
+    children: [
+      {
+        OTIO_SCHEMA: "Track.1",
+        kind: "video",
+        children: clips as Clip[],
+      },
+    ],
+  } as Stack;
+};
+
+export const remix2timeline = (remix: Remix): Timeline => {
+  const { metadata, segments } = remix;
+
+  const { id = 'no-id', title } = metadata;
+
+  const timeline: Timeline = {
+    OTIO_SCHEMA: "Timeline.1",
+    metadata: {
+      ...(metadata ?? {}),
+    } as any as Metadata,
+    tracks: {
+      OTIO_SCHEMA: "Stack.1",
+      metadata: {
+          title,
+      },
+      children: [
+        {
+          OTIO_SCHEMA: "Track.1",
+          kind: "video", // TBD audio only tracks
+          metadata: {
+          },
+          children: [
+            ...produce(segments.map((s) => segment2stack(s, id, title)), (draft) => applyEffects(draft))
+          ] as any as (Clip | Stack)[],
+          // TDB single clip as single source transcript?
+        },
+      ] as Track[],
+    } as Stack,
+  };
+
+  return timeline;
+};
+
+export const stack2timedText = (stack: Stack): any => {
+  // Convert a stack back to timed text segments
+  const track = stack.children?.[0] as Track;
+  const clips = (track?.children?.filter(
+    (c) => c.OTIO_SCHEMA === 'Clip.1'
+  ) ?? []) as Clip[];
+
+  const segments = clips.map(clip => {
+    const tokens = clip.timed_texts?.map(tt => ({
+      text: tt.texts,
+      start: tt.marked_range.start_time,
+      end: tt.marked_range.start_time + tt.marked_range.duration
+    })) || [];
+
+    return {
+      text: clip.timed_texts?.map((tt: TimedText) => tt.texts).join(' '),
+      start: clip.source_range.start_time,
+      end: clip.source_range.start_time + clip.source_range.duration,
+      metadata: {
+        speaker: (clip.metadata as any)?.speaker,
+      },
+      tokens
+    };
+  });
+
+  return {
+    metadata: {
+      ...(stack.metadata ?? {}),
+      start: stack?.source_range?.start_time ?? 0,
+      end: (stack?.source_range?.start_time ?? 0) + (stack?.source_range?.duration ?? 0),
+      src: (stack.metadata as any)?.data?.['media-src']
+    },
+    segments
+  };
+};
+
 export const timelineStacks = (source: Timeline): Stack[] => {
-  if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
+  console.log('timelineStacks?', source);
+  if (!source.tracks) return [source as unknown as Stack] as Stack[];
+  if (source.tracks.children?.[0]?.children?.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
     return [source.tracks] as Stack[];
   } else {
-    return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
+    return source.tracks.children?.flatMap((t) => t?.children as Stack[]) as Stack[];
   }
 };
 
-// ffmpeg -f lavfi -i color=c=black:s=720x480 -f lavfi -i anullsrc=r=44100:cl=stereo -t 0.033 -r 30 -c:v libx264 -crf 28 -c:a aac -b:a 128k output_black_frame_with_audio.mp4
-export const EMPTY_VIDEO_DATAURL = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAKJdtZGF0AAACrwYF//+r3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzEwOCAzMWUxOWY5IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTE1IGxvb2thaGVhZF90aHJlYWRzPTIgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MyBiX3B5cmFtaWQ9MiBiX2FkYXB0PTEgYl9iaWFzPTAgZGlyZWN0PTEgd2VpZ2h0Yj0xIG9wZW5fZ29wPTAgd2VpZ2h0cD0yIGtleWludD0yNTAga2V5aW50X21pbj0yNSBzY2VuZWN1dD00MCBpbnRyYV9yZWZyZXNoPTAgcmNfbG9va2FoZWFkPTQwIHJjPWNyZiBtYnRyZWU9MSBjcmY9MjguMCBxY29tcD0wLjYwIHFwbWluPTAgcXBtYXg9NjkgcXBzdGVwPTQgaXBfcmF0aW89MS40MCBhcT0xOjEuMDAAgAAAAGxliIQAN//+9Sf4FNUIREvha2Ht1LdJMNFwsS2z0AAAAwAAAwAAAwDxaUS7Xe252PQAAAMAGEAGkBMgTMF1COg0ggYREJsHKE8FWAAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAPiEAAAAUQZokbEN//eEAAAMAAAMAAAMAb0DcAExhdmM2MS4zLjEwMABCIAjBGDgAAAAQ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AAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAACAAAEAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAoAAAAAAQAABAAAAAABAAAAAAAAAAEAAAIAAAAAAQAACgAAAAABAAAEAAAAAAEAAAAAAAAAAQAAAgAAAAABAAAKAAAAAAEAAAQAAAAAAQAAAAAAAAABAAACAAAAAAEAAAQAAAAAKHN0c2MAAAAAAAAAAgAAAAEAAAACAAAAAQAAAAIAAAABAAAAAQAABMRzdHN6AAAAAAAAAAAAAAEsAAADIwAAABgAAAAUAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAUAAAAHgAAABYAAAAUAAAAFAAAAB4AAAAWAAAAFAAAABQAAAAeAAAAFgAAABQAAAAU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AAABAAAAAQAAAEIAAAACAAAAAQAAAEMAAAABAAAAAQAAAEQAAAACAAAAAQAAAEUAAAABAAAAAQAAAEYAAAACAAAAAQAAAEcAAAABAAAAAQAAAEkAAAACAAAAAQAAAEoAAAABAAAAAQAAAEsAAAACAAAAAQAAAEwAAAABAAAAAQAAAE0AAAACAAAAAQAAAE4AAAABAAAAAQAAAFAAAAACAAAAAQAAAFEAAAABAAAAAQAAAFIAAAACAAAAAQAAAFMAAAABAAAAAQAAAFQAAAACAAAAAQAAAFUAAAABAAAAAQAAAFYAAAACAAAAAQAAAFcAAAABAAAAAQAAAFkAAAACAAAAAQAAAFoAAAABAAAAAQAAAFsAAAACAAAAAQAAAFwAAAABAAAAAQAAAF0AAAACAAAAAQAAAF4AAAABAAAAAQAAAGAAAAACAAAAAQAAAGEAAAABAAAAAQAAAGIAAAACAAAAAQAAAGMAAAABAAAAAQAAAGQAAAACAAAAAQAAAGUAAAABAAAAAQAAAGcAAAACAAAAAQAAAGgAAAABAAAAAQAAAGkAAAACAAAAAQAAAGoAAAABAAAAAQAAAGsAAAACAAAAAQAAAGwAAAABAAAAAQAAAG0AAAACAAAAAQAAAG4AAAABAAAAAQAAAHAAAAACAAAAAQAAAHEAAAABAAAAAQAAAHIAAAACAAAAAQAAAHMAAAABAAAAAQAAAHQAAAACAAAAAQAAAHUAAAABAAAAAQAAAHcAAAACAAAAAQAAAHgAAAABAAAAAQAAAHkAAAACAAAAAQAAAHoAAAABAAAAAQAAAHsAAAACAAAAAQAAAHwAAAABAAAAAQAAAH0AAAACAAAAAQAAAH4AAAABAAAAAQAAAIAAAAACAAAAAQAAAIEAAAABAAAAAQAAAIIAAAACAAAAAQAAAIMAAAABAAAAAQAAAIQAAAACAAAAAQAAAIUAAAABAAAAAQAAAIcAAAACAAAAAQAAAIgAAAABAAAAAQAAAIkAAAACAAAAAQAAAIoAAAABAAAAAQAAAIsAAAACAAAAAQAAAIwAAAABAAAAAQAAAI4AAAACAAAAAQAAAI8AAAABAAAAAQAAAJAAAAACAAAAAQAAAJEAAAABAAAAAQAAAJIAAAACAAAAAQAAAJMAAAABAAAAAQAAAJQAAAACAAAAAQAAAJUAAAABAAAAAQAAAJcAAAACAAAAAQAAAJgAAAABAAAAAQAAAJkAAAACAAAAAQAAAJoAAAABAAAAAQAAAJsAAAACAAAAAQAAAJwAAAABAAAAAQAAAJ4AAAACAAAAAQAAAJ8AAAABAAAAAQAAAKAAAAACAAAAAQAAAKEAAAABAAAAAQAAAKIAAAACAAAAAQAAAKMAAAABAAAAAQAAAKUAAAACAAAAAQAAAKYAAAABAAAAAQAAAKcAAAACAAAAAQAAAKgAAAABAAAAAQAAAKkAAAACAAAAAQAAAKoAAAABAAAAAQAAAKsAAAACAAAAAQAAAKwAAAABAAAAAQAAAK4AAAACAAAAAQAAAK8AAAABAAAAAQAAALAAAAACAAAAAQAAALEAAAABAAAAAQAAALIAAAACAAAAAQAAALMAAAABAAAAAQAAALUAAAACAAAAAQAAALYAAAABAAAAAQAAALcAAAACAAAAAQAAALgAAAABAAAAAQAAALkAAAACAAAAAQAAALoAAAABAAAAAQAAALsAAAACAAAAAQAAALwAAAABAAAAAQAAAL4AAAACAAAAAQAAAL8AAAABAAAAAQAAAMAAAAACAAAAAQAAAMEAAAABAAAAAQAAAMIAAAACAAAAAQAAAMMAAAABAAAAAQAAAMUAAAACAAAAAQAAAMYAAAABAAAAAQAAAMcAAAACAAAAAQAAAMgAAAABAAAAAQAAAMkAAAACAAAAAQAAAMoAAAABAAAAAQAAAMwAAAACAAAAAQAAAM0AAAABAAAAAQAAAM4AAAACAAAAAQAAAM8AAAABAAAAAQAAANAAAAACAAAAAQAAANEAAAABAAAAAQAAANIAAAACAAAAAQAAANMAAAABAAAAAQAAANUAAAACAAAAAQAAANYAAAABAAAAAQAAANcAAAACAAAAAQAAANgAAAABAAAAAQAAANkAAAACAAAAAQAAANoAAAABAAAAAQAAANwAAAACAAAAAQAAAN0AAAABAAAAAQAAAN4AAAACAAAAAQAAAN8AAAABAAAAAQAAAOAAAAACAAAAAQAAAOEAAAABAAAAAQAAAOMAAAACAAAAAQAAAOQAAAABAAAAAQAAAOUAAAACAAAAAQAAAOYAAAABAAAAAQAAAOcAAAACAAAAAQAAAOgAAAABAAAAAQAAAOkAAAACAAAAAQAAAOoAAAABAAAAAQAAAOwAAAACAAAAAQAAAO0AAAABAAAAAQAAAO4AAAACAAAAAQAAAO8AAAABAAAAAQAAAPAAAAACAAAAAQAAAPEAAAABAAAAAQAAAPMAAAACAAAAAQAAAPQAAAABAAAAAQAAAPUAAAACAAAAAQAAAPYAAAABAAAAAQAAAPcAAAACAAAAAQAAAPgAAAABAAAAAQAAAPkAAAACAAAAAQAAAPoAAAABAAAAAQAAAPwAAAACAAAAAQAAAP0AAAABAAAAAQAAAP4AAAACAAAAAQAAAP8AAAABAAAAAQAAAQAAAAACAAAAAQAAAQEAAAABAAAAAQAAAQMAAAACAAAAAQAAAQQAAAABAAAAAQAAAQUAAAACAAAAAQAAAQYAAAABAAAAAQAAAQcAAAACAAAAAQAAAQgAAAABAAAAAQAAAQoAAAACAAAAAQAAAQsAAAABAAAAAQAAAQwAAAACAAAAAQAAAQ0AAAABAAAAAQAAAQ4AAAACAAAAAQAAAQ8AAAABAAAAAQAAARAAAAACAAAAAQAAAREAAAABAAAAAQAAARMAAAACAAAAAQAAARQAAAABAAAAAQAAARUAAAACAAAAAQAAARYAAAABAAAAAQAAARcAAAACAAAAAQAAARgAAAABAAAAAQAAARoAAAACAAAAAQAAARsAAAABAAAAAQAAARwAAAACAAAAAQAAAR0AAAABAAAAAQAAAR4AAAACAAAAAQAAAR8AAAABAAAAAQAAASAAAAACAAAAAQAAASEAAAABAAAAAQAAASMAAAACAAAAAQAAASQAAAABAAAAAQAAASUAAAACAAAAAQAAASYAAAABAAAAAQAAAScAAAACAAAAAQAAASgAAAABAAAAAQAAASoAAAACAAAAAQAAASsAAAAEAAAAAQAABtRzdHN6AAAAAAAAAAAAAAGwAAAAFQAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAABUAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYA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';
-
-// https://gist.github.com/wuchengwei/b7e1820d39445f431aeaa9c786753d8e
-function dataURLtoBlob(dataurl: string): Blob {
-  const arr = dataurl.split(','), mime = arr?.[0]?.match(/:(.*?);/)?.[1];
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-
-  while(n--){
-      u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], {type:mime});
-}
-
-const EMPTY_VIDEO = URL.createObjectURL(dataURLtoBlob(EMPTY_VIDEO_DATAURL));
-// console.log(EMPTY_VIDEO)
+const GAP_VIDEO = EMPTY_VIDEO; // blackHLS(10);
 
 export const EMPTY_REMIX = {
   "OTIO_SCHEMA": "Timeline.1",
   "metadata": {
       "id": "EMPTY",
-      "videoURL": EMPTY_VIDEO
+      "videoURL": GAP_VIDEO
   },
   "tracks": {
       "OTIO_SCHEMA": "Stack.1",
@@ -171,75 +488,36 @@ export const EMPTY_REMIX = {
               "OTIO_SCHEMA": "Track.1",
               "kind": "video",
               "metadata": {
+                  "remove": true,
                   "id": "T-EMPTY"
               },
               "children": [
-                  {
-                      "OTIO_SCHEMA": "Stack.1",
-                      "metadata": {
-                          "sid": "S-EMPTY2", // source id?
-                          "id": "S-EMPTY2",
-                          "data": {
-                              "t": "1,2",
-                              "media-src": EMPTY_VIDEO
-                          }
-                      },
-                      "media_reference": {
-                          "OTIO_SCHEMA": "MediaReference.1",
-                          "target": EMPTY_VIDEO
-                      },
-                      "source_range": {
-                          "OTIO_SCHEMA": "TimeRange.1",
-                          "start_time": 1,
-                          "duration": 1
-                      },
-                      "children": [
-                          {
-                              "OTIO_SCHEMA": "Track.1",
-                              "kind": "video",
-                              "children": [
-                                  {
-                                      "OTIO_SCHEMA": "Clip.1",
-                                      "metadata": {
-                                          "id": "C-EMPTY",
-                                          "speaker": "SPEAKER_0",
-                                          "data": {
-                                              "t": "1,2"
-                                          }
-                                      },
-                                      "media_reference": {
-                                          "OTIO_SCHEMA": "MediaReference.1",
-                                          "target": EMPTY_VIDEO
-                                      },
-                                      "source_range": {
-                                          "OTIO_SCHEMA": "TimeRange.1",
-                                          "start_time": 1,
-                                          "duration": 1
-                                      },
-                                      "timed_texts": [
-                                          {
-                                              "OTIO_SCHEMA": "TimedText.1",
-                                              "metadata": {
-                                                  "id": "TT-EMPTY",
-                                                  "data": {
-                                                      "t": "1,2"
-                                                  }
-                                              },
-                                              "marked_range": {
-                                                  "OTIO_SCHEMA": "TimeRange.1",
-                                                  "start_time": 1,
-                                                  "duration": 1
-                                              },
-                                              "texts": "EMPTY"
-                                          }
-                                      ]
-                                  }
-                              ]
-                          }
-                      ]
-                  }
+                // {
+                //   "OTIO_SCHEMA": "Stack.1",
+                //   "metadata": {
+                //     "id": "gap-1",
+                //     "data": {
+                //       "t": [0, 10],
+                //       "media-src": GAP_VIDEO
+                //     },
+                //     "title": "GAP",
+                //     "widget": "gap"
+                //   },
+                //   "media_reference": {
+                //     "OTIO_SCHEMA": "MediaReference.1",
+                //     "target": GAP_VIDEO
+                //   },
+                //   "source_range": {
+                //     "OTIO_SCHEMA": "TimeRange.1",
+                //     "start_time": 0,
+                //     "duration": 10
+                //   },
+                //   "children": [],
+                //   "effects": []
+                // }
               ]
           }
       ]
   }
 };
+// TODO add back the track and a gap on the track

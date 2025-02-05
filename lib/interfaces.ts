@@ -1,16 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DropResult } from "@hello-pangea/dnd";
+import { DropResult } from '@hello-pangea/dnd';
 
-export type State = { // TODO: verify with OTIO spec, this is a Timeline
+export type State = {
+  // TODO: verify with OTIO spec, this is a Timeline
   // sources?: Timeline[] | undefined | null;
   timestamp?: number;
   remix?: Timeline | undefined | null;
+  poster?: string;
+  width?: number;
+  height?: number;
+  playhead?: number;
 };
 
 export type Action =
 | { type: "test"; payload: any }
+| { type: "add-widget"; payload: any }
+| { type: "add-gap"; payload: any }
+| { type: "convert-to-gap"; payload: any }
+| { type: "convert-from-gap"; payload: any }
+| { type: "metadata"; payload: any }
 | { type: "move"; payload: DropResult }
-| { type: "add"; payload: [DropResult, Timeline, [number, number]] };
+| { type: "move-up"; payload: any }
+| { type: "move-down"; payload: any }
+| { type: "remove"; payload: any }
+| { type: "add"; payload: [DropResult, Timeline, [number, number]] }
+| { type: "add-at"; payload: [string, Timeline, [number, number]] }
+| { type: "change-duration"; payload: any }
+| { type: "update"; payload: any };
 
 export interface Stack {
   OTIO_SCHEMA: string;
@@ -19,6 +35,7 @@ export interface Stack {
   media_reference?: any | null;
   source_range?: TimeRange;
   children: Track[];
+  effects?: Effect[];
 }
 
 export interface Timeline {
@@ -29,7 +46,17 @@ export interface Timeline {
 }
 
 export interface Metadata {
-  [key: string]: any;
+  id: string;
+  story: any;
+  title: string;
+  videoURL: string;
+  duration?: number;
+  gap?: boolean;
+  type?: string;
+  template?: string;
+  data?: any;
+  component?: string | boolean;
+  widget?: string | boolean;
 }
 
 // interface RationalTime {
@@ -58,13 +85,15 @@ export interface Clip {
   timed_texts?: TimedText[] | null;
 }
 
-export interface Gap { // TODO: verify with OTIO spec
+export interface Gap {
+  // TODO: verify with OTIO spec
   OTIO_SCHEMA: string;
   markers?: any[];
   media_reference: any | null; // Replace 'any' with a specific type if media references have a defined structure
   metadata: Metadata;
   name?: string;
   source_range: TimeRange;
+  effects?: Effect[];
 }
 
 export interface Track {
@@ -94,4 +123,29 @@ export interface Effect {
   name: string;
   metadata: Metadata;
   source_range: TimeRange; // TODO: verify with OTIO spec
+}
+
+export interface Remix {
+  metadata: any;
+  segments: Segment[];
+}
+export interface Segment {
+  start: number;
+  end: number;
+  metadata: any;
+  blocks: Block[];
+}
+export interface Block {
+  text: string;
+  start: number;
+  end: number;
+  metadata: any;
+  tokens: Token[];
+}
+
+export interface Token {
+  text: string;
+  start: number;
+  end: number;
+  metadata: any;
 }

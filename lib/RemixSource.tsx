@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState, useCallback, ElementType, CSSProperties } from 'react';
+import { useContext, useMemo, useState, useCallback, ElementType, CSSProperties, useEffect } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 
 import { PlainDiv, PlainSpan, Section } from './components';
+import { Context } from './RemixContext';
 import { Player } from './Player';
 import type { Timeline, Stack } from './interfaces';
 
@@ -14,11 +15,13 @@ interface RemixSourceProps {
   BlockWrapper?: ElementType;
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
+  ToolbarWrapper?: ElementType;
   source: Timeline;
   active: boolean;
   index: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
+  timestamp?: number;
 }
 
 const RemixSource = ({
@@ -27,19 +30,26 @@ const RemixSource = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
+  // ToolbarWrapper = PlainDiv as unknown as ElementType,
   source,
   active,
   index,
   // tools = [],
+  timestamp = 0,
 }: RemixSourceProps): JSX.Element => {
-  const stacks: Stack[] = useMemo(() => {
-    // if (source.tracks.children[0].children.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
-    //   return [source.tracks] as Stack[];
-    // } else {
-    //   return source.tracks.children.flatMap((t) => t.children as Stack[]) as Stack[];
-    // }
-    return timelineStacks(source);
-  }, [source]);
+  const { state } = useContext(Context);
+  const { poster, width, height } = state;
+
+  const stacks: Stack[] = useMemo(() => timelineStacks(source), [source]);
+
+  const offsets = useMemo(() => {
+    let cumulativeOffset = 0;
+    return stacks.map((stack) => {
+      const offset = cumulativeOffset;
+      cumulativeOffset += stack.source_range?.duration ?? 0;
+      return offset;
+    });
+  }, [stacks]);
 
   const getListStyle = (isDraggingOver: boolean): CSSProperties => ({
     background: isDraggingOver ? 'lightyellow' : 'transparent',
@@ -47,6 +57,8 @@ const RemixSource = ({
   });
 
   const [interval, setInterval] = useState<[number, number] | null>(null);
+
+  useEffect(() => setInterval(null), [timestamp]);
 
   const handleSourceClick = useCallback(() => {
     const selection = window.getSelection();
@@ -85,7 +97,8 @@ const RemixSource = ({
     const previousSections = sections.slice(0, sectionIndex);
     const durations = previousSections.map((s) => {
       const [start, end] = ((s as Element).getAttribute('data-t') ?? '0,0').split(',');
-      return parseFloat(end) - parseFloat(start) ?? 0;
+      const duration = parseFloat(end) - parseFloat(start);
+      return duration < 0 ? 0 : duration;
     });
     const offset = durations.reduce((acc, d) => acc + d, 0);
 
@@ -114,17 +127,27 @@ const RemixSource = ({
     }
   }, []);
 
+  const droppableId = useMemo(
+    () => `Source-${index}-${interval ? interval?.[0] : 0}-${interval ? interval?.[1] : 0}`,
+    [index, interval],
+  );
+
+  // const offsets = useMemo(
+  //   () =>
+  //     stacks.map((_stack: Stack, i) => stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)),
+  //   [stacks],
+  // );
+
   return (
-    <div style={{ display: active ? 'block' : 'none' }} data-sid={source?.metadata?.sid ?? 'SID'}>
+    <div style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.id ?? 'SID'}>
       <PlayerWrapper>
-        <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} />
+        <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
-      {/* <p>
-        Interval: {interval ? interval[0] : 0} - {interval ? interval[1] : 0}
-      </p> */}
+
+      {/* <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper> */}
       <SourceWrapper>
         <Droppable
-          droppableId={`Source-${index}-${interval ? interval[0] : 0}-${interval ? interval[1] : 0}`}
+          droppableId={droppableId}
           // type="BLOCK"
           isDropDisabled={true}
         >
@@ -135,14 +158,16 @@ const RemixSource = ({
               style={getListStyle(snapshot.isDraggingOver)}
               onClick={handleSourceClick}
             >
-              <article id={'A' + source?.metadata?.id} data-sid={source?.metadata?.sid}>
-                {stacks.map((stack: Stack, i, stacks) => (
+              <article id={'A' + source?.metadata?.id} data-sid={(source?.metadata as any)?.sid}>
+                {stacks.map((stack: Stack, i) => (
                   <Section
                     key={stack?.metadata?.id ?? `S${i}`}
                     stack={stack}
-                    offset={stacks.slice(0, i).reduce((acc, s) => acc + (s.source_range?.duration ?? 0), 0)}
+                    offset={offsets[i]}
                     interval={interval}
-                    sourceId={source?.metadata?.sid}
+                    sourceId={(source?.metadata as any)?.sid}
+                    droppableId={droppableId}
+                    source={source}
                     {...{
                       BlockWrapper,
                       SelectedBlocksWrapper,

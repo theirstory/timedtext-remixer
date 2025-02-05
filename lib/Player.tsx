@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, memo, useMemo } from 'react';
 
 import {
   MediaController,
@@ -8,11 +8,15 @@ import {
   MediaVolumeRange,
   MediaPlayButton,
   MediaDurationDisplay,
-  MediaCaptionsButton,
+  // MediaCaptionsButton,
+  // MediaLoadingIndicator,
   MediaMuteButton,
+  MediaFullscreenButton,
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
-import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
+import { Context } from './RemixContext';
+// import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const TimedTextPlayerComponent = createComponent({
   tagName: 'timedtext-player',
@@ -22,47 +26,67 @@ export const TimedTextPlayerComponent = createComponent({
     onactivate: 'activate',
     onchange: 'change',
   },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}) as any;
+
+const preventDefault = (e: React.MouseEvent) => e.preventDefault();
+const W80H100 = { width: 'auto', height: '300px' };
+const W100 = { width: '100%' };
+
+// Memoize Media* to prevent unnecessary re-renders
+const MemoizedMediaMuteButton = memo(MediaMuteButton);
+const MemoizedMediaTimeDisplay = memo(MediaTimeDisplay);
+const MemoizedMediaPlayButton = memo(MediaPlayButton);
+const MemoizedMediaControlBar = memo(MediaControlBar);
+
+// Memoize TimedTextPlayerComponent to prevent unnecessary re-renders
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MemoizedTimedTextPlayerComponent = memo(TimedTextPlayerComponent) as any;
 
 // TODO player props
 // incl skip MediaController
 export const Player = ({
   transcript,
+  poster,
   pauseMutationObserver = false,
 }: {
   transcript: string;
+  poster: string | undefined;
   pauseMutationObserver: boolean;
 }) => {
-  const [showPlayer, setShowPlayer] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [playerKey, setPlayerKey] = useState(0);
+  const { remixPlayerRef } = useContext(Context);
 
-  return showPlayer ? (
+  // Stabilize prop references
+  const memoizedTranscript = useMemo(() => transcript, [transcript]);
+  const memoizedPoster = useMemo(() => poster, [poster]);
+  const memoizedPauseMutationObserver = useMemo(() => pauseMutationObserver, [pauseMutationObserver]);
+
+  return remixPlayerRef ? (
     <>
-      <MediaController id="myController">
-        <MediaControlBar style={{ width: '100%' }}>
-          <MediaPlayButton></MediaPlayButton>
-          <MediaMuteButton></MediaMuteButton>
+      <MediaController id="myController" style={W80H100}>
+        <MemoizedMediaControlBar style={W100}>
+          <MemoizedMediaPlayButton></MemoizedMediaPlayButton>
+          <MemoizedMediaMuteButton></MemoizedMediaMuteButton>
           <MediaVolumeRange></MediaVolumeRange>
-          <MediaTimeDisplay></MediaTimeDisplay>
+          <MemoizedMediaTimeDisplay></MemoizedMediaTimeDisplay>
           <MediaTimeRange></MediaTimeRange>
           <MediaDurationDisplay></MediaDurationDisplay>
-          <MediaCaptionsButton></MediaCaptionsButton>
-        </MediaControlBar>
+          {/* <MediaCaptionsButton></MediaCaptionsButton> */}
+          <MediaFullscreenButton></MediaFullscreenButton>
+        </MemoizedMediaControlBar>
 
-        <TimedTextPlayerComponent
-          // key={playerKey}
+        <MemoizedTimedTextPlayerComponent
+          ref={remixPlayerRef}
+          onContextMenu={preventDefault}
           slot="media"
-          width={620}
-          height={360}
-          transcript={transcript}
-          player="#video1"
-          pause-mutation-observer={pauseMutationObserver}
-        ></TimedTextPlayerComponent>
+          style={{ borderRadius: '8px' }}
+          pause-mutation-observer={memoizedPauseMutationObserver}
+          poster={memoizedPoster}
+          transcript={memoizedTranscript}
+          player="#video1" // FIXME
+        ></MemoizedTimedTextPlayerComponent>
+        {/* <MediaLoadingIndicator slot="centered-chrome" loadingdelay="1000"></MediaLoadingIndicator> */}
       </MediaController>
-      {/* <button onClick={() => setPlayerKey(Date.now())}>reload transcript</button> */}
     </>
-  ) : (
-    <button onClick={() => setShowPlayer(true)}>show player</button>
-  );
+  ) : null;
 };
