@@ -50,6 +50,13 @@ export interface Metadata {
   story: any;
   title: string;
   videoURL: string;
+  duration?: number;
+  gap?: boolean;
+  type?: string;
+  template?: string;
+  data?: any;
+  component?: string | boolean;
+  widget?: string | boolean;
 }
 
 // interface RationalTime {
@@ -86,6 +93,7 @@ export interface Gap {
   metadata: Metadata;
   name?: string;
   source_range: TimeRange;
+  effects?: Effect[];
 }
 
 export interface Track {

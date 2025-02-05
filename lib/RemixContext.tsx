@@ -130,9 +130,9 @@ const reducer = (state: State, action: Action): State => {
         // update gap stack
         if (stack?.metadata?.gap && stack!.effects?.length !== undefined && stack!.effects?.length > 0) {
           console.log({ stack: current(stack) });
-          stack!.source_range!.duration = stack?.metadata?.duration;
+          stack!.source_range!.duration = stack?.metadata?.duration ?? 0;
           stack!.metadata!.data!.t = `1,${stack?.metadata?.duration}`;
-          stack!.effects![0].source_range!.duration = stack?.metadata?.duration;
+          stack!.effects![0].source_range!.duration = stack?.metadata?.duration ?? 0;
           stack!.effects![0].metadata = { ...stack!.effects![0].metadata, ...stack!.metadata };
           stack!.effects![0].metadata!.data = {
             ...stack!.effects![0].metadata!.data,

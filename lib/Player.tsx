@@ -8,7 +8,8 @@ import {
   MediaVolumeRange,
   MediaPlayButton,
   MediaDurationDisplay,
-  MediaCaptionsButton,
+  // MediaCaptionsButton,
+  // MediaLoadingIndicator,
   MediaMuteButton,
   MediaFullscreenButton,
 } from 'media-chrome/dist/react';
@@ -84,6 +85,7 @@ export const Player = ({
           transcript={memoizedTranscript}
           player="#video1" // FIXME
         ></MemoizedTimedTextPlayerComponent>
+        {/* <MediaLoadingIndicator slot="centered-chrome" loadingdelay="1000"></MediaLoadingIndicator> */}
       </MediaController>
     </>
   ) : null;

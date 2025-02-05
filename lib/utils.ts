@@ -199,6 +199,7 @@ export const timedText2timeline = (tt: any, NS: string = "F7222ED3-9A6E-4409-BCC
                       sid: timelineUUID,
                   },
                   sid: timelineUUID,
+                  // title: tt.metadata?.title ?? id,
               },
               media_reference: {
                   OTIO_SCHEMA: "MediaReference.1",
@@ -288,7 +289,7 @@ export const stack2segment = (stack: Stack): Segment => {
       ...(stack.metadata ?? {}),
       start: stack.source_range.start_time,
       end: stack.source_range.start_time + stack.source_range.duration,
-      src: (stack.metadata as any)?.data?.['media-src'] // FIXME: we always need source?
+      src: (stack.metadata as any)?.data?.['media-src'], // FIXME: we always need source?
     },
     blocks,
     start: stack.source_range.start_time,
@@ -306,7 +307,7 @@ export const timeline2remix = (source: Timeline): Remix => {
   } as Remix;
 };
 
-const segment2stack = (segment: Segment, sid: string): Stack => {
+const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
   const { metadata, blocks, start, end } = segment;
   const clips = blocks.map((b: Block) => {
     const { start, end, metadata, tokens } = b;
@@ -369,6 +370,7 @@ const segment2stack = (segment: Segment, sid: string): Stack => {
         sid,
         metadata: JSON.stringify({...metadata, sid}),
       },
+      title,
     },
     media_reference: {
       OTIO_SCHEMA: "MediaReference.1",
@@ -392,7 +394,7 @@ const segment2stack = (segment: Segment, sid: string): Stack => {
 export const remix2timeline = (remix: Remix): Timeline => {
   const { metadata, segments } = remix;
 
-  const { id = 'no-id' } = metadata;
+  const { id = 'no-id', title } = metadata;
 
   const timeline: Timeline = {
     OTIO_SCHEMA: "Timeline.1",
@@ -402,7 +404,7 @@ export const remix2timeline = (remix: Remix): Timeline => {
     tracks: {
       OTIO_SCHEMA: "Stack.1",
       metadata: {
-          title: metadata.title,
+          title,
       },
       children: [
         {
@@ -411,7 +413,7 @@ export const remix2timeline = (remix: Remix): Timeline => {
           metadata: {
           },
           children: [
-            ...produce(segments.map((s) => segment2stack(s, id)), (draft) => applyEffects(draft))
+            ...produce(segments.map((s) => segment2stack(s, id, title)), (draft) => applyEffects(draft))
           ] as any as (Clip | Stack)[],
           // TDB single clip as single source transcript?
         },
