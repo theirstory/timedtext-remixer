@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { useContext, memo, useMemo } from 'react';
 
 import {
   MediaController,
@@ -14,7 +14,7 @@ import {
   MediaFullscreenButton,
 } from 'media-chrome/dist/react';
 import { createComponent } from '@lit/react';
-// import { Context } from './RemixContext';
+import { Context } from './RemixContext';
 // import { TimedTextPlayer } from '../../timedtext-player/dist/timedtext-player.js'; // FIXME
 import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
@@ -54,14 +54,14 @@ export const Player = ({
   poster: string | undefined;
   pauseMutationObserver: boolean;
 }) => {
-  // const { remixPlayerRef } = useContext(Context);
+  const { remixPlayerRef } = useContext(Context);
 
   // Stabilize prop references
   const memoizedTranscript = useMemo(() => transcript, [transcript]);
   const memoizedPoster = useMemo(() => poster, [poster]);
   const memoizedPauseMutationObserver = useMemo(() => pauseMutationObserver, [pauseMutationObserver]);
 
-  return (
+  return remixPlayerRef ? (
     <>
       <MediaController id="myController" style={W80H100}>
         <MemoizedMediaControlBar style={W100}>
@@ -76,7 +76,7 @@ export const Player = ({
         </MemoizedMediaControlBar>
 
         <MemoizedTimedTextPlayerComponent
-          // ref={remixPlayerRef}
+          ref={remixPlayerRef}
           onContextMenu={preventDefault}
           slot="media"
           style={{ borderRadius: '8px' }}
@@ -88,5 +88,5 @@ export const Player = ({
         {/* <MediaLoadingIndicator slot="centered-chrome" loadingdelay="1000"></MediaLoadingIndicator> */}
       </MediaController>
     </>
-  );
+  ) : null;
 };

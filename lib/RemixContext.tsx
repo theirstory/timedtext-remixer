@@ -60,8 +60,9 @@ const RemixContext = ({
 
   useEffect(() => {
     try {
-      console.log('reloadRemix', state.playhead);
-      remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
+      console.log('reloadRemix', state.playhead, remixPlayerRef);
+      const data = remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
+      console.log({ data });
     } catch (error) {
       console.log('FIXME', error);
     }

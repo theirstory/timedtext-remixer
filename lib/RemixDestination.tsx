@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
-import { Player } from './Player';
+import { Player } from './RemixPlayer';
 
 import type { Stack } from './interfaces';
 // import TheirsToryLogo from '../src/Assets/TheirStory.png';
