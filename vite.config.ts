@@ -13,6 +13,7 @@ export default defineConfig({
     dts({ include: ['lib'] })
   ],
   build: {
+    sourcemap: true,
     copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
