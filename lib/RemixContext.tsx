@@ -30,6 +30,7 @@ interface RemixContextProps extends PropsWithChildren {
   width?: number;
   height?: number;
   tools?: any[] | undefined;
+  metadataMap?: any;
 }
 
 const RemixContext = ({
@@ -39,6 +40,7 @@ const RemixContext = ({
   width,
   height,
   tools = [],
+  metadataMap = {},
   children,
 }: RemixContextProps): JSX.Element => {
   const initialState: State = {
@@ -75,6 +77,15 @@ const RemixContext = ({
       console.log('FIXME', error);
     }
   }, [state.remix, state.playhead, remixPlayerRef]);
+
+  useEffect(() => {
+    if (!metadataMap) return;
+    const { _key = 'id' } = metadataMap;
+    Object.keys(metadataMap).forEach((key) => {
+      if (key === '_key') return;
+      dispatch({ type: 'metadata-kv', payload: { key: _key, value: key, metadata: metadataMap[key] } });
+    });
+  }, [metadataMap]);
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
@@ -128,6 +139,7 @@ const reducer = (state: State, action: Action): State => {
         draftState.remix = action.payload;
         return draftState;
       }
+
       case 'metadata': {
         const { id, metadata } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
@@ -155,6 +167,18 @@ const reducer = (state: State, action: Action): State => {
           .slice(0, stackIndex)
           .reduce((acc, s) => acc + (s?.source_range?.duration ?? 0), 0);
         draftState.playhead = offset === 0 ? 0.1 : offset;
+        return draftState;
+      }
+
+      case 'metadata-kv': {
+        const { key, value, metadata } = action.payload;
+        console.log('metadata-kv', { key, value, metadata });
+        const stacks = draftState.remix?.tracks.children[0].children as Stack[];
+        stacks.forEach((stack) => {
+          if (stack.metadata?.[key as keyof typeof stack.metadata] === value) {
+            stack.metadata = { ...stack.metadata, ...metadata };
+          }
+        });
         return draftState;
       }
 
