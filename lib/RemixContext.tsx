@@ -59,6 +59,14 @@ const RemixContext = ({
   }, [remix]);
 
   useEffect(() => {
+    const event = new CustomEvent('remixChange', {
+      detail: state.remix,
+      bubbles: true,
+    });
+    remixPlayerRef.current!.dispatchEvent(event);
+  }, [state.remix, remixPlayerRef]);
+
+  useEffect(() => {
     try {
       console.log('reloadRemix', state.playhead, remixPlayerRef);
       const data = remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
