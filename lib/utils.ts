@@ -362,6 +362,7 @@ const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
   return {
     OTIO_SCHEMA: "Stack.1",
     metadata: {
+      title,
       ...(metadata ?? {}),
       sid,
       data: {
@@ -370,7 +371,6 @@ const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
         sid,
         metadata: JSON.stringify({...metadata, sid}),
       },
-      title,
     },
     media_reference: {
       OTIO_SCHEMA: "MediaReference.1",
