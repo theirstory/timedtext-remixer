@@ -6,6 +6,7 @@ import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 import { Tool } from './RemixDestination';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{children}</div>
@@ -125,6 +126,7 @@ export const Section = memo(
     SelectionWrapper = PlainSpan as unknown as ElementType,
     SectionContentWrapper = PlainDiv as unknown as ElementType,
     tools = [],
+    playerRef,
   }: {
     stack: Stack;
     offset?: number;
@@ -136,6 +138,7 @@ export const Section = memo(
     SelectedBlocksWrapper?: ElementType;
     SelectionWrapper?: ElementType;
     SectionContentWrapper?: ElementType;
+    playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools?: any[] | undefined;
   }) => {
@@ -376,6 +379,7 @@ export const Section = memo(
               offset={offset}
               BlockWrapper={BlockWrapper}
               firstRender={firstRender}
+              playerRef={playerRef}
             />
           )}
         </SectionContentWrapper>
@@ -406,18 +410,33 @@ const Paragraphs = ({
   offset,
   BlockWrapper,
   firstRender,
+  playerRef,
 }: {
   paragraphs: Clip[];
   start: number;
   offset: number;
   BlockWrapper: ElementType;
   firstRender: boolean;
+  playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
 }) => {
   const [position, setPosition] = useState(firstRender ? 1 : paragraphs.length);
 
   useEffect(() => {
-    if (position < paragraphs.length) setPosition(position + 1);
-  }, [position, paragraphs]);
+    if (position < paragraphs.length) {
+      setTimeout(() => setPosition(position + 1), 0);
+      if (position == paragraphs.length - 1) {
+        setTimeout(() => {
+          try {
+            console.log('reloadDOM', { playerRef });
+            const data = playerRef!.current!.reloadRemix(0);
+            console.log({ data });
+          } catch (error) {
+            console.log('FIXME', error);
+          }
+        }, 250);
+      }
+    }
+  }, [position, paragraphs, firstRender, playerRef]);
 
   return paragraphs.slice(0, position).map((p, i: number) => (
     <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>

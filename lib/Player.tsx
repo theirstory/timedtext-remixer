@@ -61,6 +61,7 @@ export const Player = ({
   const memoizedPoster = useMemo(() => poster, [poster]);
   const memoizedPauseMutationObserver = useMemo(() => pauseMutationObserver, [pauseMutationObserver]);
 
+  // TODO mediacontroller id fix
   return (
     <>
       <MediaController id="myController" style={W80H100}>

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useContext, useMemo, useState, useCallback, ElementType, CSSProperties, useEffect } from 'react';
+import { useContext, useMemo, useState, useCallback, ElementType, CSSProperties, useEffect, useRef } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 import { PlainDiv, PlainSpan, Section } from './components';
 import { Context } from './RemixContext';
@@ -138,8 +139,14 @@ const RemixSource = ({
   //   [stacks],
   // );
 
+  const ref = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<TimedTextPlayer | undefined>();
+  useEffect(() => {
+    playerRef.current = ref.current?.querySelector('timedtext-player') as TimedTextPlayer;
+  }, [ref, playerRef]);
+
   return (
-    <div style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.id ?? 'SID'}>
+    <div ref={ref} style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.id ?? 'SID'}>
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
@@ -168,6 +175,7 @@ const RemixSource = ({
                     sourceId={(source?.metadata as any)?.sid}
                     droppableId={droppableId}
                     source={source}
+                    playerRef={playerRef}
                     {...{
                       BlockWrapper,
                       SelectedBlocksWrapper,
