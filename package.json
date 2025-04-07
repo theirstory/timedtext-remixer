@@ -1,6 +1,6 @@
 {
   "name": "@theirstoryinc/timedtext-remixer",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "type": "module",
   "main": "dist/timedtext-remixer.js",
   "types": "dist/main.d.ts",

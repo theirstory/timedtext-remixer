@@ -1,4 +1,4 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback } from 'react';
+import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
 
@@ -146,6 +146,14 @@ export const Section = memo(
       width: isDragging ? 'fit-content' : '100%',
       height: isDragging ? 'fit-content' : 'auto',
     });
+
+    const [firstRender, setFirstRender] = useState(true);
+    useEffect(() => {
+      if (firstRender) {
+        setFirstRender(false);
+      }
+    }, [firstRender]);
+    // TODO reset firstRender on stack change?
 
     const start = stack?.source_range?.start_time ?? 0;
     const end = (stack?.source_range?.duration ?? 0) + start;
@@ -357,11 +365,18 @@ export const Section = memo(
               ))}
             </>
           ) : (
-            children?.map((p, i: number) => (
-              <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
-                <Paragraph clip={p as Clip} />
-              </BlockWrapper>
-            ))
+            // children?.map((p, i: number) => (
+            //   <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+            //     <Paragraph clip={p as Clip} />
+            //   </BlockWrapper>
+            // ))
+            <Paragraphs
+              paragraphs={children as Clip[]}
+              start={start}
+              offset={offset}
+              BlockWrapper={BlockWrapper}
+              firstRender={firstRender}
+            />
           )}
         </SectionContentWrapper>
       </section>
@@ -383,4 +398,30 @@ const Effect = ({ effect }: { effect: any }) => {
   }, {}) as unknown as Record<string, string>;
 
   return <div {...attrs}></div>;
+};
+
+const Paragraphs = ({
+  paragraphs = [],
+  start,
+  offset,
+  BlockWrapper,
+  firstRender,
+}: {
+  paragraphs: Clip[];
+  start: number;
+  offset: number;
+  BlockWrapper: ElementType;
+  firstRender: boolean;
+}) => {
+  const [position, setPosition] = useState(firstRender ? 1 : paragraphs.length);
+
+  useEffect(() => {
+    if (position < paragraphs.length) setPosition(position + 1);
+  }, [position, paragraphs]);
+
+  return paragraphs.slice(0, position).map((p, i: number) => (
+    <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+      <Paragraph clip={p as Clip} />
+    </BlockWrapper>
+  ));
 };
