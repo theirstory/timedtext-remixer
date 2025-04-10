@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
@@ -150,10 +151,13 @@ export const Section = memo(
       height: isDragging ? 'fit-content' : 'auto',
     });
 
+    const [loading, setLoading] = useState(true);
     const [firstRender, setFirstRender] = useState(true);
     useEffect(() => {
       if (firstRender) {
         setFirstRender(false);
+      } else {
+        // setLoading(false);
       }
     }, [firstRender]);
     // TODO reset firstRender on stack change?
@@ -235,10 +239,21 @@ export const Section = memo(
         {...attrs}
         id={stack?.metadata?.id}
         data-offset={offset}
-        data-sid={sourceId}
-        style={{ padding: 0, border: 'none', marginBottom: 0 }}
+        data-sid={sourceId ?? (stack?.metadata as any)?.sid}
+        style={{
+          padding: 0,
+          border: 'none',
+          marginBottom: 0,
+          // border: loading ? '5px solid #ff0000' : '5px solid green',
+        }}
         ref={sectionRef}
       >
+        {loading && (
+          <style>{`
+          section[data-sid="${sourceId ?? (stack?.metadata as any)?.sid}"] p {
+            cursor: wait;
+        `}</style>
+        )}
         {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (stack.metadata as any)?.widget &&
@@ -380,6 +395,7 @@ export const Section = memo(
               BlockWrapper={BlockWrapper}
               firstRender={firstRender}
               playerRef={playerRef}
+              setLoading={setLoading}
             />
           )}
         </SectionContentWrapper>
@@ -411,6 +427,7 @@ const Paragraphs = ({
   BlockWrapper,
   firstRender,
   playerRef,
+  setLoading,
 }: {
   paragraphs: Clip[];
   start: number;
@@ -418,6 +435,7 @@ const Paragraphs = ({
   BlockWrapper: ElementType;
   firstRender: boolean;
   playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
+  setLoading: (loading: boolean) => void;
 }) => {
   const [position, setPosition] = useState(firstRender ? 1 : paragraphs.length);
 
@@ -428,7 +446,9 @@ const Paragraphs = ({
         setTimeout(() => {
           try {
             console.log('reloadDOM', { playerRef });
+            setLoading(true);
             const data = playerRef!.current!.reloadRemix(0);
+            setLoading(false);
             console.log({ data });
           } catch (error) {
             console.log('FIXME', error);
@@ -436,7 +456,7 @@ const Paragraphs = ({
         }, 250);
       }
     }
-  }, [position, paragraphs, firstRender, playerRef]);
+  }, [position, paragraphs, firstRender, playerRef, setLoading]);
 
   return paragraphs.slice(0, position).map((p, i: number) => (
     <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
