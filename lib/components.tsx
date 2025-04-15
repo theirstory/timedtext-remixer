@@ -151,7 +151,7 @@ export const Section = memo(
       height: isDragging ? 'fit-content' : 'auto',
     });
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [firstRender, setFirstRender] = useState(true);
     useEffect(() => {
       if (firstRender) {
@@ -440,13 +440,14 @@ const Paragraphs = ({
   const [position, setPosition] = useState(firstRender ? 1 : paragraphs.length);
 
   useEffect(() => {
+    if (position === 1) setLoading(true && firstRender);
+
     if (position < paragraphs.length) {
       setTimeout(() => setPosition(position + 1), 0);
       if (position == paragraphs.length - 1) {
         setTimeout(() => {
           try {
             console.log('reloadDOM', { playerRef });
-            setLoading(true);
             const data = playerRef!.current!.reloadRemix(0);
             setLoading(false);
             console.log({ data });
