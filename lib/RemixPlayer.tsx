@@ -8,7 +8,7 @@ import {
   MediaVolumeRange,
   MediaPlayButton,
   MediaDurationDisplay,
-  // MediaCaptionsButton,
+  MediaCaptionsButton,
   // MediaLoadingIndicator,
   MediaMuteButton,
   MediaFullscreenButton,
@@ -71,7 +71,7 @@ export const Player = ({
           <MemoizedMediaTimeDisplay></MemoizedMediaTimeDisplay>
           <MediaTimeRange></MediaTimeRange>
           <MediaDurationDisplay></MediaDurationDisplay>
-          {/* <MediaCaptionsButton></MediaCaptionsButton> */}
+          <MediaCaptionsButton></MediaCaptionsButton>
           <MediaFullscreenButton></MediaFullscreenButton>
         </MemoizedMediaControlBar>
 
