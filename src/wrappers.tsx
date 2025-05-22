@@ -66,10 +66,17 @@ export const TEMPLATES = `
     <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <p style="color: white; text-align: center;">\${cue}</p>
       <style>
         .title-full {
           container-type: size;
           _opacity: \${fadeIn};
+          line-height: 1.5;
+        }
+
+        .title-full p {
+          text-align: center;
+          white-space: pre-wrap;
         }
 
         @container (min-width: 1500px) {
@@ -85,10 +92,17 @@ export const TEMPLATES = `
     <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <p style="color: white; text-align: center;">\${cue}</p>
       <style>
         .title-full {
           container-type: size;
           _opacity: \${fadeIn};
+          line-height: 1.5;
+        }
+
+        .title-full p {
+          text-align: center;
+          white-space: pre-wrap;
         }
 
         @container (min-width: 1500px) {
