@@ -318,7 +318,8 @@ const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
       return {
         OTIO_SCHEMA: "TimedText.1",
         metadata: {
-          id: timedTextUUID,
+          uuid: timedTextUUID,
+          id: `tt-${timedTextUUID}`,
           data: {
             t: `${t.start},${t.end}`,
           },
@@ -335,13 +336,15 @@ const segment2stack = (segment: Segment, sid: string, title: string): Stack => {
     return {
       OTIO_SCHEMA: "Clip.1",
       metadata: {
-        id: clipUUID,
+        uuid: clipUUID,
+        id: `c-${clipUUID}`,
         speaker: metadata.speaker,
         sid,
         data: {
           t: `${start},${end}`,
           speaker: metadata.speaker,
-          id: clipUUID,
+          uuid: clipUUID,
+          id: `c-${clipUUID}`,
           sid,
           metadata: JSON.stringify({...metadata, sid, id: clipUUID}),
         }

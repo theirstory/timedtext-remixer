@@ -71,8 +71,12 @@ const RemixContext = ({
   useEffect(() => {
     try {
       console.log('reloadRemix', state.playhead, remixPlayerRef);
-      const data = remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
+      const data = remixPlayerRef.current!.reloadRemix(state.playhead ?? 0);
       console.log({ data });
+      // FIMXE this should be handled in the player?
+      setTimeout(() => {
+        remixPlayerRef.current!.reloadRemix(state.playhead ?? 0);
+      }, 2000);
     } catch (error) {
       console.log('FIXME', error);
     }
@@ -435,6 +439,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
     const clips = draft?.children?.[0].children.filter((c) => {
       const start_time = (c as Clip).source_range?.start_time ?? 0;
       const end_time = start_time + ((c as Clip).source_range?.duration ?? 0);
+      c!.metadata!.id = `C-${nanoid()}`;
 
       return intersection([start_time, end_time], [start - offset, end - offset]);
     });

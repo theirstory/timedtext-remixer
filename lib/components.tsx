@@ -2,6 +2,7 @@
 import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
+import { v4 as uuidv4 } from 'uuid';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
@@ -57,6 +58,7 @@ export const Paragraph = memo(
         ...acc,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [`data-${key.replaceAll('_', '-')}`]: (clip.metadata as any)?.data[key],
+        id: clip?.metadata?.id ?? uuidv4(), // FIXME this shuffles on re-renders
       };
     }, {});
 
