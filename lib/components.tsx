@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 import { Tool } from './RemixDestination';
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+// import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
@@ -216,8 +216,10 @@ export const Section = memo(
         .join(' ');
     }
 
+    console.log(text); // logged just use the var for now
+
     const sectionRef = useRef<HTMLDivElement>(null);
-    const sectionWidth = sectionRef.current?.clientWidth;
+    // const sectionWidth = sectionRef.current?.clientWidth;
     const ref = useRef<HTMLDivElement>(null);
     const [y, setY] = useState(0);
     const [mouseY, setMouseY] = useState(0);
@@ -253,7 +255,7 @@ export const Section = memo(
         {loading && (
           <style>{`
           section[data-sid="${sourceId ?? (stack?.metadata as any)?.sid}"] p {
-            cursor: wait;
+            _cursor: wait;
         `}</style>
         )}
         {
@@ -290,7 +292,7 @@ export const Section = memo(
                         {...provided.draggableProps}
                         style={{
                           ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
-                          height: snapshot.isDragging ? 50 : 'fit-content',
+                          // height: snapshot.isDragging ? 50 : 'fit-content',
                         }}
                         onMouseDown={recordMouseY}
                       >
@@ -303,15 +305,16 @@ export const Section = memo(
                               backgroundColor: '#FFF',
                               boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
                               padding: '8px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              columnGap: '6px',
-                              position: 'fixed',
+                              // display: 'flex',
+                              // alignItems: 'center',
+                              // columnGap: '6px',
+                              // position: 'fixed',
                               // top: '0',
                               top: ref.current ? mouseY - y - 25 : 0,
+                              width: ref.current ? ref.current.clientWidth : 0,
                             }}
                           >
-                            <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
+                            {/* <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
                             <p
                               style={{
                                 margin: 0,
@@ -325,7 +328,26 @@ export const Section = memo(
                               }}
                             >
                               {text}
-                            </p>
+                            </p> */}
+                            <SelectedBlocksWrapper>
+                            {selected.map((p, i: number) => (
+                              <BlockWrapper
+                                key={p?.metadata?.id ?? `sP-${i}`}
+                                metadata={p?.metadata}
+                                start={start}
+                                offset={offset}
+                              >
+                                <Paragraph
+                                  clip={p as Clip}
+                                  interval={adjustedInterval}
+                                  dragHandleProps={provided.dragHandleProps}
+                                  isDragging={snapshot.isDragging}
+                                  SelectionWrapper={SelectionWrapper}
+                                  droppableId={droppableId}
+                                  source={source}
+                                />
+                              </BlockWrapper>
+                            ))}</SelectedBlocksWrapper>
                           </div>
                         ) : (
                           <SelectedBlocksWrapper>

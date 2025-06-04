@@ -53,13 +53,33 @@ const RemixDestination = ({
     width: '100%',
   });
 
-  const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
-    userSelect: 'none',
-    background: 'transparent',
-    borderRadius: '8px',
-    boxShadow: isDragging ? '0px 10px 12px 0px rgba(0, 0, 0, 0.20)' : 'none',
-    ...draggableStyle,
-  });
+  const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => {
+    // const selectedBlocksWrapper = document.querySelector('.selected-blocks-wrapper');
+    // let displacement = 0;
+    // if (selectedBlocksWrapper) {
+    //   displacement = (selectedBlocksWrapper as HTMLElement).offsetHeight;
+    // }
+
+    // const [x, y] = draggableStyle.transform?.match(/translate\((-?\d+(?:\.\d+)?px),\s*(-?\d+(?:\.\d+)?px)\)/)?.slice(1).map(s => parseFloat(s)) ?? [0, 0];
+    // const newTransform = `translate(${x}px, ${y === 0 ? 0 : 100 + y - displacement}px)`;
+    // console.log({ newTransform, x, y, displacement });
+
+    const style = {
+      userSelect: 'none',
+      // background: 'transparent',
+      borderRadius: '8px',
+      boxShadow: isDragging ? '0px 10px 12px 0px rgba(0, 0, 0, 0.20)' : 'none',
+      ...draggableStyle,
+      // outline: draggableStyle.transform ? '1px solid red !important' : '1px solid blue !important',
+      // outline: '1px solid red !important',
+      // background: draggableStyle.transform ? 'red' : 'yellow',
+      // padding: '10px',
+    };
+
+    // if (x === 0 && y > 0) style.transform = newTransform;
+
+    return style as CSSProperties;
+  };
 
   const [width, setWidth] = useState<string | number>('auto');
   const widthRef = useRef<HTMLDivElement>(null);
