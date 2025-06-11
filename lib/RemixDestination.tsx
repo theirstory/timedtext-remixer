@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties, useRef } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
 
@@ -81,14 +81,14 @@ const RemixDestination = ({
     return style as CSSProperties;
   };
 
-  const [width, setWidth] = useState<string | number>('auto');
+  // const [width, setWidth] = useState<string | number>('auto');
   const widthRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    if (widthRef.current) {
-      setWidth(widthRef.current.offsetWidth);
-    }
-  }, [widthRef]);
+  // useLayoutEffect(() => {
+  //   if (widthRef.current) {
+  //     setWidth(widthRef.current.offsetWidth);
+  //   }
+  // }, [widthRef]);
 
   return (
     <>
@@ -116,7 +116,8 @@ const RemixDestination = ({
                             ...(provided.draggableProps.style as CSSProperties),
                             ...{
                               display: snapshot.isDragging ? 'block' : 'inline-block',
-                              width: snapshot.isDragging ? width : 'auto',
+                              // width: snapshot.isDragging ? width : 'auto',
+                              width: snapshot.isDragging ? widthRef?.current?.offsetWidth ?? '40vw' : 'auto',
                               paddingTop: '8px',
                               paddingBottom: '8px',
                             },
