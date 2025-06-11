@@ -77,6 +77,9 @@ const RemixContext = ({
       setTimeout(() => {
         remixPlayerRef.current!.reloadRemix(state.playhead ?? 0);
       }, 2000);
+      setTimeout(() => {
+        remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // FIXME find a way to count paras vs player clips
+      }, 4000);
     } catch (error) {
       console.log('FIXME', error);
     }
