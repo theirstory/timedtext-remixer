@@ -243,7 +243,7 @@ export const Section = memo(
         {...attrs}
         id={stack?.metadata?.id}
         data-offset={offset}
-        data-sid={sourceId ?? (stack?.metadata as any)?.sid}
+        data-sid={(stack?.metadata as any)?.storyId ?? sourceId ?? (stack?.metadata as any)?.sid}
         style={{
           padding: 0,
           border: 'none',
@@ -254,7 +254,7 @@ export const Section = memo(
       >
         {loading && (
           <style>{`
-          section[data-sid="${sourceId ?? (stack?.metadata as any)?.sid}"] p {
+          section[data-sid="${(stack?.metadata as any)?.storyId ?? sourceId ?? (stack?.metadata as any)?.sid}"] p {
             _cursor: wait;
         `}</style>
         )}
