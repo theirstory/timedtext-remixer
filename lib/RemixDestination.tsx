@@ -8,6 +8,7 @@ import { Context } from './RemixContext';
 import { Player } from './RemixPlayer';
 
 import type { Stack } from './interfaces';
+import { getVersion } from './utils';
 // import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
@@ -96,7 +97,7 @@ const RemixDestination = ({
         <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={true} {...{ poster }} />
       </PlayerWrapper>
 
-      <div ref={widthRef} style={{ width: '100%', height: 0 }}></div>
+      <div ref={widthRef} style={{ width: '100%', height: 0 }} data-remixer-version={getVersion()}></div>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ToolbarWrapper>
           <Droppable droppableId="Toolbar" isDropDisabled={true}>

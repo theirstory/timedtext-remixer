@@ -524,3 +524,10 @@ export const EMPTY_REMIX = {
   }
 };
 // TODO add back the track and a gap on the track
+
+/**
+ * Returns the version injected at build time
+ */
+export const getVersion = (): string => {
+  return '___VER___';
+};

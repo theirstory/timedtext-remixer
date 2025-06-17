@@ -532,9 +532,13 @@ export const TitleTool = (props: {
   const handleTemplateChange2 = useCallback(
     (_event: React.MouseEvent<HTMLElement>, value: string) => {
       setGap(value as unknown as boolean);
+      const payload = { id, metadata: { gap: value } };
+      if (!value) {
+        payload.source_range.duration = 0;
+      }
       debouncedDispatch({
         type: 'metadata',
-        payload: { id, metadata: { gap: value } },
+        payload,
       });
     },
     [id, debouncedDispatch],

@@ -72,18 +72,17 @@ const RemixContext = ({
     try {
       console.log('reloadRemix', state.playhead, remixPlayerRef);
       const data = remixPlayerRef.current!.reloadRemix(state.playhead ?? 0);
-      console.log({ data });
-      // FIMXE this should be handled in the player?
       setTimeout(() => {
-        remixPlayerRef.current!.reloadRemix(state.playhead ?? 0);
+        remixPlayerRef.current!.reloadRemix(-1);
       }, 2000);
       setTimeout(() => {
-        remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // FIXME find a way to count paras vs player clips
+        remixPlayerRef.current!.reloadRemix(-1);
       }, 4000);
+      console.log({ data });
     } catch (error) {
       console.log('FIXME', error);
     }
-  }, [state.remix, state.playhead, remixPlayerRef]);
+  }, [state.remix, remixPlayerRef, state.playhead]);
 
   useEffect(() => {
     if (!metadataMap) return;
@@ -254,7 +253,7 @@ const reducer = (state: State, action: Action): State => {
               source_range: {
                 OTIO_SCHEMA: 'TimeRange.1',
                 start_time: 0,
-                duration: metadata.duration ?? 1,
+                duration: metadata.duration ?? 0,
               },
               children: [],
             };
