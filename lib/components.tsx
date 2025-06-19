@@ -130,6 +130,7 @@ export const Section = memo(
     SectionContentWrapper = PlainDiv as unknown as ElementType,
     tools = [],
     playerRef,
+    isDragDisabled = false,
   }: {
     stack: Stack;
     offset?: number;
@@ -144,6 +145,7 @@ export const Section = memo(
     playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools?: any[] | undefined;
+    isDragDisabled?: boolean;
   }) => {
     const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
       ...draggableStyle,
@@ -281,7 +283,7 @@ export const Section = memo(
                 </BlockWrapper>
               ))}
 
-              <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
+              <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0} isDragDisabled={isDragDisabled}>
                 {(provided, snapshot) => {
                   return (
                     <>

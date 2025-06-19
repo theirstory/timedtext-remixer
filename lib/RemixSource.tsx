@@ -23,6 +23,7 @@ interface RemixSourceProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   timestamp?: number;
+  isDragDisabled?: boolean;
 }
 
 const RemixSource = ({
@@ -37,6 +38,7 @@ const RemixSource = ({
   index,
   // tools = [],
   timestamp = 0,
+  isDragDisabled = false,
 }: RemixSourceProps): JSX.Element => {
   const { state } = useContext(Context);
   const { poster, width, height } = state;
@@ -62,6 +64,8 @@ const RemixSource = ({
   useEffect(() => setInterval(null), [timestamp]);
 
   const handleSourceClick = useCallback(() => {
+    if (isDragDisabled) return;
+
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) {
       setInterval(null);
@@ -126,7 +130,7 @@ const RemixSource = ({
     } else {
       console.log('Invalid selection:', start?.nodeName, end?.nodeName, start, end);
     }
-  }, []);
+  }, [isDragDisabled]);
 
   const droppableId = useMemo(
     () => `Source-${index}-${interval ? interval?.[0] : 0}-${interval ? interval?.[1] : 0}`,
@@ -176,6 +180,7 @@ const RemixSource = ({
                     droppableId={droppableId}
                     source={source}
                     playerRef={playerRef}
+                    isDragDisabled={isDragDisabled}
                     {...{
                       BlockWrapper,
                       SelectedBlocksWrapper,

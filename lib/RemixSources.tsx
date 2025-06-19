@@ -18,6 +18,7 @@ interface RemixSourcesProps {
   active: string | undefined;
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
+  isDragDisabled?: boolean;
 }
 
 const RemixSources = ({
@@ -31,6 +32,7 @@ const RemixSources = ({
   active,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
+  isDragDisabled = false,
 }: RemixSourcesProps): JSX.Element => {
   const {
     sources,
@@ -61,6 +63,7 @@ const RemixSources = ({
           source={source}
           timestamp={latestTimestamp}
           tools={tools}
+          isDragDisabled={isDragDisabled}
         />
       ))}
     </>

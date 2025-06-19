@@ -22,6 +22,7 @@ interface RemixDestinationProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
+  isDragDisabled?: boolean;
 }
 
 const RemixDestination = ({
@@ -33,6 +34,7 @@ const RemixDestination = ({
   Settings = null,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
+  isDragDisabled = false,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
@@ -104,7 +106,7 @@ const RemixDestination = ({
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle()}>
                 {tools.map((tool, i) => (
-                  <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
+                  <Draggable draggableId={tool.name} index={i} key={`tool-${i}`} isDragDisabled={isDragDisabled}>
                     {(provided, snapshot) => (
                       <>
                         <div
@@ -160,6 +162,7 @@ const RemixDestination = ({
                     key={stack?.metadata?.id ?? `db-${i}`}
                     draggableId={stack?.metadata?.id as string}
                     index={i}
+                    isDragDisabled={isDragDisabled}
                   >
                     {(provided, snapshot) => (
                       <div
@@ -186,6 +189,7 @@ const RemixDestination = ({
                             SectionContentWrapper={SectionContentWrapper}
                             sourceId={(stack?.metadata as any)?.sid}
                             tools={tools}
+                            isDragDisabled={isDragDisabled}
                           />
                         )}
                       </div>

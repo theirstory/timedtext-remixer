@@ -31,6 +31,7 @@ interface RemixContextProps extends PropsWithChildren {
   height?: number;
   tools?: any[] | undefined;
   metadataMap?: any;
+  isDragDisabled?: boolean;
 }
 
 const RemixContext = ({
@@ -42,6 +43,7 @@ const RemixContext = ({
   tools = [],
   metadataMap = {},
   children,
+  isDragDisabled = false,
 }: RemixContextProps): JSX.Element => {
   const initialState: State = {
     // sources,
@@ -95,6 +97,8 @@ const RemixContext = ({
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
+      if (isDragDisabled) return;
+
       // console.log({ result });
       // dropped outside the list
       // FIXME global
