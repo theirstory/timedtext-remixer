@@ -23,6 +23,7 @@ interface RemixDestinationProps {
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
   isDragDisabled?: boolean;
+  disableSettings?: boolean;
 }
 
 const RemixDestination = ({
@@ -35,6 +36,7 @@ const RemixDestination = ({
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
   isDragDisabled = false,
+  disableSettings = false,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
@@ -100,6 +102,7 @@ const RemixDestination = ({
       </PlayerWrapper>
 
       <div ref={widthRef} style={{ width: '100%', height: 0 }} data-remixer-version={getVersion()}></div>
+
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ToolbarWrapper>
           <Droppable droppableId="Toolbar" isDropDisabled={true}>
@@ -149,8 +152,9 @@ const RemixDestination = ({
             )}
           </Droppable>
         </ToolbarWrapper>
-        {Settings}
-      </Box>
+          {disableSettings ? null : Settings}
+        </Box>
+
 
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
