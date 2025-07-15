@@ -24,6 +24,7 @@ interface RemixDestinationProps {
   Empty?: ElementType | undefined;
   isDragDisabled?: boolean;
   disableSettings?: boolean;
+  disableTools?: boolean;
 }
 
 const RemixDestination = ({
@@ -37,6 +38,7 @@ const RemixDestination = ({
   Empty = PlainDiv as unknown as ElementType,
   isDragDisabled = false,
   disableSettings = false,
+  disableTools = false,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
@@ -175,7 +177,7 @@ const RemixDestination = ({
                         {...provided.dragHandleProps}
                         style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                       >
-                        {(stack.metadata as any)?.component ? (
+                        {(stack.metadata as any)?.component ? disableTools ? null : (
                           <Tool
                             key={stack?.metadata?.id ?? `T-${i}`}
                             Component={

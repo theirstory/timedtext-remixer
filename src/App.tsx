@@ -48,6 +48,7 @@ import {
   ExportRemix,
   FadeInDraggable,
   TitleDraggable,
+  SampleMUISearchTool,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
@@ -553,6 +554,7 @@ function App() {
                 BlockWrapper={BlockWrapperLeft}
                 SelectionWrapper={SelectionWrapper}
                 ToolbarWrapper={ToolbarWrapper}
+                SearchTool={SampleMUISearchTool}
                 tools={toolsLeft}
                 Empty={EmptySource}
               />

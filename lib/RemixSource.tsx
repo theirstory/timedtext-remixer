@@ -10,6 +10,7 @@ import type { Timeline, Stack } from './interfaces';
 
 import { timelineStacks } from './utils';
 
+
 interface RemixSourceProps {
   PlayerWrapper?: ElementType;
   SourceWrapper?: ElementType;
@@ -17,6 +18,7 @@ interface RemixSourceProps {
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
   ToolbarWrapper?: ElementType;
+  SearchTool?: ElementType;
   source: Timeline;
   active: boolean;
   index: number;
@@ -32,7 +34,8 @@ const RemixSource = ({
   BlockWrapper = PlainDiv as unknown as ElementType,
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
-  // ToolbarWrapper = PlainDiv as unknown as ElementType,
+  ToolbarWrapper = PlainDiv as unknown as ElementType,
+  SearchTool = PlainDiv as unknown as ElementType,
   source,
   active,
   index,
@@ -149,13 +152,115 @@ const RemixSource = ({
     playerRef.current = ref.current?.querySelector('timedtext-player') as TimedTextPlayer;
   }, [ref, playerRef]);
 
+  const sid = useMemo(() => (source?.metadata as any)?.id ?? 'SID', [source]);
+
+  // search test
+  const [searchText, setSearchText] = useState('');
+  const [searchResultsCount, setSearchResultsCount] = useState(0);
+  const [searchIndex, setSearchIndex] = useState(0);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+    setSearchIndex(0);
+  };
+
+  useEffect(() => {
+    const str = searchText.trim().toLowerCase();
+    if (str.length <= 1) {
+      CSS.highlights.delete(`search-results-${sid}`);
+      CSS.highlights.delete(`search-results-head-${sid}`);
+      return;
+    }
+
+    const article = ref.current?.querySelector('article');
+    console.log({ref, article});
+    if (!article) return;
+
+    const treeWalker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
+    const allTextNodes = [];
+    let currentNode = treeWalker.nextNode();
+    while (currentNode) {
+      allTextNodes.push(currentNode);
+      currentNode = treeWalker.nextNode();
+    }
+    console.log({allTextNodes});
+
+    if (!CSS.highlights) {
+      alert("CSS Custom Highlight API not supported.");
+      return;
+    }
+
+    CSS.highlights.delete(`search-results-${sid}`);
+    CSS.highlights.delete(`search-results-head-${sid}`);
+
+    const ranges = allTextNodes
+    .map((el) => ({ el, text: el.textContent?.toLowerCase() ?? '' }))
+    .map(({ text, el }) => {
+      const indices = [];
+      let startPos = 0;
+      while (startPos < text.length) {
+        const index = text.indexOf(str, startPos);
+        if (index === -1) break;
+        indices.push(index);
+        startPos = index + str.length;
+      }
+
+      // Create a range object for each instance of
+      // str we found in the text node.
+      return indices.map((index) => {
+        const range = new Range();
+        range.setStart(el, index);
+        range.setEnd(el, index + str.length);
+        return range;
+      });
+    });
+
+    // console.log({ranges});
+    setSearchResultsCount(ranges.flat().length);
+
+    // Create a Highlight object for the ranges.
+    let searchResultsHighlight = new Highlight(...ranges.flat());
+    console.log({searchResultsHighlight});
+    // highlights minus the one at searchIndex
+    const highlights = ranges.flat().filter((_range, index) => index !== searchIndex);
+    searchResultsHighlight = new Highlight(...highlights);
+
+    // Register the Highlight object in the registry.
+    CSS.highlights.set(`search-results-${sid}`, searchResultsHighlight);
+
+    // highlight the result at index
+    const rangeAtIndex = (ranges.flat())[searchIndex];
+    console.log({rangeAtIndex});
+    if (rangeAtIndex) {
+      const highlight = new Highlight(rangeAtIndex);
+      CSS.highlights.set(`search-results-head-${sid}`, highlight);
+      // find dom node for range
+      const domNode = rangeAtIndex.startContainer.parentElement;
+      console.log({domNode});
+      if (domNode) {
+        domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [searchText, searchIndex, sid]);
+
+  const handlePrevious = () => {
+    setSearchIndex(searchIndex - 1);
+  };
+  const handleNext = () => {
+    setSearchIndex(searchIndex + 1);
+  };
+  // search test
+
   return (
-    <div ref={ref} style={{ display: active ? 'block' : 'none' }} data-sid={(source?.metadata as any)?.id ?? 'SID'}>
+    <div ref={ref} style={{ display: active ? 'block' : 'none' }} data-sid={sid}>
       <PlayerWrapper>
         <Player transcript={`#A${source?.metadata?.id}`} pauseMutationObserver={true} {...{ poster, width, height }} />
       </PlayerWrapper>
 
-      {/* <ToolbarWrapper>{tools.map((tool) => tool.toolBarComponent)}</ToolbarWrapper> */}
+      <ToolbarWrapper>
+        <SearchTool postfix={sid} searchText={searchText} searchIndex={searchIndex} searchResultsCount={searchResultsCount} handleSearchChange={handleSearchChange} handlePrevious={handlePrevious} handleNext={handleNext} />
+      </ToolbarWrapper>
+
       <SourceWrapper>
         <Droppable
           droppableId={droppableId}
