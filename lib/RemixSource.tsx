@@ -154,21 +154,22 @@ const RemixSource = ({
 
   const sid = useMemo(() => (source?.metadata as any)?.id ?? 'SID', [source]);
 
-  // search test
   const [searchText, setSearchText] = useState('');
   const [searchResultsCount, setSearchResultsCount] = useState(0);
   const [searchIndex, setSearchIndex] = useState(0);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
     setSearchIndex(0);
-  };
+  }, []);
 
   useEffect(() => {
     const str = searchText.trim().toLowerCase();
     if (str.length <= 1) {
       CSS.highlights.delete(`search-results-${sid}`);
       CSS.highlights.delete(`search-results-head-${sid}`);
+      setSearchIndex(0);
+      setSearchResultsCount(0);
       return;
     }
 
@@ -243,13 +244,13 @@ const RemixSource = ({
     }
   }, [searchText, searchIndex, sid]);
 
-  const handlePrevious = () => {
-    setSearchIndex(searchIndex - 1);
-  };
-  const handleNext = () => {
-    setSearchIndex(searchIndex + 1);
-  };
-  // search test
+  const handlePrevious = useCallback(() => {
+    setSearchIndex(searchIndex - 1 < 0 ? searchResultsCount - 1 : searchIndex - 1);
+  }, [searchIndex, searchResultsCount]);
+  const handleNext = useCallback(() => {
+    setSearchIndex(searchIndex + 1 >= searchResultsCount ? 0 : searchIndex + 1 );
+  }, [searchIndex, searchResultsCount]);
+
 
   return (
     <div ref={ref} style={{ display: active ? 'block' : 'none' }} data-sid={sid}>
