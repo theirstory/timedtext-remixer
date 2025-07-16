@@ -272,7 +272,7 @@ const RemixSource = ({
         domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [searchText, searchIndex, sid]);
+  }, [searchText, searchIndex, sid, interval]);
 
   const handlePrevious = useCallback(() => {
     setSearchIndex(searchIndex - 1 < 0 ? searchResultsCount - 1 : searchIndex - 1);
