@@ -194,27 +194,57 @@ const RemixSource = ({
     CSS.highlights.delete(`search-results-${sid}`);
     CSS.highlights.delete(`search-results-head-${sid}`);
 
-    const ranges = allTextNodes
-    .map((el) => ({ el, text: el.textContent?.toLowerCase() ?? '' }))
-    .map(({ text, el }) => {
-      const indices = [];
-      let startPos = 0;
-      while (startPos < text.length) {
-        const index = text.indexOf(str, startPos);
-        if (index === -1) break;
-        indices.push(index);
-        startPos = index + str.length;
-      }
+    // Build a map of text positions to their corresponding text nodes
+    const textNodeMap: Array<{ node: Node; start: number; end: number; text: string }> = [];
+    let concatenatedText = '';
 
-      // Create a range object for each instance of
-      // str we found in the text node.
-      return indices.map((index) => {
-        const range = new Range();
-        range.setStart(el, index);
-        range.setEnd(el, index + str.length);
-        return range;
+    allTextNodes.forEach((node) => {
+      const nodeText = node.textContent?.toLowerCase() ?? '';
+      const start = concatenatedText.length;
+      const end = start + nodeText.length;
+
+      textNodeMap.push({
+        node,
+        start,
+        end,
+        text: nodeText
       });
+
+      concatenatedText += nodeText;
     });
+
+    // Find all matches in the concatenated text
+    const matchIndices: number[] = [];
+    let startPos = 0;
+    while (startPos < concatenatedText.length) {
+      const index = concatenatedText.indexOf(str, startPos);
+      if (index === -1) break;
+      matchIndices.push(index);
+      startPos = index + 1; // Move by 1 to find overlapping matches
+    }
+
+    // Map matches back to DOM ranges
+    const ranges = matchIndices.map((matchStart) => {
+      const matchEnd = matchStart + str.length;
+
+      // Find the text nodes that contain the start and end of the match
+      const startNodeInfo = textNodeMap.find(info => matchStart >= info.start && matchStart < info.end);
+      const endNodeInfo = textNodeMap.find(info => matchEnd > info.start && matchEnd <= info.end);
+
+      if (!startNodeInfo || !endNodeInfo) return null;
+
+      const range = new Range();
+
+      // Set the start position
+      const startOffset = matchStart - startNodeInfo.start;
+      range.setStart(startNodeInfo.node, startOffset);
+
+      // Set the end position
+      const endOffset = matchEnd - endNodeInfo.start;
+      range.setEnd(endNodeInfo.node, endOffset);
+
+      return range;
+    }).filter(range => range !== null) as Range[];
 
     // console.log({ranges});
     setSearchResultsCount(ranges.flat().length);
