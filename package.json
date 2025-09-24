@@ -1,6 +1,6 @@
 {
   "name": "@theirstoryinc/timedtext-remixer",
-  "version": "0.0.65",
+  "version": "0.0.67",
   "type": "module",
   "main": "dist/timedtext-remixer.js",
   "types": "dist/main.d.ts",
@@ -49,7 +49,7 @@
     "@million/lint": "^1.0.0",
     "@mui/icons-material": "^5.15.14",
     "@mui/material": "^5.15.14",
-    "@theirstoryinc/timedtext-player": "0.0.47",
+    "@theirstoryinc/timedtext-player": "0.0.49",
     "@types/smpte-timecode": "1.2.5",
     "crypto-js": "^4.2.0",
     "immer": "^10.1.1",
