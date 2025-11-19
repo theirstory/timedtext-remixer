@@ -1,9 +1,16 @@
 {
   "name": "@theirstoryinc/timedtext-remixer",
-  "version": "0.0.67",
+  "version": "0.0.68",
   "type": "module",
   "main": "dist/timedtext-remixer.js",
   "types": "dist/main.d.ts",
+  "exports": {
+    ".": {
+      "development": "./lib/main.ts",
+      "types": "./dist/main.d.ts",
+      "default": "./dist/timedtext-remixer.js"
+    }
+  },
   "files": [
     "dist",
     "lib"
@@ -19,6 +26,7 @@
     "docs": "vite build --config vite.docs.config.ts"
   },
   "peerDependencies": {
+    "@theirstoryinc/timedtext-player": "^0.0.50",
     "react": "^18.2.0 || ^19.0.0",
     "react-dom": "^18.2.0 || ^19.0.0"
   },
@@ -44,12 +52,12 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@gilbarbara/deep-equal": "^0.3.1",
     "@hello-pangea/dnd": "^16.6.0",
     "@lit/react": "^1.0.5",
     "@million/lint": "^1.0.0",
     "@mui/icons-material": "^5.15.14",
     "@mui/material": "^5.15.14",
-    "@theirstoryinc/timedtext-player": "0.0.49",
     "@types/smpte-timecode": "1.2.5",
     "crypto-js": "^4.2.0",
     "immer": "^10.1.1",
