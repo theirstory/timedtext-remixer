@@ -76,7 +76,7 @@ const RemixSource = ({
     }
 
     const range = selection.getRangeAt(0);
-    console.log(range);
+    // console.log(range);
 
     const start =
       range.startContainer.parentElement?.nodeName === 'SPAN'
@@ -87,7 +87,7 @@ const RemixSource = ({
         ? range.endContainer.parentElement
         : (range.endContainer as any).previousElementSibling;
 
-    console.log(start, end);
+    // console.log(start, end);
 
     // TODO handle space selection, <p>...
 
@@ -174,7 +174,7 @@ const RemixSource = ({
     }
 
     const article = ref.current?.querySelector('article');
-    console.log({ref, article});
+    // console.log({ref, article});
     if (!article) return;
 
     const treeWalker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
@@ -184,7 +184,7 @@ const RemixSource = ({
       allTextNodes.push(currentNode);
       currentNode = treeWalker.nextNode();
     }
-    console.log({allTextNodes});
+    // console.log({allTextNodes});
 
     if (!CSS.highlights) {
       alert("CSS Custom Highlight API not supported.");
@@ -251,7 +251,7 @@ const RemixSource = ({
 
     // Create a Highlight object for the ranges.
     let searchResultsHighlight = new Highlight(...ranges.flat());
-    console.log({searchResultsHighlight});
+    // console.log({searchResultsHighlight});
     // highlights minus the one at searchIndex
     const highlights = ranges.flat().filter((_range, index) => index !== searchIndex);
     searchResultsHighlight = new Highlight(...highlights);
@@ -261,13 +261,13 @@ const RemixSource = ({
 
     // highlight the result at index
     const rangeAtIndex = (ranges.flat())[searchIndex];
-    console.log({rangeAtIndex});
+    // console.log({rangeAtIndex});
     if (rangeAtIndex) {
       const highlight = new Highlight(rangeAtIndex);
       CSS.highlights.set(`search-results-head-${sid}`, highlight);
       // find dom node for range
       const domNode = rangeAtIndex.startContainer.parentElement;
-      console.log({domNode});
+      // console.log({domNode});
       if (domNode) {
         domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }

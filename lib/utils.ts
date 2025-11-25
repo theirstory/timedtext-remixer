@@ -3,6 +3,15 @@ import { v5 as uuidv5 } from 'uuid';
 import stringify from 'json-stringify-deterministic';
 import CryptoJS from 'crypto-js';
 import { produce } from 'immer';
+
+import {
+  Output,
+  BufferTarget,
+  Mp4OutputFormat,
+  CanvasSource,
+  getFirstEncodableVideoCodec,
+} from "mediabunny";
+
 import type { Clip, Metadata, Stack, TimeRange, TimedText, Track, Timeline, Remix, Segment, Block, Token } from "./interfaces";
 import { EMPTY_VIDEO } from "./video";
 import { applyEffects } from "./RemixContext";
@@ -280,7 +289,7 @@ export const stack2segment = (stack: Stack): Segment => {
 
   // throw error if there is no source_range start_time or duration
   if (!stack.source_range || typeof stack.source_range.start_time === 'undefined' || isNaN(stack.source_range.start_time) || typeof stack.source_range.duration === 'undefined' || isNaN(stack.source_range.duration)) {
-    console.log('stack', stack);
+    // console.log('stack', stack);
     throw new Error('source_range start_time or duration is missing');
   }
 
@@ -464,7 +473,7 @@ export const stack2timedText = (stack: Stack): any => {
 };
 
 export const timelineStacks = (source: Timeline): Stack[] => {
-  console.log('timelineStacks?', source);
+  // console.log('timelineStacks?', source);
   if (!source.tracks) return [source as unknown as Stack] as Stack[];
   if (source.tracks.children?.[0]?.children?.every((c) => c.OTIO_SCHEMA === 'Clip.1')) {
     return [source.tracks] as Stack[];
@@ -531,3 +540,53 @@ export const EMPTY_REMIX = {
 export const getVersion = (): string => {
   return '___VER___';
 };
+
+
+
+export async function generateBlackVideoURL(durationSeconds: number): Promise<string> {
+  const width = 426;
+  const height = 240;
+  const fps = 1;                   // minimum fps → minimal memory/CPU
+  const totalFrames = Math.max(1, Math.ceil(durationSeconds * fps));
+
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext("2d")!;
+
+  // Paint the single black frame once
+  ctx.fillStyle = "blue";
+  ctx.fillRect(0, 0, width, height);
+
+  const output = new Output({
+    target: new BufferTarget(),
+    format: new Mp4OutputFormat(),
+  });
+
+  const codec = await getFirstEncodableVideoCodec(
+    output.format.getSupportedVideoCodecs(),
+    { width, height }
+  );
+  if (!codec) throw new Error("No supported video codec.");
+
+  const canvasSource = new CanvasSource(canvas, {
+    codec,
+    bitrate: 100000, // 100kbps - low bitrate for minimal memory usage
+  });
+
+  output.addVideoTrack(canvasSource, { frameRate: fps });
+  await output.start();
+
+  // Re-add the identical black frame N times
+  for (let i = 0; i < totalFrames; i++) {
+    const timestamp = i / fps;
+    await canvasSource.add(timestamp, 1 / fps);
+  }
+
+  canvasSource.close();
+  await output.finalize();
+
+  const blob = new Blob([output.target.buffer!], {
+    type: output.format.mimeType,
+  });
+
+  return URL.createObjectURL(blob);
+}
