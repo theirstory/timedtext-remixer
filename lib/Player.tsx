@@ -64,7 +64,7 @@ export const Player = ({
   // TODO mediacontroller id fix
   return (
     <>
-      <MediaController id="myController" style={W80H100}>
+      <MediaController style={W80H100} id={`remix-player-${memoizedTranscript}`}>
         <MemoizedMediaControlBar style={W100}>
           <MemoizedMediaPlayButton></MemoizedMediaPlayButton>
           <MemoizedMediaMuteButton></MemoizedMediaMuteButton>

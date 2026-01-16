@@ -6,12 +6,31 @@ import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     // MillionLint.vite(),
     react(),
     dts({ include: ['lib'] })
   ],
+  server: {
+    fs: {
+      // Allow serving files from the linked package source
+      allow: [
+        '..',
+        '../timedtext-player',
+      ],
+    },
+  },
+  resolve: {
+    dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled'],
+    // Only use local package aliases in development mode
+    // In production builds, use the published npm packages from node_modules
+    ...(mode === 'development' && {
+      alias: {
+        '@theirstoryinc/timedtext-player': resolve(__dirname, '../timedtext-player'),
+      },
+    }),
+  },
   build: {
     sourcemap: 'inline',
     minify: false,
@@ -25,6 +44,10 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['@theirstoryinc/timedtext-player']
+    force: true,
+    exclude: mode === 'development' ? ['@theirstoryinc/timedtext-player'] : [],
+    esbuildOptions: {
+      sourcemap: true,
+    },
   }
-})
+}))

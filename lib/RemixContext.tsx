@@ -11,7 +11,8 @@ import type { State, Action, Timeline, Stack, Clip, Effect } from './interfaces'
 import { generateBlackVideoURL, timelineStacks } from './utils';
 // import { TimedTextPlayerComponent } from './Player';
 // import { ReactWebComponent } from '@lit/react';
-import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
+// import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
+import { LitePlayer } from '@theirstoryinc/timedtext-player/dist/lite-player.js';
 
 declare global {
   interface Window {
@@ -27,7 +28,8 @@ export const Context = createContext({
   } as State,
   dispatch: (action: any) => action,
   // remixPlayerRef: null as LegacyRef<ReactWebComponent<TimedTextPlayer, { onactivate: string; onchange: string }>>,
-  remixPlayerRef: null as LegacyRef<TimedTextPlayer>,
+  // remixPlayerRef: null as LegacyRef<TimedTextPlayer>,
+  remixPlayerRef: null as LegacyRef<LitePlayer>,
 });
 
 interface RemixContextProps extends PropsWithChildren {
@@ -68,7 +70,7 @@ const RemixContext = ({
     playhead: 0,
   };
 
-  const remixPlayerRef = useRef<TimedTextPlayer>(null);
+  const remixPlayerRef = useRef<LitePlayer>(null);
   const previousRemixRef = useRef<{ remix: Timeline | null; timestamp: number }>({ remix: null, timestamp: 0 });
   const [state, dispatch] = useReducer(reducer, initialState);
 

@@ -188,7 +188,7 @@ export const Section = memo(
     let selected: (Clip | Stack | Gap)[] = [];
     let after: (Clip | Stack | Gap)[] = [];
     let intersects = false;
-    let text = '';
+    // let text = '';
 
     if (adjustedInterval && intersection([start, end], adjustedInterval)) {
       intersects = true;
@@ -205,20 +205,20 @@ export const Section = memo(
         const pEnd = pStart + (p as Clip).source_range.duration;
         return intersection([pStart, pEnd], adjustedInterval);
       });
-      text = selected
-        .map((s) => {
-          if ((s as Clip).OTIO_SCHEMA === 'Clip.1') {
-            return (s as Clip).timed_texts?.map((t) => t.texts).join(' ');
-          }
-          return '';
-        })
-        .join(' ')
-        .split(' ')
-        .slice(0, 30) // limit to 30 words max
-        .join(' ');
+    //   text = selected
+    //     .map((s) => {
+    //       if ((s as Clip).OTIO_SCHEMA === 'Clip.1') {
+    //         return (s as Clip).timed_texts?.map((t) => t.texts).join(' ');
+    //       }
+    //       return '';
+    //     })
+    //     .join(' ')
+    //     .split(' ')
+    //     .slice(0, 30) // limit to 30 words max
+    //     .join(' ');
     }
 
-    console.log(text); // logged just use the var for now
+    // console.log(text); // logged just use the var for now
 
     const sectionRef = useRef<HTMLDivElement>(null);
     // const sectionWidth = sectionRef.current?.clientWidth;
@@ -474,9 +474,10 @@ const Paragraphs = ({
         setTimeout(() => {
           try {
             console.log('reloadDOM', { playerRef });
-            const data = playerRef!.current!.reloadRemix(0);
+            // const data =
+            playerRef!.current!.reloadRemix(0);
             setLoading(false);
-            console.log({ data });
+            // console.log({ data });
           } catch (error) {
             console.log('FIXME', error);
           }
