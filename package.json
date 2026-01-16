@@ -1,6 +1,6 @@
 {
   "name": "@theirstoryinc/timedtext-remixer",
-  "version": "0.0.72",
+  "version": "0.0.80",
   "type": "module",
   "main": "dist/timedtext-remixer.js",
   "types": "dist/main.d.ts",
@@ -26,7 +26,7 @@
     "docs": "vite build --config vite.docs.config.ts"
   },
   "peerDependencies": {
-    "@theirstoryinc/timedtext-player": "^0.0.53",
+    "@theirstoryinc/timedtext-player": "^0.0.60",
     "react": "^18.2.0 || ^19.0.0",
     "react-dom": "^18.2.0 || ^19.0.0"
   },
