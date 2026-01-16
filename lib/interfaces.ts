@@ -19,6 +19,7 @@ export type Action =
 | { type: "convert-to-gap"; payload: any }
 | { type: "convert-from-gap"; payload: any }
 | { type: "metadata"; payload: any }
+| { type: "metadata-kv"; payload: any }
 | { type: "move"; payload: DropResult }
 | { type: "move-up"; payload: any }
 | { type: "move-down"; payload: any }

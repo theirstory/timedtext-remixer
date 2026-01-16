@@ -14,10 +14,12 @@ interface RemixSourcesProps {
   SelectedBlocksWrapper?: ElementType;
   SelectionWrapper?: ElementType;
   ToolbarWrapper?: ElementType;
+  SearchTool?: ElementType;
   id?: (t: Timeline) => string | undefined;
   active: string | undefined;
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
+  isDragDisabled?: boolean;
 }
 
 const RemixSources = ({
@@ -27,10 +29,12 @@ const RemixSources = ({
   SelectedBlocksWrapper = PlainDiv as unknown as ElementType,
   SelectionWrapper = PlainSpan as unknown as ElementType,
   ToolbarWrapper = PlainDiv as unknown as ElementType,
+  SearchTool = PlainDiv as unknown as ElementType,
   id = (source: Timeline) => source?.metadata?.id,
   active,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
+  isDragDisabled = false,
 }: RemixSourcesProps): JSX.Element => {
   const {
     sources,
@@ -58,9 +62,11 @@ const RemixSources = ({
           SelectedBlocksWrapper={SelectedBlocksWrapper}
           SelectionWrapper={SelectionWrapper}
           ToolbarWrapper={ToolbarWrapper}
+          SearchTool={SearchTool}
           source={source}
           timestamp={latestTimestamp}
           tools={tools}
+          isDragDisabled={isDragDisabled}
         />
       ))}
     </>

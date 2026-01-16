@@ -2,7 +2,7 @@
 
 declare global {
   interface Window {
-    foo: any;
+    emptyVideoURL: string | null;
   }
 }
 

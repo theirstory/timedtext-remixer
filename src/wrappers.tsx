@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, PropsWithChildren, useContext, useState, useCallback, useRef } from 'react';
+import React, { useMemo, PropsWithChildren, useContext, useState, useCallback } from 'react';
 import { renderToString } from 'react-dom/server';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
 import {
   Box,
   Button,
@@ -19,15 +19,18 @@ import {
   Menu,
   ListItemIcon,
   Tooltip,
-  SelectChangeEvent,
-  Select,
+  // SelectChangeEvent,
+  // Select,
+  InputAdornment,
+  ButtonGroup,
 } from '@mui/material';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import TvOffIcon from '@mui/icons-material/TvOff';
+// import TvOffIcon from '@mui/icons-material/TvOff';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import TitleIcon from '@mui/icons-material/Title';
@@ -66,10 +69,17 @@ export const TEMPLATES = `
     <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <p style="color: white; text-align: center;">\${cue}</p>
       <style>
         .title-full {
           container-type: size;
           _opacity: \${fadeIn};
+          line-height: 1.5;
+        }
+
+        .title-full p {
+          text-align: center;
+          white-space: pre-wrap;
         }
 
         @container (min-width: 1500px) {
@@ -85,10 +95,17 @@ export const TEMPLATES = `
     <div class="title-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 1);">
       <h2 style="color: white; text-align: center; margin-top: 30%;">\${title}</h2>
       <h3 style="color: white; text-align: center;">\${subtitle}</h3>
+      <p style="color: white; text-align: center;">\${cue}</p>
       <style>
         .title-full {
           container-type: size;
           _opacity: \${fadeIn};
+          line-height: 1.5;
+        }
+
+        .title-full p {
+          text-align: center;
+          white-space: pre-wrap;
         }
 
         @container (min-width: 1500px) {
@@ -162,7 +179,7 @@ export const FadeInTool = (props: {
   //   [],
   // );
 
-  const handleDurationChange = (value) => setDuration(value);
+  const handleDurationChange = (value: number) => setDuration(value); // TODO: use SelectChangeEvent<{ value: unknown }>
 
   const handleSave = useCallback(
     () => dispatch({ type: 'metadata', payload: { id, metadata: { id, template, duration } } }),
@@ -518,9 +535,13 @@ export const TitleTool = (props: {
   const handleTemplateChange2 = useCallback(
     (_event: React.MouseEvent<HTMLElement>, value: string) => {
       setGap(value as unknown as boolean);
+      const payload = { id, metadata: { gap: value } };
+      if (!value) {
+        (payload as any).source_range.duration = 0;
+      }
       debouncedDispatch({
         type: 'metadata',
-        payload: { id, metadata: { gap: value } },
+        payload,
       });
     },
     [id, debouncedDispatch],
@@ -568,7 +589,7 @@ export const TitleTool = (props: {
     });
   }, [id, debouncedDispatch]);
 
-  const ignoreClick = useCallback((e) => e.stopPropagation(), []);
+  const ignoreClick = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
 
   return (
     <Box
@@ -1316,5 +1337,96 @@ export const ExportRemix = ({ remix }: { remix: Timeline }) => {
     <div style={{ padding: 10 }}>
       <TextField label="HTML" multiline value={html} />
     </div>
+  );
+};
+
+export interface SearchToolProps {
+  postfix?: string;
+  searchText: string;
+  searchIndex?: number;
+  searchResultsCount?: number;
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handlePrevious: () => void;
+  handleNext: () => void;
+}
+
+export const SampleSearchTool = ({ postfix = 'all', searchText, searchIndex = 0, searchResultsCount = 0, handleSearchChange, handlePrevious, handleNext }: SearchToolProps) => {
+  return (
+    <div>
+      <input type="text" value={searchText} onChange={handleSearchChange} />
+      <button onClick={handlePrevious}>previous</button>
+      <button onClick={handleNext}>next</button>
+      <span>{searchIndex + 1} of {searchResultsCount}</span>
+      <style>
+        {
+          `
+          ::highlight(search-results-${postfix}) {
+            background-color: #f06;
+            color: white;
+          }
+          ::highlight(search-results-head-${postfix}) {
+            background-color: #00f;
+            color: white;
+          }
+          `
+        }
+      </style>
+    </div>
+  );
+};
+
+export const SampleMUISearchTool = ({ postfix = 'all', searchText, searchIndex = 0, searchResultsCount = 0, handleSearchChange, handlePrevious, handleNext }: SearchToolProps) => {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <TextField
+        size="small"
+        value={searchText}
+        onChange={handleSearchChange}
+        placeholder="Search..."
+        InputProps={{
+          endAdornment: searchText && (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                onClick={() => handleSearchChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>)}
+              >
+                <ClearIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          )
+        }}
+      />
+      <ButtonGroup size="small">
+        <IconButton
+          onClick={handlePrevious}
+          disabled={searchResultsCount === 0}
+        >
+          <ArrowUpwardIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          onClick={handleNext}
+          disabled={searchResultsCount === 0}
+        >
+          <ArrowDownwardIcon fontSize="small" />
+        </IconButton>
+      </ButtonGroup>
+      <Typography variant="body2" color="text.secondary">
+        {searchResultsCount > 0 ? `${searchIndex + 1} of ${searchResultsCount}` : 'No results'}
+      </Typography>
+      <style>
+        {
+          `
+          ::highlight(search-results-${postfix}) {
+            background-color: #f06;
+            color: white;
+          }
+          ::highlight(search-results-head-${postfix}) {
+            background-color: #00f;
+            color: white;
+          }
+          `
+        }
+      </style>
+    </Box>
   );
 };

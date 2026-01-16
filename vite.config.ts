@@ -13,6 +13,8 @@ export default defineConfig({
     dts({ include: ['lib'] })
   ],
   build: {
+    sourcemap: 'inline',
+    minify: false,
     copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),

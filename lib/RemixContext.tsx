@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PropsWithChildren, createContext, useReducer, useRef, LegacyRef, useEffect, useCallback } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { current, produce } from 'immer';
+import { produce } from 'immer';
 // import { useImmerReducer } from 'use-immer';
 import { intersection } from 'interval-operations';
 import { nanoid } from 'nanoid';
+import deepEqual from '@gilbarbara/deep-equal';
 
 import type { State, Action, Timeline, Stack, Clip, Effect } from './interfaces';
-import { timelineStacks } from './utils';
+import { generateBlackVideoURL, timelineStacks } from './utils';
 // import { TimedTextPlayerComponent } from './Player';
 // import { ReactWebComponent } from '@lit/react';
 import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
+
+declare global {
+  interface Window {
+    emptyVideoURL: string;
+  }
+}
 
 export const Context = createContext({
   sources: [] as Timeline[],
@@ -30,6 +37,8 @@ interface RemixContextProps extends PropsWithChildren {
   width?: number;
   height?: number;
   tools?: any[] | undefined;
+  metadataMap?: any;
+  isDragDisabled?: boolean;
 }
 
 const RemixContext = ({
@@ -39,8 +48,17 @@ const RemixContext = ({
   width,
   height,
   tools = [],
+  metadataMap = {},
   children,
+  isDragDisabled = false,
 }: RemixContextProps): JSX.Element => {
+
+  useEffect(() => {
+    generateBlackVideoURL(20).then((url) => {
+      window.emptyVideoURL = url;
+    });
+  }, []);
+
   const initialState: State = {
     // sources,
     remix,
@@ -51,7 +69,9 @@ const RemixContext = ({
   };
 
   const remixPlayerRef = useRef<TimedTextPlayer>(null);
+  const previousRemixRef = useRef<{ remix: Timeline | null; timestamp: number }>({ remix: null, timestamp: 0 });
   const [state, dispatch] = useReducer(reducer, initialState);
+
 
   useEffect(() => {
     if (!remix) return;
@@ -59,16 +79,55 @@ const RemixContext = ({
   }, [remix]);
 
   useEffect(() => {
+    const event = new CustomEvent('remixChange', {
+      detail: state.remix,
+      bubbles: true,
+    });
+    remixPlayerRef.current!.dispatchEvent(event);
+  }, [state.remix, remixPlayerRef]);
+
+  useEffect(() => {
     try {
-      console.log('reloadRemix', state.playhead);
-      remixPlayerRef.current!.reloadRemix(state.playhead ?? 0); // TODO this dies on bad network?
+      const currentTimestamp = state.timestamp ?? 0;
+      const previousTimestamp = previousRemixRef.current.timestamp;
+
+      // Only call reloadRemix if the remix actually changed (timestamp is different)
+      if (currentTimestamp !== previousTimestamp) {
+        console.log('reloadRemix', state.playhead, remixPlayerRef, currentTimestamp, previousTimestamp);
+        // const data =
+        remixPlayerRef.current!.reloadRemix(state.playhead ?? -1);
+        // setTimeout(() => {
+        //   remixPlayerRef.current!.reloadRemix(-1);
+        // }, 2000);
+        // setTimeout(() => {
+        //   remixPlayerRef.current!.reloadRemix(-1);
+        // }, 4000);
+        // console.log({ data });
+
+        // Update the previous remix state
+        previousRemixRef.current = {
+          remix: state.remix ?? null,
+          timestamp: currentTimestamp
+        };
+      }
     } catch (error) {
       console.log('FIXME', error);
     }
-  }, [state.remix, state.playhead, remixPlayerRef]);
+  }, [state.remix, remixPlayerRef]);
+
+  useEffect(() => {
+    if (!metadataMap) return;
+    const { _key = 'id' } = metadataMap;
+    Object.keys(metadataMap).forEach((key) => {
+      if (key === '_key') return;
+      dispatch({ type: 'metadata-kv', payload: { key: _key, value: key, metadata: metadataMap[key] } });
+    });
+  }, [metadataMap]);
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
+      if (isDragDisabled) return;
+
       // console.log({ result });
       // dropped outside the list
       // FIXME global
@@ -111,15 +170,20 @@ const RemixContext = ({
 };
 
 const reducer = (state: State, action: Action): State => {
-  console.log({ action, state });
+  console.log('reducer', { action, state });
   const nextState = produce(state, (draftState) => {
-    draftState.timestamp = Date.now();
     switch (action.type) {
       case 'update': {
-        draftState.remix = action.payload;
+        // Only update if the new remix is different from the current one
+        if (!deepEqual(draftState.remix, action.payload)) {
+          draftState.remix = action.payload;
+          draftState.timestamp = Date.now();
+        }
         return draftState;
       }
+
       case 'metadata': {
+        draftState.timestamp = Date.now();
         const { id, metadata } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
         if (stackIndex === -1) return draftState;
@@ -129,7 +193,7 @@ const reducer = (state: State, action: Action): State => {
 
         // update gap stack
         if (stack?.metadata?.gap && stack!.effects?.length !== undefined && stack!.effects?.length > 0) {
-          console.log({ stack: current(stack) });
+          // console.log({ stack: current(stack) });
           stack!.source_range!.duration = stack?.metadata?.duration ?? 0;
           stack!.metadata!.data!.t = `1,${stack?.metadata?.duration}`;
           stack!.effects![0].source_range!.duration = stack?.metadata?.duration ?? 0;
@@ -149,7 +213,21 @@ const reducer = (state: State, action: Action): State => {
         return draftState;
       }
 
+      case 'metadata-kv': {
+        draftState.timestamp = Date.now();
+        const { key, value, metadata } = action.payload;
+        // console.log('metadata-kv', { key, value, metadata });
+        const stacks = draftState.remix?.tracks.children[0].children as Stack[];
+        stacks.forEach((stack) => {
+          if (stack.metadata?.[key as keyof typeof stack.metadata] === value) {
+            stack.metadata = { ...stack.metadata, ...metadata };
+          }
+        });
+        return draftState;
+      }
+
       case 'add-widget': {
+        draftState.timestamp = Date.now();
         const { result, metadata, tools } = action.payload;
         const tool = tools.find((t: any) => t.name === result.draggableId) ?? { defaults: {} };
 
@@ -164,7 +242,7 @@ const reducer = (state: State, action: Action): State => {
                 id: metadata.id ?? id,
                 data: {
                   t: `1,${({ ...tool.defaults, ...metadata }.duration ?? 5) + 1}`,
-                  'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
+                  'media-src': window.emptyVideoURL,
                 },
                 gap: true,
                 title: 'GAP2',
@@ -173,7 +251,7 @@ const reducer = (state: State, action: Action): State => {
               },
               media_reference: {
                 OTIO_SCHEMA: 'MediaReference.1',
-                target: 'https://lab.hyperaud.io/tmp/black_video.mp4',
+                target: window.emptyVideoURL,
               },
               source_range: {
                 OTIO_SCHEMA: 'TimeRange.1',
@@ -214,7 +292,7 @@ const reducer = (state: State, action: Action): State => {
               source_range: {
                 OTIO_SCHEMA: 'TimeRange.1',
                 start_time: 0,
-                duration: metadata.duration ?? 1,
+                duration: metadata.duration ?? 0,
               },
               children: [],
             };
@@ -232,6 +310,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'add': {
+        draftState.timestamp = Date.now();
         const [result, source, [start, end]] = action.payload;
         const stack = subClip(source, start, end);
 
@@ -249,6 +328,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'add-at': {
+        draftState.timestamp = Date.now();
         const [sectionId, source, [start, end]] = action.payload;
         const stack = subClip(source, start, end);
 
@@ -272,6 +352,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'move': {
+        draftState.timestamp = Date.now();
         const { source, destination } = action.payload;
 
         // eslint-disable-next-line no-unsafe-optional-chaining
@@ -291,6 +372,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'move-down': {
+        draftState.timestamp = Date.now();
         const { id } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
         if (stackIndex === -1) return draftState;
@@ -311,6 +393,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'move-up': {
+        draftState.timestamp = Date.now();
         const { id } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
         if (stackIndex === -1) return draftState;
@@ -331,6 +414,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'remove': {
+        draftState.timestamp = Date.now();
         const { id } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
         if (stackIndex === -1) return draftState;
@@ -352,6 +436,7 @@ const reducer = (state: State, action: Action): State => {
       }
 
       case 'change-duration': {
+        draftState.timestamp = Date.now();
         const { id, duration } = action.payload;
         const stackIndex = draftState.remix?.tracks.children[0].children.findIndex((s) => s.metadata?.id === id) ?? -1;
         if (stackIndex === -1) return draftState;
@@ -402,6 +487,7 @@ const subClip = (source: Timeline, start: number, end: number): Stack | undefine
     const clips = draft?.children?.[0].children.filter((c) => {
       const start_time = (c as Clip).source_range?.start_time ?? 0;
       const end_time = start_time + ((c as Clip).source_range?.duration ?? 0);
+      c!.metadata!.id = `C-${nanoid()}`;
 
       return intersection([start_time, end_time], [start - offset, end - offset]);
     });
@@ -504,7 +590,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
         id,
         data: {
           t: `1,${(metadata?.duration ?? 5) + 1}`,
-          'media-src': 'https://lab.hyperaud.io/tmp/black_video.mp4',
+          'media-src': window.emptyVideoURL,
         },
         gap: true,
         widget: 'title',
@@ -513,7 +599,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
 
       stack.media_reference = {
         OTIO_SCHEMA: 'MediaReference.1',
-        target: 'https://lab.hyperaud.io/tmp/black_video.mp4',
+        target: window.emptyVideoURL,
       };
 
       stack.source_range = {
@@ -664,7 +750,7 @@ export const applyEffects = (stacks: Stack[]): Stack[] => {
 
       if (!nextNonEffect.effects) nextNonEffect.effects = [];
       const effectIndex = nextNonEffect.effects?.findIndex((e) => e.metadata?.id === metadata?.id) ?? -2;
-      console.log({ effect, nextNonEffect, effectIndex });
+      // console.log({ effect, nextNonEffect, effectIndex });
       if (effectIndex === -1) {
         if (nextNonEffect.effects.length === 0) {
           nextNonEffect.effects = [effect];

@@ -1,11 +1,14 @@
-import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ElementType, CSSProperties, PropsWithChildren, memo, useRef, useState, useCallback, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { intersection } from 'interval-operations';
+import { v4 as uuidv4 } from 'uuid';
 
 import type { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
 import type { Timeline, Stack, Clip, TimedText, Gap } from './interfaces';
 import { Tool } from './RemixDestination';
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+// import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import { TimedTextPlayer } from '@theirstoryinc/timedtext-player/dist/timedtext-player.js';
 
 export const PlainDiv = ({ children }: PropsWithChildren): JSX.Element => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{children}</div>
@@ -55,6 +58,7 @@ export const Paragraph = memo(
         ...acc,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [`data-${key.replaceAll('_', '-')}`]: (clip.metadata as any)?.data[key],
+        id: clip?.metadata?.id ?? uuidv4(), // FIXME this shuffles on re-renders
       };
     }, {});
 
@@ -125,6 +129,8 @@ export const Section = memo(
     SelectionWrapper = PlainSpan as unknown as ElementType,
     SectionContentWrapper = PlainDiv as unknown as ElementType,
     tools = [],
+    playerRef,
+    isDragDisabled = false,
   }: {
     stack: Stack;
     offset?: number;
@@ -136,8 +142,10 @@ export const Section = memo(
     SelectedBlocksWrapper?: ElementType;
     SelectionWrapper?: ElementType;
     SectionContentWrapper?: ElementType;
+    playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools?: any[] | undefined;
+    isDragDisabled?: boolean;
   }) => {
     const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
       ...draggableStyle,
@@ -146,6 +154,17 @@ export const Section = memo(
       width: isDragging ? 'fit-content' : '100%',
       height: isDragging ? 'fit-content' : 'auto',
     });
+
+    const [loading, setLoading] = useState(false);
+    const [firstRender, setFirstRender] = useState(true);
+    useEffect(() => {
+      if (firstRender) {
+        setFirstRender(false);
+      } else {
+        // setLoading(false);
+      }
+    }, [firstRender]);
+    // TODO reset firstRender on stack change?
 
     const start = stack?.source_range?.start_time ?? 0;
     const end = (stack?.source_range?.duration ?? 0) + start;
@@ -199,8 +218,10 @@ export const Section = memo(
         .join(' ');
     }
 
+    console.log(text); // logged just use the var for now
+
     const sectionRef = useRef<HTMLDivElement>(null);
-    const sectionWidth = sectionRef.current?.clientWidth;
+    // const sectionWidth = sectionRef.current?.clientWidth;
     const ref = useRef<HTMLDivElement>(null);
     const [y, setY] = useState(0);
     const [mouseY, setMouseY] = useState(0);
@@ -224,10 +245,21 @@ export const Section = memo(
         {...attrs}
         id={stack?.metadata?.id}
         data-offset={offset}
-        data-sid={sourceId}
-        style={{ padding: 0, border: 'none', marginBottom: 0 }}
+        data-sid={(stack?.metadata as any)?.storyId ?? sourceId ?? (stack?.metadata as any)?.sid}
+        style={{
+          padding: 0,
+          border: 'none',
+          marginBottom: 0,
+          // border: loading ? '5px solid #ff0000' : '5px solid green',
+        }}
         ref={sectionRef}
       >
+        {loading && (
+          <style>{`
+          section[data-sid="${(stack?.metadata as any)?.storyId ?? sourceId ?? (stack?.metadata as any)?.sid}"] p {
+            _cursor: wait;
+        `}</style>
+        )}
         {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (stack.metadata as any)?.widget &&
@@ -251,7 +283,7 @@ export const Section = memo(
                 </BlockWrapper>
               ))}
 
-              <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0}>
+              <Draggable draggableId={`selection-${interval?.[0]}-${interval?.[1]}`} index={0} isDragDisabled={isDragDisabled}>
                 {(provided, snapshot) => {
                   return (
                     <>
@@ -262,7 +294,7 @@ export const Section = memo(
                         {...provided.draggableProps}
                         style={{
                           ...getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties),
-                          height: snapshot.isDragging ? 50 : 'fit-content',
+                          // height: snapshot.isDragging ? 50 : 'fit-content',
                         }}
                         onMouseDown={recordMouseY}
                       >
@@ -275,15 +307,16 @@ export const Section = memo(
                               backgroundColor: '#FFF',
                               boxShadow: '0px 10px 12px 0px rgba(0, 0, 0, 0.20)',
                               padding: '8px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              columnGap: '6px',
-                              position: 'fixed',
+                              // display: 'flex',
+                              // alignItems: 'center',
+                              // columnGap: '6px',
+                              // position: 'fixed',
                               // top: '0',
                               top: ref.current ? mouseY - y - 25 : 0,
+                              width: ref.current ? ref.current.clientWidth : 0,
                             }}
                           >
-                            <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
+                            {/* <PlaylistAddIcon style={{ width: '20px', height: '20px', color: '#606971' }} />
                             <p
                               style={{
                                 margin: 0,
@@ -297,7 +330,26 @@ export const Section = memo(
                               }}
                             >
                               {text}
-                            </p>
+                            </p> */}
+                            <SelectedBlocksWrapper>
+                            {selected.map((p, i: number) => (
+                              <BlockWrapper
+                                key={p?.metadata?.id ?? `sP-${i}`}
+                                metadata={p?.metadata}
+                                start={start}
+                                offset={offset}
+                              >
+                                <Paragraph
+                                  clip={p as Clip}
+                                  interval={adjustedInterval}
+                                  dragHandleProps={provided.dragHandleProps}
+                                  isDragging={snapshot.isDragging}
+                                  SelectionWrapper={SelectionWrapper}
+                                  droppableId={droppableId}
+                                  source={source}
+                                />
+                              </BlockWrapper>
+                            ))}</SelectedBlocksWrapper>
                           </div>
                         ) : (
                           <SelectedBlocksWrapper>
@@ -357,11 +409,20 @@ export const Section = memo(
               ))}
             </>
           ) : (
-            children?.map((p, i: number) => (
-              <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
-                <Paragraph clip={p as Clip} />
-              </BlockWrapper>
-            ))
+            // children?.map((p, i: number) => (
+            //   <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+            //     <Paragraph clip={p as Clip} />
+            //   </BlockWrapper>
+            // ))
+            <Paragraphs
+              paragraphs={children as Clip[]}
+              start={start}
+              offset={offset}
+              BlockWrapper={BlockWrapper}
+              firstRender={firstRender}
+              playerRef={playerRef}
+              setLoading={setLoading}
+            />
           )}
         </SectionContentWrapper>
       </section>
@@ -383,4 +444,50 @@ const Effect = ({ effect }: { effect: any }) => {
   }, {}) as unknown as Record<string, string>;
 
   return <div {...attrs}></div>;
+};
+
+const Paragraphs = ({
+  paragraphs = [],
+  start,
+  offset,
+  BlockWrapper,
+  firstRender,
+  playerRef,
+  setLoading,
+}: {
+  paragraphs: Clip[];
+  start: number;
+  offset: number;
+  BlockWrapper: ElementType;
+  firstRender: boolean;
+  playerRef?: React.MutableRefObject<TimedTextPlayer | undefined>;
+  setLoading: (loading: boolean) => void;
+}) => {
+  const [position, setPosition] = useState(firstRender ? 1 : paragraphs.length);
+
+  useEffect(() => {
+    if (position === 1) setLoading(true && firstRender);
+
+    if (position < paragraphs.length) {
+      setTimeout(() => setPosition(position + 1), 0);
+      if (position == paragraphs.length - 1) {
+        setTimeout(() => {
+          try {
+            console.log('reloadDOM', { playerRef });
+            const data = playerRef!.current!.reloadRemix(0);
+            setLoading(false);
+            console.log({ data });
+          } catch (error) {
+            console.log('FIXME', error);
+          }
+        }, 250);
+      }
+    }
+  }, [position, paragraphs, firstRender, playerRef, setLoading]);
+
+  return paragraphs.slice(0, position).map((p, i: number) => (
+    <BlockWrapper key={p?.metadata?.id ?? `uP-${i}`} metadata={p?.metadata} start={start} offset={offset}>
+      <Paragraph clip={p as Clip} />
+    </BlockWrapper>
+  ));
 };

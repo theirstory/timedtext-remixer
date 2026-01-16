@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useContext, useMemo, ElementType, CSSProperties, useRef, useState, useLayoutEffect } from 'react';
+import { useContext, useMemo, ElementType, CSSProperties, useRef } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
 
 import { PlainDiv, Section } from './components';
 import { Context } from './RemixContext';
-import { Player } from './Player';
+import { Player } from './RemixPlayer';
 
 import type { Stack } from './interfaces';
+import { getVersion } from './utils';
 // import TheirsToryLogo from '../src/Assets/TheirStory.png';
 
 interface RemixDestinationProps {
@@ -21,6 +22,9 @@ interface RemixDestinationProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tools?: any[] | undefined;
   Empty?: ElementType | undefined;
+  isDragDisabled?: boolean;
+  disableSettings?: boolean;
+  disableTools?: boolean;
 }
 
 const RemixDestination = ({
@@ -32,6 +36,9 @@ const RemixDestination = ({
   Settings = null,
   tools = [],
   Empty = PlainDiv as unknown as ElementType,
+  isDragDisabled = false,
+  disableSettings = false,
+  disableTools = false,
 }: RemixDestinationProps): JSX.Element => {
   const { state } = useContext(Context);
   const { remix, poster } = state;
@@ -53,22 +60,42 @@ const RemixDestination = ({
     width: '100%',
   });
 
-  const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => ({
-    userSelect: 'none',
-    background: 'transparent',
-    borderRadius: '8px',
-    boxShadow: isDragging ? '0px 10px 12px 0px rgba(0, 0, 0, 0.20)' : 'none',
-    ...draggableStyle,
-  });
+  const getItemStyle = (isDragging: boolean, draggableStyle: CSSProperties): CSSProperties => {
+    // const selectedBlocksWrapper = document.querySelector('.selected-blocks-wrapper');
+    // let displacement = 0;
+    // if (selectedBlocksWrapper) {
+    //   displacement = (selectedBlocksWrapper as HTMLElement).offsetHeight;
+    // }
 
-  const [width, setWidth] = useState<string | number>('auto');
+    // const [x, y] = draggableStyle.transform?.match(/translate\((-?\d+(?:\.\d+)?px),\s*(-?\d+(?:\.\d+)?px)\)/)?.slice(1).map(s => parseFloat(s)) ?? [0, 0];
+    // const newTransform = `translate(${x}px, ${y === 0 ? 0 : 100 + y - displacement}px)`;
+    // console.log({ newTransform, x, y, displacement });
+
+    const style = {
+      userSelect: 'none',
+      // background: 'transparent',
+      borderRadius: '8px',
+      boxShadow: isDragging ? '0px 10px 12px 0px rgba(0, 0, 0, 0.20)' : 'none',
+      ...draggableStyle,
+      // outline: draggableStyle.transform ? '1px solid red !important' : '1px solid blue !important',
+      // outline: '1px solid red !important',
+      // background: draggableStyle.transform ? 'red' : 'yellow',
+      // padding: '10px',
+    };
+
+    // if (x === 0 && y > 0) style.transform = newTransform;
+
+    return style as CSSProperties;
+  };
+
+  // const [width, setWidth] = useState<string | number>('auto');
   const widthRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    if (widthRef.current) {
-      setWidth(widthRef.current.offsetWidth);
-    }
-  }, [widthRef]);
+  // useLayoutEffect(() => {
+  //   if (widthRef.current) {
+  //     setWidth(widthRef.current.offsetWidth);
+  //   }
+  // }, [widthRef]);
 
   return (
     <>
@@ -76,14 +103,15 @@ const RemixDestination = ({
         <Player transcript={`#B${remix?.metadata?.id}`} pauseMutationObserver={true} {...{ poster }} />
       </PlayerWrapper>
 
-      <div ref={widthRef} style={{ width: '100%', height: 0 }}></div>
+      <div ref={widthRef} style={{ width: '100%', height: 0 }} data-remixer-version={getVersion()}></div>
+
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ToolbarWrapper>
           <Droppable droppableId="Toolbar" isDropDisabled={true}>
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} style={getListStyle()}>
                 {tools.map((tool, i) => (
-                  <Draggable draggableId={tool.name} index={i} key={`tool-${i}`}>
+                  <Draggable draggableId={tool.name} index={i} key={`tool-${i}`} isDragDisabled={isDragDisabled}>
                     {(provided, snapshot) => (
                       <>
                         <div
@@ -96,7 +124,8 @@ const RemixDestination = ({
                             ...(provided.draggableProps.style as CSSProperties),
                             ...{
                               display: snapshot.isDragging ? 'block' : 'inline-block',
-                              width: snapshot.isDragging ? width : 'auto',
+                              // width: snapshot.isDragging ? width : 'auto',
+                              width: snapshot.isDragging ? widthRef?.current?.offsetWidth ?? '40vw' : 'auto',
                               paddingTop: '8px',
                               paddingBottom: '8px',
                             },
@@ -125,8 +154,9 @@ const RemixDestination = ({
             )}
           </Droppable>
         </ToolbarWrapper>
-        {Settings}
-      </Box>
+          {disableSettings ? null : Settings}
+        </Box>
+
 
       <DestinationWrapper>
         <Droppable droppableId={`Remix-${remix?.metadata?.id}`}>
@@ -138,6 +168,7 @@ const RemixDestination = ({
                     key={stack?.metadata?.id ?? `db-${i}`}
                     draggableId={stack?.metadata?.id as string}
                     index={i}
+                    isDragDisabled={isDragDisabled}
                   >
                     {(provided, snapshot) => (
                       <div
@@ -146,7 +177,7 @@ const RemixDestination = ({
                         {...provided.dragHandleProps}
                         style={getItemStyle(snapshot.isDragging, provided.draggableProps.style as CSSProperties)}
                       >
-                        {(stack.metadata as any)?.component ? (
+                        {(stack.metadata as any)?.component ? disableTools ? null : (
                           <Tool
                             key={stack?.metadata?.id ?? `T-${i}`}
                             Component={
@@ -164,6 +195,7 @@ const RemixDestination = ({
                             SectionContentWrapper={SectionContentWrapper}
                             sourceId={(stack?.metadata as any)?.sid}
                             tools={tools}
+                            isDragDisabled={isDragDisabled}
                           />
                         )}
                       </div>

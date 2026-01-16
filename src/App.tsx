@@ -43,11 +43,12 @@ import {
   SelectionWrapper,
   ToolbarWrapper,
   BlockWrapperLeft,
-  BlockWrapperRight,
+  // BlockWrapperRight,
   SectionContentWrapper,
   ExportRemix,
   FadeInDraggable,
   TitleDraggable,
+  SampleMUISearchTool,
 } from './wrappers.tsx';
 import { SourceDrawer } from './components/SourceDrawer.tsx';
 import TopRightIcons from './components/TopRightIcons.tsx';
@@ -166,27 +167,24 @@ function App() {
         }
 
         const cssText = `
+          /* transcript ${transcript} */
+          /* selector   ${selector} */
+          /* clip       ${clip.metadata.selector} */
+          /* section    ${section.metadata.selector} */
+
           ${transcript} {
             ${selector} {
               color: #1C7C6F !important;
-              text-decoration: underline;
             }
 
             ${selector} ~ span {
               color: #717171 !important;
             }
 
-            ${clip.metadata.selector} ~ p, div:has(span[data-t="${element.getAttribute('data-t')}"]) ~ div {
+            div.BlockWrapper:has(${clip.metadata.selector}) ~ div.BlockWrapper {
               color: #717171;
             }
 
-            ${clip.metadata.selector.replace('> p', '')} ~ div.BlockWrapper, div:has(span[data-t="${element.getAttribute('data-t')}"]) ~ div {
-              color: #717171 !important;
-            }
-
-            ${section.metadata.selector} ~ section, div[data-rfd-draggable-id="${section.metadata.selector.replace('#', '')}"] ~ div {
-              color: #717171;
-            }
           }
         `;
 
@@ -556,6 +554,7 @@ function App() {
                 BlockWrapper={BlockWrapperLeft}
                 SelectionWrapper={SelectionWrapper}
                 ToolbarWrapper={ToolbarWrapper}
+                SearchTool={SampleMUISearchTool}
                 tools={toolsLeft}
                 Empty={EmptySource}
               />
@@ -584,7 +583,7 @@ function App() {
                 }
                 DestinationWrapper={DestinationWrapper}
                 SectionContentWrapper={SectionContentWrapper}
-                BlockWrapper={BlockWrapperRight}
+                BlockWrapper={BlockWrapperLeft}
                 // ToolbarWrapper={ToolbarWrapper}
                 Settings={
                   <div>
